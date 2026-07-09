@@ -1,0 +1,262 @@
+/* ═══ NEBULA FORCE — style.css: Shining-Force-blue windows, one-screen mobile layout.
+   #ui-battle and #ui-town swap via body.mode-* classes; the canvas is scaled
+   by fitLayout() in js/battle.js so everything always fits without scrolling. ═══ */
+:root{
+  --win-top:#3448b8; --win-bot:#16206e;
+  --edge:#f0f0f4; --ink:#08081a;
+  --ally:#7ce8ff; --enemy:#ff7088; --accent:#ffd23a;
+  --special:#b47ae8;
+  --text:#e8ecff; --dim:#9aa6d8;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none;}
+button{-webkit-user-select:none; user-select:none;}
+html,body{height:100%; overscroll-behavior:none;}
+body{
+  position:fixed; inset:0; width:100%;
+  touch-action:none;
+  background:#060714;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, #ffffff55 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 8%, #ffffff44 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 70%, #9fd8ff33 50%, transparent 51%);
+  color:var(--text);
+  font-family:'IBM Plex Mono', monospace;
+  display:flex; flex-direction:column; align-items:center;
+  overflow:hidden;
+  padding:5px;
+  user-select:none; -webkit-user-select:none;
+}
+#app{display:flex; flex-direction:column; gap:6px; align-items:center; width:100%; height:100%;}
+header{
+  display:flex; justify-content:space-between; align-items:baseline;
+  width:100%; padding:1px 2px; flex:0 0 auto;
+}
+header h1{
+  font-family:'Press Start 2P', monospace;
+  font-size:10px; color:var(--accent);
+  text-shadow:1px 1px 0 #000, 0 0 10px #ffd23a55;
+}
+header .sub{font-size:9px; color:var(--dim);}
+#stage{position:relative; flex:0 0 auto;}
+canvas#view{
+  display:block; width:100%; height:auto;
+  image-rendering:pixelated;
+  border:3px solid var(--edge);
+  outline:2px solid var(--ink);
+  border-radius:6px;
+  background:#04050c;
+  touch-action:none;
+}
+#fastbtn{
+  position:absolute; top:6px; right:6px; z-index:15;
+  font-family:'Press Start 2P', monospace; font-size:7px;
+  background:#101a5ecc; color:var(--dim);
+  border:1px solid #c8d4ff66; border-radius:4px;
+  padding:5px 7px; cursor:pointer;
+}
+#fastbtn.on{background:#8a6a10dd; color:#fff; border-color:var(--accent);}
+body.mode-town #fastbtn, body.mode-space #fastbtn, body.mode-entity #fastbtn, body.mode-return #fastbtn{display:none;}
+.sfwin{
+  background:linear-gradient(180deg, var(--win-top), var(--win-bot));
+  border:3px solid var(--edge); outline:2px solid var(--ink);
+  border-radius:8px;
+  box-shadow:4px 4px 0 #00000088;
+}
+#dialog{
+  position:absolute; left:3%; right:3%; bottom:4%;
+  padding:9px 12px 12px;
+  display:none; min-height:74px; z-index:20;
+}
+#dialog.show{display:block;}
+#dialog .who{
+  font-family:'Press Start 2P', monospace; font-size:9px;
+  color:var(--accent); text-shadow:1px 1px 0 #000; margin-bottom:6px;
+}
+#dialog .txt{font-size:12px; line-height:1.55; min-height:38px; text-shadow:1px 1px 0 #000;}
+#dialog .more{
+  position:absolute; right:12px; bottom:6px;
+  color:var(--accent); font-size:11px;
+  animation:blink 0.7s steps(1) infinite;
+}
+#dialog .choices{display:none; gap:8px; margin-top:8px;}
+#dialog .choices.show{display:flex;}
+.dlgbtn{
+  font-family:'Press Start 2P', monospace; font-size:8px;
+  background:linear-gradient(180deg,#2438a0,#101a5e);
+  color:var(--text);
+  border:2px solid var(--edge); outline:1px solid var(--ink);
+  border-radius:5px; padding:8px 10px; cursor:pointer;
+  text-shadow:1px 1px 0 #000;
+}
+.dlgbtn:hover{color:var(--accent);}
+@keyframes blink{50%{opacity:0;}}
+#shop, #items{
+  position:absolute; left:6%; right:6%; top:5%;
+  padding:10px 12px;
+  display:none; z-index:20;
+  max-height:88%;
+  overflow-y:auto;
+  touch-action:pan-y;
+}
+#shop.show, #items.show{display:block;}
+#shop h3, #items h3{
+  font-family:'Press Start 2P', monospace; font-size:9px;
+  color:var(--accent); text-shadow:1px 1px 0 #000; margin-bottom:8px;
+  display:flex; justify-content:space-between;
+}
+.shopitem{
+  display:flex; justify-content:space-between; align-items:center;
+  width:100%; text-align:left;
+  font-family:'IBM Plex Mono', monospace; font-size:12px;
+  background:transparent; border:none; outline:none;
+  color:var(--text); padding:6px 7px; border-radius:4px;
+  cursor:pointer; text-shadow:1px 1px 0 #000;
+}
+.shopitem:hover, .shopitem:focus{background:#ffffff22; color:var(--accent);}
+.shopitem:disabled{opacity:.5;}
+.shopitem .pr{color:var(--accent);}
+.shopitem.exit{margin-top:5px; border-top:1px dashed #c8d4ff55; padding-top:9px;}
+.shopitem small{display:block; color:var(--dim); font-size:10px;}
+#overlay{
+  position:absolute; inset:0; display:none;
+  align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  background:#03040add; z-index:50; backdrop-filter:blur(2px); border-radius:6px;
+  text-align:center; padding:14px;
+}
+#overlay.show{display:flex;}
+#overlay h2{
+  font-family:'Press Start 2P', monospace; font-size:15px;
+  color:var(--accent); text-shadow:2px 2px 0 #000, 0 0 18px #ffd23a88;
+  line-height:1.7;
+}
+#overlay h2.lose{color:var(--enemy); text-shadow:2px 2px 0 #000, 0 0 18px #ff547088;}
+#overlay p{color:var(--dim); font-size:11px; max-width:400px; line-height:1.6;}
+#overlay button{
+  font-family:'Press Start 2P', monospace; font-size:9px;
+  background:linear-gradient(180deg,#2438a0,#101a5e);
+  color:var(--text); border:2px solid var(--edge); outline:1px solid var(--ink);
+  border-radius:5px; padding:10px 12px; cursor:pointer;
+}
+/* ── one-screen UI stacks (mode-switched) ── */
+#ui{display:flex; flex-direction:column; gap:5px; flex:0 0 auto; width:100%;}
+body.mode-town #ui-battle{display:none;}
+body.mode-battle #ui-town{display:none;}
+body.mode-space #ui-battle, body.mode-space #ui-town{display:none;}
+body.mode-entity #ui-battle, body.mode-entity #ui-town{display:none;}
+body.mode-return #ui-battle, body.mode-return #ui-town{display:none;}
+#ui-battle{display:flex; flex-direction:column; gap:5px;}
+.panel{
+  background:linear-gradient(180deg, var(--win-top), var(--win-bot));
+  border:2px solid var(--edge);
+  outline:1px solid var(--ink);
+  border-radius:7px;
+  padding:6px 8px;
+  box-shadow:inset 0 0 0 1px #00000055, 3px 3px 0 #00000066;
+}
+#cmdpanel{padding:5px 7px;}
+#actions{
+  display:flex; gap:6px; align-items:center;
+  height:42px; overflow-x:auto; overflow-y:hidden;
+  touch-action:pan-x;
+  scrollbar-width:none;
+}
+#actions::-webkit-scrollbar{display:none;}
+#actions button{
+  font-family:'Press Start 2P', monospace;
+  font-size:8px; flex:0 0 auto;
+  background:linear-gradient(180deg,#2438a0,#101a5e);
+  color:var(--text);
+  border:2px solid var(--edge);
+  outline:1px solid var(--ink);
+  border-radius:5px; padding:9px 10px;
+  cursor:pointer; letter-spacing:1px;
+  text-shadow:1px 1px 0 #000;
+  white-space:nowrap;
+}
+#actions button:disabled{opacity:.4; cursor:default;}
+#actions button.special{background:linear-gradient(180deg,#6a3aa8,#40206a); border-color:#e0c8ff;}
+#hint{
+  font-size:10px; color:#c8d4ff; height:15px; line-height:15px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-top:3px; text-shadow:1px 1px 0 #000;
+}
+/* compact unit strip */
+#card{height:104px; overflow:hidden;}
+#card .crow{display:flex; gap:8px; align-items:flex-start;}
+#card .portrait{
+  background:#0d1440; border:2px solid var(--edge); outline:1px solid var(--ink);
+  border-radius:5px; width:48px; height:48px; flex:0 0 auto;
+  display:flex; align-items:flex-end; justify-content:center; overflow:hidden;
+}
+#card .portrait canvas{image-rendering:pixelated;}
+#card .mid{flex:1; min-width:0;}
+#card .name{
+  font-family:'Press Start 2P', monospace; font-size:9px;
+  text-shadow:1px 1px 0 #000; margin-bottom:3px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#card .name .lv{color:var(--accent); font-size:8px;}
+.bar{height:7px; background:#08102e; border:1px solid #c8d4ff88; border-radius:3px; overflow:hidden; margin:1px 0 3px;}
+.bar > i{display:block; height:100%; transition:width .3s;}
+.bar.hp > i{background:linear-gradient(90deg,#37d67a,#a8e84e);}
+.bar.mp > i{background:linear-gradient(90deg,#3f7fd6,#7ce8ff);}
+.bar.xp{height:4px;}
+.bar.xp > i{background:linear-gradient(90deg,#c8a020,#ffd23a);}
+.barlabel{font-size:8px; color:#c8d4ff; display:flex; justify-content:space-between; line-height:1.2;}
+#card .stats{
+  flex:0 0 auto; font-size:9px; line-height:1.6; text-align:right;
+  color:var(--text); text-shadow:1px 1px 0 #000;
+}
+#card .stats b{color:var(--accent); font-weight:600;}
+#card .proc{
+  font-size:9px; color:var(--accent); border-top:1px dashed #c8d4ff55;
+  margin-top:4px; padding-top:3px; line-height:1.5;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-shadow:1px 1px 0 #000;
+}
+#card .proc .sp{color:var(--special);}
+#card .proc .used{color:var(--dim); text-decoration:line-through;}
+#card .proc .rg{color:#48e060;}
+/* mini log */
+#log{
+  height:52px; overflow-y:auto; font-size:9.5px; line-height:1.5;
+  touch-action:pan-y;
+}
+#log p{margin-bottom:1px;}
+#log .a{color:var(--ally);} #log .e{color:var(--enemy);}
+#log .p{color:var(--accent);} #log .d{color:var(--dim);}
+#log .s{color:var(--special);}
+#log .ev{color:#48e0d0;}
+#log .round{color:#c8d4ff; border-top:1px dashed #c8d4ff55; margin-top:3px; padding-top:2px; font-size:8.5px; letter-spacing:1px;}
+/* ── town controls ── */
+#ui-town{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:4px 6px 0;
+}
+#dpad{display:grid; grid-template-columns:repeat(3,46px); grid-template-rows:repeat(3,46px); gap:4px;}
+.pbtn{
+  background:linear-gradient(180deg,#2438a0,#101a5e);
+  border:2px solid var(--edge); outline:1px solid var(--ink);
+  border-radius:8px; color:var(--text);
+  font-size:16px; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; touch-action:none;
+}
+.pbtn:active{background:#3a52d8;}
+.pbtn.blank{visibility:hidden;}
+#midtown{display:flex; flex-direction:column; gap:8px; align-items:center;}
+#items-btn{
+  font-family:'Press Start 2P', monospace; font-size:8px;
+  background:linear-gradient(180deg,#2438a0,#101a5e);
+  color:var(--text);
+  border:2px solid var(--edge); outline:1px solid var(--ink);
+  border-radius:6px; padding:11px 9px; cursor:pointer; touch-action:none;
+}
+#town-hint{font-size:9px; color:var(--dim); text-align:center; max-width:110px;}
+#abtn{
+  width:64px; height:64px; border-radius:50%;
+  background:linear-gradient(180deg,#c8a020,#8a6a10);
+  border:3px solid var(--edge); outline:2px solid var(--ink);
+  font-family:'Press Start 2P', monospace; font-size:13px; color:#fff;
+  text-shadow:1px 1px 0 #000; cursor:pointer; touch-action:none;
+}
+#abtn:active{background:#e8c040;}

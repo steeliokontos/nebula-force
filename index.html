@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NEBULA FORCE — Act 1</title>
+<meta name="theme-color" content="#060714">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nebula Force">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="mode-town">
+<div id="app">
+  <header>
+    <h1>NEBULA FORCE</h1>
+    <span class="sub" id="subline">Rustharbor Colony</span>
+  </header>
+  <div id="stage">
+    <canvas id="view" width="480" height="384"></canvas>
+    <button id="fastbtn">FAST OFF</button>
+    <div id="dialog" class="sfwin">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="more">▼</div>
+      <div class="choices"></div>
+    </div>
+    <div id="shop" class="sfwin">
+      <h3><span>VENN'S SUNDRIES</span><span id="shop-cr"></span></h3>
+      <div id="shop-list"></div>
+    </div>
+    <div id="items" class="sfwin">
+      <h3><span>ITEMS</span><span id="items-cr"></span></h3>
+      <div id="items-list"></div>
+    </div>
+    <div id="overlay">
+      <h2 id="ov-title"></h2>
+      <p id="ov-sub"></p>
+      <button onclick="location.reload()">RESTART</button>
+    </div>
+  </div>
+  <div id="ui">
+    <div id="ui-battle">
+      <div class="panel" id="cmdpanel">
+        <div id="actions"></div>
+        <div id="hint">—</div>
+      </div>
+      <div class="panel" id="card"></div>
+      <div class="panel" id="log"></div>
+    </div>
+    <div id="ui-town">
+      <div id="dpad">
+        <div class="pbtn blank"></div><button class="pbtn" data-d="up">▲</button><div class="pbtn blank"></div>
+        <button class="pbtn" data-d="left">◀</button><div class="pbtn blank"></div><button class="pbtn" data-d="right">▶</button>
+        <div class="pbtn blank"></div><button class="pbtn" data-d="down">▼</button><div class="pbtn blank"></div>
+      </div>
+      <div id="midtown">
+        <button id="items-btn">ITEMS</button>
+        <div id="town-hint">walk · A = talk &amp; search</div>
+      </div>
+      <button id="abtn">A</button>
+    </div>
+  </div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/data/characters.js"></script>
+<script src="js/town.js"></script>
+<script src="js/cutscenes.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/missions/sump.js"></script>
+<script src="js/missions/shaft9.js"></script>
+<script src="js/missions/kr7.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
