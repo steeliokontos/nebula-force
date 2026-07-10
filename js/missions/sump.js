@@ -12,6 +12,7 @@ SPRITES.maw=SPRITES.rig.map(r=>r.replace(/g/g,'D').replace(/G/g,'E').replace(/o/
 const MISSION_SUMP={
   id:'sump',
   name:'The Eastern Sump',
+  lvl:1, /* XP decay yardstick — see kr7.js */
   crashProp:false,
   map:[
     "000018000660000110",

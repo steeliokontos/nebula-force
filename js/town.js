@@ -661,6 +661,9 @@ function openItems(){
     let note='';
     if(it==='Worm Soup') note='Rich, mineral, faintly wriggling. Still warm — somehow.';
     else if(it==='Dormant Spore') note='Warm. Slightly warmer than yesterday, if you\u2019re honest.';
+    else if(it==='Ration Pack') note='In battle: your action, +12 HP.';
+    else if(it==='Repair Spray') note='In battle: your action, +18 HP.';
+    else if(it==='Cell Pack') note='In battle: your action, +8 MP.';
     else note='Best saved for the field.';
     b.innerHTML=`<span>${it}<small>${note}</small></span><span class="pr">${it==='Worm Soup'?'USE ▸':''}</span>`;
     b.onclick=()=>{ if(it==='Worm Soup') pickSoupTarget(); };

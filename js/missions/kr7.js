@@ -10,6 +10,10 @@
 const MISSION_KR7={
   id:'kr7',
   name:'KR-7 Claim War',
+  /* mission level — the XP decay yardstick (battle.js giveXP). Crew more
+     than 3 levels above this earn sharply less here. Rule of thumb from
+     the XP doctrine in DESIGN.md: lvl ≈ 3 × (act − 1) + battle number. */
+  lvl:2,
   map:[
     "444400000110000444",
     "440002000110000044",

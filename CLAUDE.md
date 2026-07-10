@@ -94,6 +94,10 @@ and rebuilding the single file.
   (dying must never make the force stronger). Won battles can be re-entered
   by quitting during the victory dialogs — that's Egress-style grinding,
   allowed on purpose.
-- Field items (Ration Pack etc.) can be bought but not yet used in battle.
-  Cell Pack says it restores MP but has no use-code at all yet.
-- Acts 2–9, 7+ more recruits (incl. Bracket), promotion at L15.
+- ~~Field items unusable~~ BUILT: Ration Pack / Repair Spray / Cell Pack are
+  battle actions now (ITEM button; effects in BATTLE_ITEMS, battle.js).
+- XP doctrine is live (DESIGN.md rule 10): every mission MUST declare `lvl`
+  (see kr7.js), XP decays when crew outlevel the mission, heal XP pays at
+  damage parity, casters gain +1 max MP on even levels.
+- Acts 2–9, 7+ more recruits (incl. Bracket), promotion at L15
+  (SF-style: new class, reset to L1, stats carry — not built yet).

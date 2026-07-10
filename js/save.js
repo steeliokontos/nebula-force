@@ -40,6 +40,7 @@ function harvestProgress(){
       lvl:u.lvl, xp:u.xp,
       hp:u.maxhp-u.base.maxhp, atk:u.atk-u.base.atk,
       def:u.def-u.base.def,   agi:u.agi-u.base.agi,
+      mp:u.maxmp-(u.base.maxmp||u.maxmp),
       spells:u.spells.map(s2=>Object.assign({},s2)),
     };
   }
@@ -51,7 +52,8 @@ function applyProgress(u){
   if(!pg) return;
   u.lvl=pg.lvl; u.xp=pg.xp;
   u.maxhp+=pg.hp; u.atk+=pg.atk; u.def+=pg.def; u.agi+=pg.agi;
-  u.hp=u.maxhp;
+  u.maxmp+=pg.mp||0;
+  u.hp=u.maxhp; u.mp=u.maxmp;
   if(pg.spells&&pg.spells.length) u.spells=pg.spells.map(s2=>Object.assign({},s2));
 }
 

@@ -81,6 +81,21 @@ Town NPCs of note: Foreman Okari, Venn (walk-in shop east of the plaza, sells a 
    heals give XP too).
 9. **Boss regen only in phase 2 and only beatable-by-focus** (Vash: 48 HP,
    +3/turn regen, party focused output 20–25/round → pressure, not a slog).
+10. **XP doctrine (calibrated by simulation for 9 acts, promotion L15
+   mid-Act-3 / start of Act 4, ~60% of the game promoted):**
+   - Every mission declares `lvl` ≈ 3×(act−1)+battle# (kr7.js template).
+   - Past mission level +3, XP halves per 3 levels of gap (giveXP). This is
+     the whole economy's governor: it stops runaway leaders, lets benched
+     crew catch up fast, and makes boss-regen farming / battle-replay
+     grinding self-limiting instead of forbidden.
+   - Heal XP pays at damage parity (×0.9, cap 10); AURA cap 10. Healers
+     level ~1 act behind the pack — intended, not a bug.
+   - Casters gain +1 max MP every even level, so spell counts grow with the
+     campaign instead of flatlining at 3–4 casts per battle.
+   - XP from LOST battles is discarded (save.js harvests only on victory) —
+     dying must never make the force stronger.
+   - Promotion at L15 is SF-style: new class, level resets to 1, stats
+     carry. The decay then naturally re-opens the XP faucet post-promotion.
 
 ## Battle systems (implemented in js/battle.js)
 - Terrain: boulders (cost 2, 15% evade), debris (cost 2, 30% evade), crystal
@@ -125,7 +140,9 @@ waterfall splash; shrine motes).
 1. ~~Save system~~ DONE (js/save.js): credits, inventory, hpBonus, story flags,
    weapons, lost crew, and per-character levels/XP/spells all persist.
    Autosaves in town + at battle start; loss resumes at the battle.
-2. Battle items (use Ration Pack / Cell Pack / Repair Spray as a turn action).
+2. ~~Battle items~~ DONE: Ration Pack (+12 HP) / Repair Spray (+18 HP) /
+   Cell Pack (+8 MP) usable as the turn's action via the ITEM button
+   (BATTLE_ITEMS in battle.js — effects tunable there).
 3. Ceril's Crossing buildout (Worldsmith pass) + battle #2 on Vantorr
    (Encounter Architect; reinforcements ON, new twist).
 4. New recruits (next: Bracket) + promotion system at L15.

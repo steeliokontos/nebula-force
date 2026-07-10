@@ -11,6 +11,7 @@ SPRITES.sparker=SPRITES.spiker.map(r=>r.replace(/r/g,'f').replace(/R/g,'O'));
 const MISSION_SHAFT9={
   id:'shaft9',
   name:'Shaft Nine',
+  lvl:1, /* XP decay yardstick — see kr7.js */
   crashProp:false,
   map:[
     "444414000004444444",

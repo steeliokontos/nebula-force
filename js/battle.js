@@ -150,7 +150,7 @@ function mkUnit(o){
     ox:0, oy:0, flash:0, walk:null,
   }, o);
   u.hp=u.maxhp; u.mp=u.maxmp;
-  u.base={maxhp:u.maxhp, atk:u.atk, def:u.def, agi:u.agi};
+  u.base={maxhp:u.maxhp, atk:u.atk, def:u.def, agi:u.agi, maxmp:u.maxmp};
   return u;
 }
 let units=[];
@@ -286,10 +286,30 @@ function renderActions(){
       bX.onclick=()=>useSpecial();
       a.appendChild(bX);
     }
+    if(Object.keys(BATTLE_ITEMS).some(n2=>inventory.includes(n2))){
+      const bI=document.createElement('button'); bI.textContent='ITEM';
+      bI.onclick=()=>{bstate='item'; renderActions();};
+      a.appendChild(bI);
+    }
     const bW=document.createElement('button'); bW.textContent='WAIT';
     bW.onclick=()=>{moveSet.clear(); endTurn();};
     a.appendChild(bW);
     setHint(`${cur.name} — tap a blue tile to move (free until you act)`);
+  } else if(bstate==='item'){
+    for(const n2 of Object.keys(BATTLE_ITEMS)){
+      const count=inventory.filter(i=>i===n2).length;
+      if(!count) continue;
+      const it=BATTLE_ITEMS[n2];
+      const b=document.createElement('button');
+      b.textContent=`${n2} ×${count} (${it.hint})`;
+      b.disabled=!it.avail(cur);
+      b.onclick=()=>useBattleItem(n2);
+      a.appendChild(b);
+    }
+    const bC=document.createElement('button'); bC.textContent='CANCEL';
+    bC.onclick=()=>{bstate='action'; renderActions();};
+    a.appendChild(bC);
+    setHint('Use an item on '+cur.name+' — this is the turn’s action');
   } else if(bstate==='target'){
     const bC=document.createElement('button'); bC.textContent='CANCEL';
     bC.onclick=()=>{targetSet.clear(); pendingAct=null; pendingSpell=null; bstate='action'; renderActions();};
@@ -421,6 +441,37 @@ function spellTargets(u,s2){
     return list;
   }
   return targetsInRange(u,s2.rng,'enemy');
+}
+
+/* — battle items: using one is the unit's ACTION for the turn (no XP).
+   Effects live here; the shop in town.js just sells the names. — */
+const BATTLE_ITEMS={
+  'Ration Pack':{ hint:'+12 HP',
+    avail:u=>u.hp<u.maxhp,
+    use:u=>{ const amt=Math.min(12,u.maxhp-u.hp); u.hp+=amt;
+      floatText(u.x,u.y,'+'+amt,'#48e060');
+      log(`${tag(u)} tears open a RATION PACK — recovers <b>${amt}</b> HP.`); }},
+  'Repair Spray':{ hint:'+18 HP',
+    avail:u=>u.hp<u.maxhp,
+    use:u=>{ const amt=Math.min(18,u.maxhp-u.hp); u.hp+=amt;
+      floatText(u.x,u.y,'+'+amt,'#48e060');
+      log(`${tag(u)} hisses REPAIR SPRAY over the dents — recovers <b>${amt}</b> HP.`); }},
+  'Cell Pack':{ hint:'+8 MP',
+    avail:u=>u.maxmp>0&&u.mp<u.maxmp,
+    use:u=>{ const amt=Math.min(8,u.maxmp-u.mp); u.mp+=amt;
+      floatText(u.x,u.y,'+'+amt+' MP','#7ce8ff');
+      log(`${tag(u)} slots a fresh CELL PACK — recovers <b>${amt}</b> MP.`); }},
+};
+function useBattleItem(n2){
+  const it=BATTLE_ITEMS[n2];
+  const idx=inventory.indexOf(n2);
+  if(!it||idx<0||!it.avail(cur)) return;
+  inventory.splice(idx,1);
+  bstate='anim'; renderActions();
+  it.use(cur);
+  renderCard(cur);
+  moveSet.clear();
+  setTimeout(endTurn, fastMode?120:550);
 }
 
 /* — combat math — */
@@ -615,7 +666,7 @@ async function doSpell(att,tgt,s2){
       n2++;
     }
     log(`${tag(att)} casts <span class="p">${s2.name}</span> — healing light washes over ${n2} allies`);
-    giveXP(att, Math.min(8, 2*n2+2));
+    giveXP(att, Math.min(10, 2*n2+2));
     if(!fastMode) await wait(520);
     return;
   }
@@ -626,7 +677,7 @@ async function doSpell(att,tgt,s2){
       tgt.hp=Math.min(tgt.maxhp,tgt.hp+amt);
       floatText(tgt.x,tgt.y,'+'+amt,'#48e060',true);
       log(`${tag(att)} casts <span class="p">${s2.name}</span> — ${tag(tgt)} recovers <b>${amt}</b> HP`);
-      giveXP(att, Math.min(8, Math.max(2, Math.round(amt*0.7))));
+      giveXP(att, Math.min(10, Math.max(2, Math.round(amt*0.9)))); /* heal XP = damage XP parity */
     } else {
       const amt=s2.pow+Math.floor(Math.random()*4);
       tgt.hp=Math.max(0,tgt.hp-amt);
@@ -651,7 +702,7 @@ async function doSpell(att,tgt,s2){
     sSparkFX(tgt,'#48e060');
     addPop(tgt,'+'+amt,'#48e060',true);
     log(`${tag(att)} casts <span class="p">${s2.name}</span> — ${tag(tgt)} recovers <b>${amt}</b> HP`);
-    giveXP(att, Math.min(8, Math.max(2, Math.round(amt*0.7))));
+    giveXP(att, Math.min(10, Math.max(2, Math.round(amt*0.9)))); /* heal XP = damage XP parity */
     renderCard(tgt);
     await wait(520);
   } else {
@@ -890,6 +941,12 @@ async function doCryo(fallen){
 /* — XP & leveling: wild rolls, hard floors — */
 function giveXP(u,amt){
   if(u.side!=='ally'||gameOver) return;
+  /* outleveled enemies teach less: past mission level +3, XP halves per 3
+     levels of gap. Keeps promotion (L15) landing mid-Act-3, stops runaway
+     leaders, makes benched crew catch up fast — see DESIGN.md XP doctrine.
+     Every mission declares its lvl (kr7.js template). */
+  const gap=u.lvl-(mission.lvl||1);
+  if(gap>=4) amt=Math.max(1,Math.round(amt*Math.pow(0.5,(gap-3)/3)));
   u.xp+=amt;
   floatText(u.x,u.y,'+'+amt+' XP','#ffd23a');
   while(u.xp>=XP_PER_LEVEL){
@@ -911,11 +968,16 @@ function levelUp(u){
   u.atk+=atkG; u.def+=defG; u.agi+=agiG;
   if(u.maxhp<hpFloor){ const b=hpFloor-u.maxhp; u.maxhp+=b; u.hp+=b; hpG+=b; }
   if(u.atk<atkFloor){ atkG+=atkFloor-u.atk; u.atk=atkFloor; }
+  /* casters grow +1 max MP every even level — spells stay relevant across
+     nine acts instead of flatlining at 3-4 casts per battle forever */
+  let mpG=0;
+  if(u.maxmp>0&&u.lvl%2===0){ mpG=1; u.maxmp++; u.mp++; }
   pushBanner(`✦ ${u.name} — LV ${u.lvl} ✦`);
   const bits=[`HP +${hpG}`];
   if(atkG) bits.push(`ATK +${atkG}`);
   if(defG) bits.push(`DEF +${defG}`);
   if(agiG) bits.push(`AGI +${agiG}`);
+  if(mpG) bits.push(`MP +${mpG}`);
   log(`<span class="p">✦ ${tag(u)} reaches level ${u.lvl}! ${bits.join(' · ')}</span>`);
   const learned=u.learn[u.lvl];
   if(learned){
