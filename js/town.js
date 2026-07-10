@@ -1021,7 +1021,7 @@ function tryMove(dir){
   const nx=hero.x+dx, ny=hero.y+dy;
   const ch=tileAt(nx,ny);
   if(curMap==='town'&&ch==='d'){
-    if(hero.x===SHOP_DOOR.x&&hero.y===SHOP_DOOR.y) enterShop(); else enterHouse();
+    if(nx===SHOP_DOOR.x&&ny===SHOP_DOOR.y) enterShop(); else enterHouse();
     return;
   }
   if(!WALK.has(ch)) return;
