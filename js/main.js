@@ -98,6 +98,7 @@ function frame(now){
   cx.clearRect(0,0,cv.width,cv.height);
   if(mode==='town'){
     drawTown(now,dt);
+    saveTick(now); /* throttled autosave while walking (save.js) */
   } else if(mode==='space'){
     if(sp){ updateSpace(dt,now); if(sp) drawSpace(now); }
   } else if(mode==='battle'){
@@ -116,5 +117,5 @@ function frame(now){
 /* — boot — */
 makeTownTiles();
 makeAsteroid();
-startIntro();
+saveBoot(); /* CONTINUE / NEW GAME if a save exists, else the opening movie */
 requestAnimationFrame(frame);

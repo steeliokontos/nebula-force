@@ -173,6 +173,7 @@ function rosterInit(){
     if(bn&&hpBonus[bn]){ u.maxhp+=hpBonus[bn]; u.hp=u.maxhp; u.base.maxhp=u.maxhp; }
     const wpn=equippedWeapons[u.id];
     if(wpn){ u.atk+=wpn.atk; u.base.atk=u.atk; u.weapon=wpn; }
+    applyProgress(u); /* levels/XP/spells carried from past victories (save.js) */
     units.push(u);
   }
   for(const e of mission.enemies){
@@ -1064,6 +1065,9 @@ function checkEnd(){
 }
 function battleWon(){
   gameOver=true; bstate='over';
+  harvestProgress(); /* victory locks in levels/XP — BEFORE explore-phase
+    POIs mutate units, so weapon pickups don't double-count (save.js) */
+  saveGame('battle');
   const lvls=units.filter(u=>u.side==='ally').map(u=>`${u.name.split(' ')[0]} LV${u.lvl}`).join(' · ');
   log(`<span class="round">— VICTORY — ${round} rounds · ${casualties} crew lost · ${lvls}</span>`);
   renderActions();
@@ -1588,6 +1592,7 @@ function battlePointerCancel(){ pdown=false; panned=false; activePid=null; }
 /* — entry point — */
 function startBattle(m){
   mission=m;
+  saveGame('battle'); /* checkpoint: a loss + RESTART resumes at this fight */
   setMode('battle');
   makeBattleTiles();
   makeSceneBG();

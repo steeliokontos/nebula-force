@@ -3,12 +3,14 @@
 Everything decided so far. Future sessions: read this before proposing changes.
 
 ## The pitch
-A Shining Force–style tactical RPG in space. Five acts. A salvager on a
-backwater colony digs up a Precursor relic — the first of five — and learns
+A Shining Force–style tactical RPG in space. Nine acts (expanded from the
+original five — the relic count stays five; the extra acts are room for the
+chase to breathe, detours, and the hunger arriving in stages). A salvager on
+a backwater colony digs up a Precursor relic — the first of five — and learns
 from a dying future that an extra-galactic hunger is coming that UNWRITES
 reality. Gather the relics before it does.
 
-## Story spine (5 acts)
+## Story spine (9 acts)
 - **Act 1 (built):** OPENING MOVIE — Dax released from Penal Station VK-9
   after nine years (salvage-rights fraud); GUNNAR-7, his robot companion, put
   himself in suspended animation for the whole sentence, bought a FLIGHT MODE
@@ -24,10 +26,13 @@ reality. Gather the relics before it does.
   the fold home → Vantorr. One relic found, four to go.
   Recruitment doctrine: the force is FOUND, not issued — every act should
   gate at least one battle behind an under-strength roster.
-- **Acts 2–5 (outlined):** chase the remaining relics across the galaxy;
+- **Acts 2–9 (outlined):** chase the remaining four relics across the galaxy
+  (not every act finds one — some acts are the cost of the chase);
   13–15 recruitable characters total; two anchor characters: **Vesper**
   (psionic, already in) and **Bracket** (not yet introduced). The hunger
   gets closer each act; the relics' song gets louder the more are gathered.
+  Promotion at L15 lands mid-campaign (~acts 4–6) — see the XP doctrine
+  in the roadmap notes.
 
 ## Cast (current crew)
 | id | Name | Class | HP/ATK/DEF/AGI/MOV | ✦ Special (once per battle) |
@@ -117,10 +122,12 @@ all faster/brighter while carrying the Dormant Spore; water shorelines/ripples;
 waterfall splash; shrine motes).
 
 ## Roadmap (rough priority)
-1. Save system (localStorage on Pages): credits, inventory, hpBonus, levels/XP.
+1. ~~Save system~~ DONE (js/save.js): credits, inventory, hpBonus, story flags,
+   weapons, lost crew, and per-character levels/XP/spells all persist.
+   Autosaves in town + at battle start; loss resumes at the battle.
 2. Battle items (use Ration Pack / Cell Pack / Repair Spray as a turn action).
 3. Ceril's Crossing buildout (Worldsmith pass) + battle #2 on Vantorr
    (Encounter Architect; reinforcements ON, new twist).
-4. New recruits (next: Bracket) + promotion system at ~L10.
+4. New recruits (next: Bracket) + promotion system at L15.
 5. Unique sprites for Dossa/Harrow/Yims/Tiln/Oro (currently recolors/reuse).
 6. Music/SFX (Tone.js candidate).

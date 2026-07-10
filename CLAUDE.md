@@ -42,6 +42,8 @@ PWA manifest. Hosted on GitHub Pages (see README.md).
 - `js/cutscenes.js` — space ambush/crash, the Precursor entity finale
 - `js/battle.js` — the tactical engine (see DESIGN.md for full spec)
 - `js/missions/kr7.js` — Act 1 battle config; **the template for all future battles**
+- `js/save.js` — persistent progression (CREW_PROG: levels/XP/spells survive
+  between battles) + localStorage autosave; CONTINUE/NEW GAME boot prompt
 - `js/main.js` — mode manager (`setMode`), all input routing, story flow, boot
 - `tools/build_single.py` — bundles everything into `dist/nebula-force-act1.html`
 - `legacy/` — older standalone prototypes kept for reference
@@ -50,8 +52,9 @@ PWA manifest. Hosted on GitHub Pages (see README.md).
 1. Copy `js/missions/kr7.js` → `js/missions/<name>.js`, rename the const.
 2. Edit map rows (legend at top of kr7.js), enemy list, `config`
    (storm / reinforcements / bossPhase are all per-mission switches), dialog.
-3. Add its `<script>` tag to `index.html` before `main.js`.
+3. Add its `<script>` tag to `index.html` before `save.js`.
 4. Call `startBattle(MISSION_<NAME>)` from the story flow in `main.js`.
+5. Add the mission to `missionById` in `js/save.js` so a loss can resume there.
 
 ## How to add a recruit
 Add an entry to `CREW_DATA` (stats, one `special`, optional `spells` + `learn`),
@@ -84,7 +87,13 @@ Both must obey CLAUDE.md + DESIGN.md; both end by running the concat check
 and rebuilding the single file.
 
 ## Known gaps / roadmap (see DESIGN.md for detail)
-- No save system yet (levels/XP don't persist past the battle; game restarts on loss).
-  When adding one on GitHub Pages, localStorage is fine there.
+- ~~No save system~~ BUILT (js/save.js): levels/XP/spells persist between
+  battles (CREW_PROG), the journey autosaves to localStorage while walking
+  in town and at every battle start, and losing a fight resumes AT that
+  fight via CONTINUE. XP earned in a lost battle is deliberately discarded
+  (dying must never make the force stronger). Won battles can be re-entered
+  by quitting during the victory dialogs — that's Egress-style grinding,
+  allowed on purpose.
 - Field items (Ration Pack etc.) can be bought but not yet used in battle.
-- Acts 2–5, 7+ more recruits (incl. Bracket), promotions.
+  Cell Pack says it restores MP but has no use-code at all yet.
+- Acts 2–9, 7+ more recruits (incl. Bracket), promotion at L15.
