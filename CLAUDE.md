@@ -46,6 +46,8 @@ PWA manifest. Hosted on GitHub Pages (see README.md).
   between battles) + localStorage autosave; CONTINUE/NEW GAME boot prompt
 - `js/main.js` — mode manager (`setMode`), all input routing, story flow, boot
 - `tools/build_single.py` — bundles everything into `dist/nebula-force-act1.html`
+- `tools/preview.js` — screenshots the live game (town spots + sprite/tile
+  sheets) so art changes can be checked visually; art rules live in ART.md
 - `legacy/` — older standalone prototypes kept for reference
 
 ## How to add a new battle

@@ -99,8 +99,21 @@ const EXIT_RETURN={x:15,y:20};
 const townTiles={};
 function baseGround(g2,rnd){
   rr(g2,0,0,16,16,'#3a3048');
-  for(let i=0;i<9;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0, rnd()<.5?'#463a58':'#2e2740');
+  /* clustered mottling reads as packed regolith; lone pixels read as noise */
+  for(let i=0;i<7;i++){
+    const x=(rnd()*14)|0, y=(rnd()*15)|0, c=rnd()<.5?'#463a58':'#2e2740';
+    rr(g2,x,y,rnd()<.4?2:1,1,c);
+    if(rnd()<.4) pxr(g2,x,y+1,c);
+  }
   for(let i=0;i<3;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0,'#584a6c');
+  if(rnd()<.55){ /* hairline crack */
+    let x=(rnd()*10+3)|0, y=(rnd()*8+2)|0;
+    for(let s=0;s<5;s++){ pxr(g2,x,y,'#2a2438'); y++; if(rnd()<.4) x+=rnd()<.5?-1:1; }
+  }
+  if(rnd()<.35){ /* lit pebble */
+    const x=(rnd()*13+1)|0, y=(rnd()*13+1)|0;
+    pxr(g2,x,y,'#524660'); pxr(g2,x+1,y+1,'#2e2740');
+  }
 }
 function makeTownTiles(){
   const types=[',','=','#','R','E','^','1','2','D','d','W','C','B','A','T','~','P','K','/','|','L','!','j','.','u','t','x','Y','z','O','c','V','l','M','q','Q','S','a','p'];
@@ -112,17 +125,21 @@ function makeTownTiles(){
       const rnd=mulberry(ch.charCodeAt(0)*17+v*131+9);
       switch(ch){
         case ',': baseGround(g2,rnd); break;
-        case '=':
-          baseGround(g2,rnd);
-          rr(g2,1,1,14,14,'#243258');
-          rr(g2,1,1,14,1,'#34446e'); rr(g2,1,14,14,1,'#182444');
-          pxr(g2,3,3,'#3a4a78'); pxr(g2,12,12,'#3a4a78');
+        case '=': /* deck plating — fills the tile so runs read as one walkway */
+          rr(g2,0,0,16,16,'#2e3c66');
+          rr(g2,0,0,16,1,'#44548a'); rr(g2,0,15,16,1,'#20294a');
+          rr(g2,0,8,16,1,'#26325a'); rr(g2,8,0,1,16,'#26325a');
+          pxr(g2,2,2,'#4a5c94'); pxr(g2,13,2,'#4a5c94');
+          pxr(g2,2,13,'#4a5c94'); pxr(g2,13,13,'#4a5c94');
+          for(let i=0;i<4;i++) pxr(g2,(rnd()*15)|0,(rnd()*14+1)|0,'#26325a');
+          if(v){ rr(g2,4,5,3,1,'#20294a'); rr(g2,10,11,2,1,'#44548a'); }
           break;
         case 'K':
           rr(g2,0,0,16,16,'#2c2238');
           rr(g2,0,0,16,1,'#5a4a6a'); rr(g2,0,1,16,1,'#463a58');
           for(let yy=4; yy<16; yy+=4){
             rr(g2,0,yy,16,1,'#221a2c');
+            rr(g2,(rnd()*10)|0,yy+1,(rnd()*4+2)|0,1,'#4a3f5e');
             for(let i=0;i<3;i++) pxr(g2,(rnd()*15)|0,yy+1+((rnd()*2)|0),'#3a2f4a');
           }
           for(let i=0;i<5;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0,'#1c1626');
@@ -151,15 +168,16 @@ function makeTownTiles(){
           pxr(g2,1,4,'#5e6a8c'); pxr(g2,14,4,'#5e6a8c');
           if(v){ rr(g2,6,10,4,3,'#3a4460'); rr(g2,6,10,4,1,'#5e6a8c'); }
           break;
-        case '^':
+        case '^': /* roof ridge cap — full-width bands so a row reads as one roofline */
           baseGround(g2,rnd);
-          rr(g2,0,12,16,4,'#7e3428');
-          rr(g2,1,9,14,3,'#8a3a30');
-          rr(g2,3,6,10,3,'#96453a');
-          rr(g2,5,3,6,3,'#a84e40');
-          rr(g2,6,1,4,2,'#c86a58');
-          rr(g2,6,1,4,1,'#e88a72');
-          if(v){ rr(g2,11,0,1,4,'#343c54'); pxr(g2,11,0,'#e83048'); }
+          rr(g2,1,2,14,1,'#e88a72');
+          rr(g2,0,3,16,2,'#c86a58');
+          rr(g2,0,5,16,3,'#a84e40');
+          rr(g2,0,8,16,4,'#96453a');
+          rr(g2,0,12,16,4,'#8a3a30');
+          pxr(g2,0,3,'#a84e40'); pxr(g2,15,3,'#a84e40');
+          for(let yy=7;yy<16;yy+=4) for(let i=0;i<3;i++) pxr(g2,(rnd()*15)|0,yy+((rnd()*2)|0),'#7e3428');
+          if(v){ rr(g2,11,0,1,3,'#343c54'); pxr(g2,11,0,'#e83048'); }
           break;
         case 'R':
           rr(g2,0,0,16,16, v?'#8a3a30':'#7e3428');
@@ -174,15 +192,16 @@ function makeTownTiles(){
           rr(g2,0,14,16,2,'#28100c');
           for(let xx=1;xx<16;xx+=5) pxr(g2,xx,12,'#521e16');
           break;
-        case '1':
+        case '1': /* teal roof ridge cap — same geometry as '^' */
           baseGround(g2,rnd);
-          rr(g2,0,12,16,4,'#1e5e56');
-          rr(g2,1,9,14,3,'#256e64');
-          rr(g2,3,6,10,3,'#2c7e72');
-          rr(g2,5,3,6,3,'#369286');
-          rr(g2,6,1,4,2,'#4ab0a0');
-          rr(g2,6,1,4,1,'#6ed0be');
-          if(v){ rr(g2,3,2,2,2,'#4ab0a0'); pxr(g2,3,1,'#6ed0be'); }
+          rr(g2,1,2,14,1,'#6ed0be');
+          rr(g2,0,3,16,2,'#4ab0a0');
+          rr(g2,0,5,16,3,'#369286');
+          rr(g2,0,8,16,4,'#2c7e72');
+          rr(g2,0,12,16,4,'#256e64');
+          pxr(g2,0,3,'#369286'); pxr(g2,15,3,'#369286');
+          for(let yy=7;yy<16;yy+=4) for(let i=0;i<3;i++) pxr(g2,(rnd()*15)|0,yy+((rnd()*2)|0),'#1e5e56');
+          if(v){ rr(g2,3,0,2,3,'#2c7e72'); pxr(g2,3,0,'#6ed0be'); }
           break;
         case '2':
           rr(g2,0,0,16,12,'#1e5e56');
@@ -250,6 +269,8 @@ function makeTownTiles(){
         case '~':
           rr(g2,0,0,16,16,'#0a3844');
           rr(g2,0,0,16,1,'#144e5c');
+          for(let i=0;i<4;i++) rr(g2,(rnd()*12)|0,(rnd()*12+2)|0,3,1,'#0e4452');
+          for(let i=0;i<3;i++) rr(g2,(rnd()*13)|0,(rnd()*12+3)|0,2,1,'#082c36');
           break;
         case '!':
           rr(g2,0,0,16,16,'#1a3a12');
@@ -419,7 +440,7 @@ function makeTownTiles(){
 }
 
 /* worldsmith: colonist recolors + a small critter, derived at runtime */
-SPRITES.colA=SPRITES.keeper.map(r=>r.replace(/w/g,'t').replace(/g/g,'T').replace(/O/g,'y'));
+SPRITES.colA=SPRITES.keeper.map(r=>r.replace(/w/g,'t').replace(/g/g,'T').replace(/O/g,'y').replace(/v/g,'T').replace(/o/g,'t'));
 SPRITES.colB=SPRITES.mech.map(r=>r.replace(/o/g,'g').replace(/O/g,'G').replace(/h/g,'H').replace(/c/g,'m'));
 SPRITES.critter=["........","..k..k..",".kGGGGk.","kGvGGvGk",".kGGGGk.","..k..k.."];
 let storyStage=0, metOkari=false, haleJoined=false; /* 0: sump quest · 1: shaft quest · 2: launch unlocked */
