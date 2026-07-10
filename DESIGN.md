@@ -58,6 +58,36 @@ recruits are a recurring, deliberate cruelty: search everything, always.
 Town NPCs of note: Foreman Okari, Venn (walk-in shop east of the plaza, sells a mysterious Dormant Spore), Pip, Riga (launch), Gloop (sentient sludge), Mother Skitterly
 (worm soup quest: talk 3× → soup → permanent +3 max HP to one crew member).
 
+## Promotions (L15) — normal + SECRET
+Every character has a normal promotion at L15 (SF-style: new class name,
+level resets to 1, stats carry). A few characters ALSO have a secret
+promotion, unlocked by a specific held item or completed chain quest at
+the moment of promotion. Secret promotions are never hinted at directly —
+missable-cruelty doctrine applies in full.
+
+**The Compassion Chain (Dax: HERO → ASCEN) — decided, spans acts 1–4:**
+1. Act 1: Worm Soup (Mother Skitterly's quest — already in the game). It
+   begs to be eaten (+3 max HP, USE button right there). Keeping it is a
+   leap of faith with a real cost. Eating it silently locks the chain.
+2. Act 2: CRUSTY BREAD — earned by a secret action (TBD in the Act 2
+   build). Same tension: usable for +2 DEF to one character, or hoarded.
+3. Act 3: a MYSTERIOUS TREAT — given by someone/something secret (TBD).
+4. Early Act 4: a STARVING MAN asks if you have food. Each quest food you
+   give: "thanks... I was starving." Give all three (talk 3×, holding all
+   three unused) → he transforms — an alien entity testing the human race
+   for compassion. You passed: he grants the ANCIENT ALIEN ARTIFACT.
+5. If Dax holds the artifact when he promotes at L15: **ASCEN** class
+   instead of HERO. (If he already promoted before Act 4 — the artifact
+   missed its moment. Timing is part of the test.)
+
+Partial gives are absorbed with a thank-you and nothing else — feeding
+him two of three wastes them. The chain rewards hoarding, generosity, and
+patience in that order, which is the joke and the point.
+
+Engine note for the promotion build: promotion data lives per-character in
+characters.js — normal class plus optional secret variants, each with a
+condition checked at the moment of promotion (e.g. item in inventory).
+
 ## Balance doctrine (Erik's rules — keep these)
 1. **No health sponges.** Enemies die in 2–3 focused hits; fights end because
    of decisions, not attrition.
