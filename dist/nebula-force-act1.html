@@ -1624,7 +1624,16 @@ function interact(){
   if(FL){ openDialog('—',[FL]); return; }
   if(ch==='c'){ openDialog('—',["A crystal sconce, older than any charted civilization. Its light pulses in time with the relic in your pack."]); return; }
   if(ch==='Y'){ openDialog('—',["Seamless stone. No tool marks. No dust. Ten millennia and no dust."]); return; }
-  if(ch==='T'){ openDialog('—',["Venn's counter. Talk to Venn to browse."]); return; }
+  if(ch==='T'){ /* counter — talk across it to whoever stands behind */
+    const n3=npcs.find(n4=>n4.map===curMap&&Math.abs(n4.x-tx2)<=1&&Math.abs(n4.y-ty2)<=1);
+    if(n3){
+      n3.dir = hero.dir==='up'?'down':hero.dir==='down'?'up':hero.dir==='left'?'right':'left';
+      if(n3.shop) openDialog(n3.name, n3.lines(), openShop);
+      else openDialog(n3.name, n3.lines());
+      return;
+    }
+    openDialog('—',["Venn's counter, polished to a suspicious shine."]); return;
+  }
   if(ch==='u'){ openDialog('—',["A pot of worms rolls in a slow, dignified boil. It smells... genuinely wonderful? You feel confused about this."]); return; }
   if(ch==='t'){ openDialog('—',["Two bowls, pre-set. One of them has a place card. It says 'GUEST'. It has said that for forty years."]); return; }
   if(ch==='L'){ openDialog('—',["A plaza lamp. Moths from three different planets orbit it."]); return; }
