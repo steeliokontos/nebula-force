@@ -59,11 +59,22 @@ Town NPCs of note: Foreman Okari, Venn (walk-in shop east of the plaza, sells a 
 (worm soup quest: talk 3× → soup → permanent +3 max HP to one crew member).
 
 ## Promotions (L15) — normal + SECRET
-Every character has a normal promotion at L15 (SF-style: new class name,
-level resets to 1, stats carry). A few characters ALSO have a secret
-promotion, unlocked by a specific held item or completed chain quest at
-the moment of promotion. Secret promotions are never hinted at directly —
-missable-cruelty doctrine applies in full.
+Every character can promote from L15 (SF-style: new class name, level
+resets to 1, stats carry). **Promotion is a CHOICE, never automatic** —
+offered at L15, declinable, returnable-to. Unpromoted level cap is L20:
+delaying past 15 buys extra stat rolls that carry over, at the price of
+fighting harder acts under-classed. The XP decay prices this correctly on
+its own: grinding 15→20 against old missions is throttled to a trickle,
+but pressing forward unpromoted stays rewarding because mission levels
+(~3/act) catch back up. Post-promotion, the reset to L1 re-opens the XP
+faucet — veterans zoom through their early promoted levels. At the L20
+cap, XP stops accumulating (build this guard with the promotion system).
+A few characters ALSO have a secret promotion, unlocked by a specific
+held item or completed chain quest at the moment of promotion. Secret
+promotions are never hinted at directly — missable-cruelty doctrine
+applies in full. Choosing to delay promotion is itself the final leg of
+some secrets (see the Compassion Chain: Dax must still be unpromoted
+when the artifact arrives in early Act 4).
 
 **The Compassion Chain (Dax: HERO → ASCEN) — decided, spans acts 1–4:**
 1. Act 1: Worm Soup (Mother Skitterly's quest — already in the game). It
