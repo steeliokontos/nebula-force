@@ -25,6 +25,10 @@ function missionById(id){
     case 'shaft9': return MISSION_SHAFT9;
     case 'kr7':    return MISSION_KR7;
     case 'tithe':  return MISSION_TITHE;
+    case 'glassfields': return MISSION_GLASSFIELDS;
+    case 'tithepit':    return MISSION_TITHEPIT;
+    case 'understack':  return MISSION_UNDERSTACK;
+    case 'ringwarden':  return MISSION_RINGWARDEN;
   }
   return null;
 }
@@ -73,6 +77,8 @@ function saveGame(kind){
     /* Act 2 */
     cerilBriefed, hobJoined, dashaAsked, dashaSaved, dashaLost, ledgerSaved,
     fenAsked, defBonus, atkBonus,
+    fenSaved, fenLost, brandTalked, tithepitDone, nimaSaved, nimaStruck,
+    bracketJoined, vyeJoined, custodiansSpared, relicTwo, cerilStage5,
   };
   try{ localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }catch(_){/* storage full/blocked: play on unsaved */}
 }
@@ -105,6 +111,10 @@ function applySave(s){
   cerilBriefed=!!s.cerilBriefed; hobJoined=!!s.hobJoined; dashaAsked=!!s.dashaAsked;
   dashaSaved=!!s.dashaSaved; dashaLost=!!s.dashaLost; ledgerSaved=!!s.ledgerSaved;
   fenAsked=!!s.fenAsked;
+  fenSaved=!!s.fenSaved; fenLost=!!s.fenLost; brandTalked=!!s.brandTalked;
+  tithepitDone=!!s.tithepitDone; nimaSaved=!!s.nimaSaved; nimaStruck=!!s.nimaStruck;
+  bracketJoined=!!s.bracketJoined; vyeJoined=!!s.vyeJoined;
+  custodiansSpared=!!s.custodiansSpared; relicTwo=!!s.relicTwo; cerilStage5=!!s.cerilStage5;
   defBonus=s.defBonus||{}; atkBonus=s.atkBonus||{};
   CREW_PROG=s.prog||{};
   for(const k of Object.keys(equippedWeapons)) delete equippedWeapons[k];

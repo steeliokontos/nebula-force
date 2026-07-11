@@ -32,9 +32,17 @@ const CREW_DATA=[
   {id:'hob', name:'HOB', spr:'hob', cls:'Dock wrangler · DRVR',
    maxhp:29, atk:9, def:7, agi:7, mov:5,
    special:{name:'JOLT PROD', type:'jolt', desc:'stun one adjacent enemy — it loses its next turn'}},
+  /* Act 2 — the missable one: freed from the tithe-pit (Battle 3). */
+  {id:'vye', name:'VYE', spr:'vye', cls:'Halo-diver · SKMR',
+   maxhp:24, atk:12, def:4, agi:12, mov:6,
+   special:{name:'RING FLARE', type:'flare', desc:'pocket shard flashbulbs — enemies within 2 tiles miss their next attack'}},
+  /* Act 2 — the anchor: cut from the puppet web (Battle 4). First ranged-physical ground unit. */
+  {id:'bracket', name:'BRACKET', spr:'bracket', cls:'Ringwright · RIG',
+   maxhp:36, atk:9, def:9, agi:3, mov:4, rng:[1,2],
+   special:{name:'MAG-TETHER', type:'tether', desc:'yank one enemy within 3 tiles adjacent — it cannot move next turn'}},
 ];
-const CREW=['Dax','Kharn','Gunnar-7','Jet','Vesper','Sister Hale','Hob'];
-const ID2CREW={dax:'Dax',kharn:'Kharn',gunnar:'Gunnar-7',jet:'Jet',vesper:'Vesper',hale:'Sister Hale',hob:'Hob'};
+const CREW=['Dax','Kharn','Gunnar-7','Jet','Vesper','Sister Hale','Hob','Vye','Bracket'];
+const ID2CREW={dax:'Dax',kharn:'Kharn',gunnar:'Gunnar-7',jet:'Jet',vesper:'Vesper',hale:'Sister Hale',hob:'Hob',vye:'Vye',bracket:'Bracket'};
 
 /* ═══ persistent progression layer (survives between battles this session) ═══ */
 const equippedWeapons={};          /* id → {name, atk, strongVs} */
