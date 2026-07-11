@@ -42,6 +42,9 @@ PWA manifest. Hosted on GitHub Pages (see README.md).
 - `js/cutscenes.js` — space ambush/crash, the Precursor entity finale
 - `js/battle.js` — the tactical engine (see DESIGN.md for full spec)
 - `js/missions/kr7.js` — Act 1 battle config; **the template for all future battles**
+- `js/missions/tithe.js` — Act 2 battle 1 (Tithe Night): survive-N objective,
+  green rescue unit (Dasha), player-sprung ally cage, night tint — the
+  engine features for all of these live in battle.js and are config-driven
 - `js/save.js` — persistent progression (CREW_PROG: levels/XP/spells survive
   between battles) + localStorage autosave; CONTINUE/NEW GAME boot prompt
 - `js/main.js` — mode manager (`setMode`), all input routing, story flow, boot
@@ -72,7 +75,16 @@ MISSION_SHAFT9 (adds Kharn; win recruits Vesper+Kharn, storyStage 2)
 → battleWon → startTempleRise (cinematic, battle.js) → enterTemple
 → altar (3,2) → startEntity → whiteout → startReturnFlight (cutscenes.js,
 mode 'return': crew talk → hyperwarp → Vantorr approach) → enterVantorr
-(town engine, 'vantorr' map — Ceril's Crossing, Act 2 open exploration).
+(town engine, 'vantorr' map — Ceril's Crossing, 30×16 bazaar, ACT2.md is
+the design bible). Act 2 flow: talk Ceril [cerilBriefed] → talk Hob at the
+dray pens [hobJoined, she joins at L3] → interact with the shuttle → night
+falls → MISSION_TITHE (under-strength: Gunnar caged on-map, Vesper benched;
+Dasha is a hunted green unit; win → storyStage 3, dashaSaved/dashaLost +
+ledgerSaved flags, market opens). Interiors: 'ledger' (Kep's shop, per-map
+stock + ledgerSaved discount) and 'hall' (Hymn Hall — the tithe bowl secret:
+3 donations → Bale gives Crusty Bread, +2 DEF via defBonus). Pock's
+ring-mouse census → Glass Burr (+1 ATK via atkBonus). East exit at (29,9)
+teases Battle 2 (THE GLASS FIELDS, not yet built).
 
 
 ## Agents (agents/*.md)

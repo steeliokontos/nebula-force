@@ -59,35 +59,63 @@ const SHOP_RAW=[
 "j........j",
 "jjjjxxjjjj",
 ];
+/* Ceril's Crossing — 30×16. Five districts (ACT2.md geography):
+   Glasshouse Row (NW) · Hymn Hall (NE) · Shard Market (center, stalls 'a'
+   open to 'r' at storyStage 3) · bakery (W-mid) · The Crossing Ledger shop
+   (E-mid) · Dockyard (S: pads, crane 'n', impound cage 'i', dray pens 'y')
+   · east canyon exit (y9) past the ossuary 'v' · sealed Understack crack 'e'. */
 const VAN_RAW=[
-"QQQQQQQQQQQQQQQQQQ",
-"QqqqqqqqSqqqqqqqqQ",
-"QqqqqqqqqqqqqqqqqQ",
-"QqaqaqaqqqaqaqaqqQ",
-"QqqqqqqqqqqqqqqqqQ",
-"QqqqqqqqqqqqqqqqqQ",
-"QqqqqqqqqqqqqqqqqQ",
-"QpppqqqqqqqqqqqqqQ",
-"QpppqqqqqqqqqqqqqQ",
-"QpppqqqqqqqqqqqqqQ",
-"QqqqqqqqqqqqqqqqqQ",
-"QQQQQQQQQQQQQQQQQQ",
+"QQQQQQQQQQQQQQQQQQQQQQQQQQQeQQ",
+"QggwggwggwggwgQqqqqGGGGGGGGqQQ",
+"QgDggggDggggDgQqqqqGGGdGGGGqQQ",
+"QqqqqqqqqqqqqqqqmqqqqqqqqqqqQQ",
+"QqqqqqqqqqqqqqqqqqqqqqqqqqqqvQ",
+"QqqFFFFFqqqaqaqSqaqaqqqqqqqqQQ",
+"Qqqooo#oqqqqqqqqqqqqqFFFFFqqvQ",
+"Qqqqqqqqqqqqqqqqqqqqq##d##qqQQ",
+"QqqqqqqqqqqqqqqqqqqqqqqqqqqqQQ",
+"Qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+"Qqq#D#qqqqnnqqqqqqqqqqqqqqqqQQ",
+"QqqqqqqqqqqqqiqqqyyyyqqqqqqqQQ",
+"QqppppqqqqqqqqqqqyqqyqqqqqqqQQ",
+"QqppppqqqqqqqqqqqyyyyqqqqqqqQQ",
+"QqqqqqqqqqqqqqqqqqqqqqqqqqqqQQ",
+"QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ",
+];
+const LEDGER_RAW=[
+"jjjjjjjjjj",
+"juCC..TT.j",
+"j......T.j",
+"j.BB.....j",
+"j........j",
+"jjjjxxjjjj",
+];
+const HALL_RAW=[
+"GGGGGGGGG",
+"GGzztzzGG",
+"GzzzzzzzG",
+"GzbbzbbzG",
+"GzzzzzzzG",
+"GzbbzbbzG",
+"GGGGxGGGG",
 ];
 function parseMap(raw,w,border){
   return raw.map(r=>{ let s=r.slice(0,w); while(s.length<w) s+=border; return s.split(''); });
 }
 const MAPS={
   town:{grid:parseMap(TOWN_RAW,33,'K'), w:33, h:22},
-  vantorr:{grid:parseMap(VAN_RAW,18,'Q'), w:18, h:12},
+  vantorr:{grid:parseMap(VAN_RAW,30,'Q'), w:30, h:16},
   worm:{grid:parseMap(WORM_RAW,12,'j'), w:12, h:9},
   shopint:{grid:parseMap(SHOP_RAW,10,'j'), w:10, h:6},
+  ledger:{grid:parseMap(LEDGER_RAW,10,'j'), w:10, h:6},
+  hall:{grid:parseMap(HALL_RAW,9,'G'), w:9, h:7},
   temple:{grid:parseMap(TEMPLE_RAW,7,'Y'), w:7, h:12},
 };
 let curMap='town';
 const WALK=new Set([',','=','/','P','.','x','z','q','p']);
 const tileAt=(x,y)=>{
   const M=MAPS[curMap];
-  return (x<0||y<0||x>=M.w||y>=M.h) ? (curMap==='town'?'K':curMap==='temple'?'Y':curMap==='vantorr'?'Q':'j') : M.grid[y][x];
+  return (x<0||y<0||x>=M.w||y>=M.h) ? (curMap==='town'?'K':curMap==='temple'?'Y':curMap==='vantorr'?'Q':curMap==='hall'?'G':'j') : M.grid[y][x];
 };
 function levelOf(y){ return y<=3?2 : (y<=14?1:0); }
 const HOUSE_DOOR={x:15,y:19};
@@ -116,7 +144,8 @@ function baseGround(g2,rnd){
   }
 }
 function makeTownTiles(){
-  const types=[',','=','#','R','E','^','1','2','D','d','W','C','B','A','T','~','P','K','/','|','L','!','j','.','u','t','x','Y','z','O','c','V','l','M','q','Q','S','a','p'];
+  const types=[',','=','#','R','E','^','1','2','D','d','W','C','B','A','T','~','P','K','/','|','L','!','j','.','u','t','x','Y','z','O','c','V','l','M','q','Q','S','a','p',
+    'r','F','g','w','G','o','n','i','y','e','m','v','b'];
   for(const ch of types){
     townTiles[ch]=[];
     for(let v=0; v<2; v++){
@@ -433,6 +462,118 @@ function makeTownTiles(){
           for(let i=0;i<16;i+=4){ rr(g2,i,7,2,2,'#ff9a2a'); }
           pxr(g2,2,2,'#5a6278'); pxr(g2,13,13,'#5a6278');
           break;
+        /* ═══ Act 2 — Ceril's Crossing tile set ═══ */
+        case 'r': /* OPEN market stall — awning up, wares out */
+          rr(g2,0,0,16,16,'#6e3a1c');
+          for(let i=0;i<5;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0,'#5a2e14');
+          for(let i=0;i<16;i+=4){ rr(g2,i,1,2,3,'#ff5ad2'); rr(g2,i+2,1,2,3,'#48e0d0'); }
+          rr(g2,0,1,16,1,'#f0f0f4');
+          rr(g2,2,5,1,9,'#3a2c24'); rr(g2,13,5,1,9,'#3a2c24');
+          rr(g2,3,7,10,5,'#8a6a3a'); rr(g2,3,7,10,1,'#b08a4e');
+          pxr(g2,4,8,'#48e0d0'); pxr(g2,6,9,'#b8ff4a'); pxr(g2,9,8,'#ff5ad2'); pxr(g2,11,9,'#ffd23a');
+          if(v){ pxr(g2,5,10,'#e83048'); pxr(g2,10,10,'#c8a050'); }
+          break;
+        case 'F': /* adobe roof — banded ochre, rim-lit */
+          rr(g2,0,0,16,16,'#8a4e28');
+          rr(g2,0,0,16,1,'#c87840'); rr(g2,0,1,16,1,'#a86234');
+          for(let yy=5; yy<16; yy+=5) rr(g2,0,yy,16,1,'#6e3a1c');
+          for(let i=0;i<4;i++) pxr(g2,(rnd()*15)|0,(rnd()*14+1)|0,'#9a5a2e');
+          if(v) rr(g2,(rnd()*10+2)|0,7,3,1,'#c87840');
+          break;
+        case 'g': /* glasshouse wall — adobe framing salvaged ring-glass panes */
+          rr(g2,0,0,16,16,'#7e4422');
+          rr(g2,0,0,16,1,'#a86234');
+          rr(g2,2,4,12,9,'#183038');
+          rr(g2,2,4,12,1,'#48e0d0');
+          rr(g2,8,4,1,9,'#0e2028'); rr(g2,2,8,12,1,'#0e2028');
+          pxr(g2,4,6, v?'#2c8a7e':'#1e5e56'); pxr(g2,11,10, v?'#8a3a68':'#5e2848');
+          rr(g2,0,14,16,2,'#5e3016');
+          break;
+        case 'w': /* glass window strip — flickers ring colors at runtime */
+          rr(g2,0,0,16,16,'#7e4422');
+          rr(g2,0,0,16,1,'#a86234');
+          rr(g2,3,3,10,11,'#0e2028');
+          rr(g2,3,3,10,1,'#48e0d0'); rr(g2,3,13,10,1,'#0a161c');
+          rr(g2,0,14,16,2,'#5e3016');
+          break;
+        case 'G': /* Hymn Hall slab — one curved piece of fallen ring */
+          rr(g2,0,0,16,16,'#8a94ac');
+          rr(g2,0,0,16,1,'#c2ccdf'); rr(g2,0,1,16,1,'#a4aec6');
+          for(let yy=5; yy<16; yy+=5) rr(g2,0,yy,16,1,'#6a7490');
+          pxr(g2,(rnd()*14+1)|0,(rnd()*10+3)|0,'#b6c0d8');
+          if(v){ pxr(g2,4,7,'#48e0d0'); pxr(g2,11,11,'#ff5ad2'); }
+          rr(g2,0,15,16,1,'#525c76');
+          break;
+        case 'o': /* Old Bale's seam-oven mouth — glows at runtime */
+          rr(g2,0,0,16,16,'#7e4422');
+          rr(g2,0,0,16,1,'#a86234');
+          rr(g2,3,5,10,10,'#382012');
+          rr(g2,4,7,8,8,'#180a06');
+          rr(g2,5,11,6,4,'#7e2810');
+          rr(g2,6,12,4,3,'#c85018');
+          rr(g2,3,5,10,1,'#5e3016');
+          break;
+        case 'n': /* Tuck's crane — gantry base, hook swings at runtime */
+          rr(g2,0,0,16,16,'#6e3a1c');
+          for(let i=0;i<4;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0,'#5a2e14');
+          rr(g2,2,10,12,4,'#3a4054');
+          rr(g2,2,10,12,1,'#5a6278');
+          rr(g2,6,1,4,10,'#4e5670');
+          rr(g2,6,1,4,1,'#7e88a0'); rr(g2,6,1,1,10,'#5e6a8c');
+          for(let yy=2;yy<10;yy+=3) rr(g2,7,yy,2,1,'#2a2f40');
+          pxr(g2,3,11,'#ffd23a'); pxr(g2,12,11,'#ffd23a');
+          break;
+        case 'i': /* the impound cage — rated for ore, holding a war-bot's dignity */
+          rr(g2,0,0,16,16,'#3a4054');
+          rr(g2,0,0,16,1,'#4e5670'); rr(g2,0,15,16,1,'#2a2f40');
+          rr(g2,1,1,14,14,'#22283a');
+          for(let xx=2;xx<15;xx+=3) rr(g2,xx,1,1,14,'#98a0b4');
+          rr(g2,1,1,14,1,'#b8c0d4'); rr(g2,1,14,14,1,'#5a6278');
+          pxr(g2,13,7,'#e83048');
+          break;
+        case 'y': /* dray pens — rough rails, straw, hoof-churned ground */
+          rr(g2,0,0,16,16,'#6e3a1c');
+          for(let i=0;i<6;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0, rnd()<.5?'#8a5a28':'#5a2e14');
+          for(let i=0;i<4;i++) pxr(g2,(rnd()*14+1)|0,(rnd()*14+1)|0,'#c8a050');
+          rr(g2,0,3,16,2,'#5e4626'); rr(g2,0,3,16,1,'#8a6a3a');
+          rr(g2,0,10,16,2,'#5e4626'); rr(g2,0,10,16,1,'#8a6a3a');
+          if(v){ rr(g2,7,0,2,16,'#4a3820'); }
+          break;
+        case 'e': /* the sealed Understack crack — a hairline that sings at night */
+          rr(g2,0,0,16,16,'#4a2412');
+          rr(g2,0,0,16,1,'#8a4e28'); rr(g2,0,1,16,1,'#6e3a1c');
+          for(let yy=4; yy<16; yy+=4) rr(g2,0,yy,16,1,'#341808');
+          let ex=7;
+          for(let yy=3;yy<16;yy++){ pxr(g2,ex,yy,'#180c04'); if(yy%3===0) ex+=(rnd()<.5?-1:1); }
+          pxr(g2,7,6,'#2c8a7e'); pxr(g2,8,11,'#1e5e56');
+          break;
+        case 'm': /* Meres's vapor-well — the Crossing's water */
+          rr(g2,0,0,16,16,'#6e3a1c');
+          for(let i=0;i<4;i++) pxr(g2,(rnd()*16)|0,(rnd()*16)|0,'#5a2e14');
+          rr(g2,3,5,10,8,'#7e88a0');
+          rr(g2,3,5,10,1,'#a8b2c8'); rr(g2,3,12,10,1,'#525c76');
+          rr(g2,5,7,6,4,'#0a3844');
+          rr(g2,5,7,6,1,'#144e5c');
+          rr(g2,7,1,2,5,'#5e4626'); rr(g2,4,2,8,1,'#5e4626');
+          break;
+        case 'v': /* ossuary niches — every grave holds a small glass bell */
+          rr(g2,0,0,16,16,'#4a2412');
+          rr(g2,0,0,16,1,'#8a4e28'); rr(g2,0,1,16,1,'#6e3a1c');
+          for(const [nx2,ny2] of [[3,4],[9,4],[3,10],[9,10]]){
+            rr(g2,nx2,ny2,4,5,'#2a1408');
+            rr(g2,nx2,ny2,4,1,'#180c04');
+            pxr(g2,nx2+1,ny2+2,'#8ad8cc'); pxr(g2,nx2+2,ny2+3,'#48e0d0');
+          }
+          break;
+        case 'b': /* hall bench — worn smooth by ten generations of singers */
+          rr(g2,0,0,16,16,'#232c42');
+          rr(g2,0,0,16,1,'#182034'); rr(g2,0,0,1,16,'#182034');
+          rr(g2,15,0,1,16,'#2e3a56'); rr(g2,0,15,16,1,'#2e3a56');
+          rr(g2,2,5,12,6,'#8a6a3a');
+          rr(g2,2,5,12,1,'#b08a4e'); rr(g2,2,10,12,1,'#5e4626');
+          rr(g2,3,11,2,3,'#5e4626'); rr(g2,11,11,2,3,'#5e4626');
+          pxr(g2,5,7,'#b08a4e'); pxr(g2,10,8,'#5e4626');
+          break;
       }
       townTiles[ch].push(c);
     }
@@ -442,6 +583,7 @@ function makeTownTiles(){
 /* worldsmith: colonist recolors + a small critter, derived at runtime */
 SPRITES.colA=SPRITES.keeper.map(r=>r.replace(/w/g,'t').replace(/g/g,'T').replace(/O/g,'y').replace(/v/g,'T').replace(/o/g,'t'));
 SPRITES.colB=SPRITES.mech.map(r=>r.replace(/o/g,'g').replace(/O/g,'G').replace(/h/g,'H').replace(/c/g,'m'));
+SPRITES.ringmouse=["........","..k..k..",".kTTTTk.","kTtTTtTk",".kTTTTk.","..k..k.."];
 SPRITES.critter=["........","..k..k..",".kGGGGk.","kGvGGvGk",".kGGGGk.","..k..k.."];
 let storyStage=0, metOkari=false, haleJoined=false; /* 0: sump quest · 1: shaft quest · 2: launch unlocked */
 const hero={x:14,y:12, px:0, py:0, dir:'down', moving:false, mx:0,my:0, prog:0, hidden:false};
@@ -534,29 +676,204 @@ const npcs=[
     "Lamp-moss. Grows best in the pit-glow. Don't make it weird.",
     "The goo is a NEIGHBOR, not a hazard. I wave every morning. Sometimes... something waves back. Anyway! Moss.",
    ]},
-  /* — Vantorr: Ceril's Crossing — */
-  {id:'ceril', map:'vantorr', name:'CERIL', spr:'elder', x:5,y:8, dir:'left', wander:false,
+  /* ═══ Vantorr: Ceril's Crossing — Act 2 cast (ACT2.md §3) ═══ */
+  {id:'ceril', map:'vantorr', name:'CERIL', spr:'elder', x:2,y:10, dir:'right', wander:false,
+   lines:()=>{
+    if(storyStage>=3){
+      if(dashaLost) return [
+        "First tithe night in ten years the Crossing kept its own. The dock crews are calling it a holiday. I'm calling it a Tuesday — morale's cheaper that way.",
+        "The wardens pulled back to the ring-fall fields, east canyon. They're not scavenging out there, salvager. They never scavenge. They HARVEST.",
+        "...The tollhouse ledger's closed this week. Clerical reasons. Don't ask again.",
+      ];
+      return [
+        "First tithe night in ten years the Crossing kept its own. Dasha's already re-filed the whole raid under 'DAMAGES, THEIRS'.",
+        "Your bot's released — I lost the tariff paperwork. Tragic. Ten years a dockmaster, you learn exactly which papers know how to swim.",
+        "The wardens pulled back east, to the ring-fall fields. Mirrit up in Glasshouse Row was asking for you — her partner took the vapor rig out before the raid. Nobody's come back down that trail.",
+      ];
+    }
+    if(!cerilBriefed){
+      cerilBriefed=true; dashaAsked=true;
+      return [
+        "Welcome to Ceril's Crossing. Dockmaster Ceril. The Crossing came first; I renamed myself. Long story, decent story.",
+        "You picked a bad week. Tithe week. The Ringwarden's collectors sweep through, the stalls shutter, and everyone finds somewhere else to look. We pay, they leave. The math holds.",
+        "Which brings me to the bad news stapled to your gangway: your shuttle's cited for 'mass tariff arrears' and your war-bot is impounded at the crane scales. Tuck's crane can't legally release him. He has FEELINGS about the word 'cargo'.",
+        "I can lose paperwork, but not during tithe week — too many uniforms doing arithmetic. Sit tight a night. You're short hands anyway — and the best pair on this dock works my dray pens for IOUs. Southeast. Can't miss the swearing.",
+        "One favor while you're stuck here. My tally-clerk Dasha works late on tithe nights. See her home before the wardens make their rounds. Humor an old dockmaster.",
+      ];
+    }
+    if(!hobJoined) return ["The pens are southeast, past the crane. Follow the sound of a quarter-ton animal winning an argument."];
+    return ["Nothing to do now but wait out the night. Your shuttle's the only bed you own, salvager — I'd use it. The wardens bill at dawn."];
+   }},
+  {id:'dasha', map:'vantorr', name:'DASHA', spr:'dasha', x:6,y:10, dir:'left', wander:false,
+   when:()=>!dashaLost,
+   lines:()=>{
+    if(storyStage>=3) return [
+      "...Thank you. For the dock. Ceril says you're trouble. I'm entering you as an asset.",
+      "Ten years of tithe, every chit of it, in one book. The last page doesn't add up, salvager — the money doesn't stay with the Ringwarden. It goes UP. Off-world. To a mark with no name.",
+    ];
+    return [
+      "Ceril's tally-clerk. Dasha. If you're here to argue a tariff: the book wins. The book always wins.",
+      "I can carry a ledger through a dark dock, salvager. Done it ten years. ...Why, what have you heard?",
+    ];
+   }},
+  {id:'tuck', map:'vantorr', name:'TUCK', spr:'tuck', x:9,y:11, dir:'right', wander:false,
+   lines:()=>{
+    if(storyStage>=3) return [
+      "Crane's re-rated. New tonnage class. 'War-bot, ambulatory, one (1), with opinions.' Don't tell him I did it. Don't tell ANYONE I did it.",
+      "He recited his serial number at me for six hours. I grieve every gram over manifest, friend, but that machine grieves in PARAGRAPHS.",
+    ];
+    return [
+      "Crane operator. Twenty years, zero dropped loads, one impounded war-bot currently reciting legal precedent at my scales.",
+      "Your robot is three permits and a prayer, friend. The cage stays shut till the paperwork says otherwise. I don't make the rules. I just weigh them.",
+    ];
+   }},
+  {id:'hob', map:'vantorr', name:'HOB', spr:'hob', x:16,y:12, dir:'right', wander:false,
+   when:()=>!hobJoined,
+   lines:()=>{
+    if(!cerilBriefed) return [
+      "Busy. The dray smelled a warden skiff an hour ago and she's still got opinions about it.",
+      "Shhh. Shh. ...Not you. Her. You can talk all you want.",
+    ];
+    hobJoined=true;
+    CREW_PROG.hob=CREW_PROG.hob||{lvl:3,xp:0,hp:0,atk:0,def:0,agi:0,mp:0,spells:[]};
+    return [
+      "Easy. EASY. ...There she is. Breathing even. A skiff spooks a loaded dray and suddenly everybody remembers dock wranglers exist.",
+      "Hob. Twenty years working Ceril's pads. Paid, the last three tithe-weeks, in IOUs — the wardens skim the dock ledger before wages do. Know what an IOU spends like? Paper. Tastes like it too, by week two.",
+      "You're the crew with the impounded war-bot and the citation stapled to your ramp. I've watched you walk this dock all day. You count exits. I respect that in a person.",
+      "Ship crew gets paid in credits. Dock crew gets paid in promises. Congratulations — you're short a dockhand and I'm short a ship. ✦ HOB joins the force.",
+    ];
+   }},
+  {id:'dray', map:'vantorr', name:'THE DRAY', spr:'dray', x:18,y:12, dir:'left', wander:true, home:[18,12],
+   lines:()=>hobJoined
+    ?["The dray looks past you, down the dock, the way she's looked all day. The pens keep waiting for footsteps that moved on. She'll take the apple anyway."]
+    :["A cargo-dray: a quarter ton of shag, patience, and strong opinions about warden skiffs. She sniffs your pack — the relic makes her ears go flat. Huh."]},
+  {id:'kep', map:'ledger', name:'KEP', spr:'kep', x:8,y:1, dir:'down', wander:false, shop:true,
+   lines:()=>{
+    if(ledgerSaved) return ["Dasha vouches. The book respects the book — twenty percent off, and I want it noted I did NOT smile just now."];
+    return ["The Crossing Ledger. Everything's in the book: price, provenance, and what your neighbor paid so don't try it.","That's the price. The book says the price. Argue with the book."];
+   }},
+  {id:'bale', map:'vantorr', name:'OLD BALE', spr:'bale', x:4,y:7, dir:'down', wander:false,
+   lines:()=>{
+    if((searched['bowl-given']||0)>=3&&!searched['bread-given']){
+      searched['bread-given']=true;
+      inventory.push('Crusty Bread');
+      return [
+        "...Hold still.",
+        "Bowl says someone's been kind. The bowl talks to me. Always has — who do you think empties it?",
+        "Take the heel. It's the part that keeps. ✦ Got CRUSTY BREAD.",
+      ];
+    }
+    return [
+      "Old Bale. Baker. The oven rides a hot glass seam — thirty years staring into it, and these days the light stares back a little.",
+      "First loaf of every batch goes on the sill. For the rings. That's not religion, friend — that's seniority.",
+    ];
+   }},
+  {id:'meres', map:'vantorr', name:'MERES', spr:'meres', x:17,y:3, dir:'left', wander:false,
    lines:()=>[
-    "Welcome to Ceril's Crossing. Dockmaster Ceril. The Crossing came first; I renamed myself. Long story, decent story.",
-    "Your transponder history is... poetry. Says you're in two systems at once. I'll bill both.",
-    "The bazaar's built around the ring-shard — chunk of the halo fell here centuries back and never stopped glowing. Mind the festival crowds. When there ARE crowds.",
+    "Keeper of the vapor-well. One cup a head at dusk, two if you worked the pads. The well decides, I just pour.",
+    "Level's been dropping since the digging started under the east quarter. A well doesn't lie, salvager. Ground with a hole in it sounds exactly like this one's started to.",
    ]},
-  {id:'nima', map:'vantorr', name:'NIMA', spr:'kid', x:8,y:2, dir:'up', wander:false,
+  {id:'mirrit', map:'vantorr', name:'MIRRIT', spr:'mirrit', x:4,y:3, dir:'down', wander:false,
+   lines:()=>{
+    if(storyStage>=3){
+      if(!fenAsked){
+        fenAsked=true;
+        return [
+          "You're the crew from the dock. Good. I don't have anyone else to say this to and I'm only saying it once.",
+          "My partner Fen took the vapor rig into the ring-fall fields before the raid. The wardens sweep the fields after every tithe night. He hasn't come back down the trail.",
+          "Here — his lunch tin. He'll say he wasn't worried. Give him this so he knows I wasn't either.",
+        ];
+      }
+      return ["The east canyon, past the ossuary. The fields sing when the wind's right. Fen says it's the prettiest sound on four worlds. ...Go when you're ready. Please."];
+    }
+    return ["Glasshouse row. We farm vapor and grow panes off the ring-fall. My partner's out at the fields with the rig — one more haul before tithe week. Always one more haul."];
+   }},
+  {id:'lunett', map:'hall', name:'LUNETT', spr:'lunett', x:2,y:1, dir:'right', wander:false,
    lines:()=>[
-    "The big glass hums a song at night. Everyone says it's the wind.",
-    "...You're humming it too. You didn't notice? You're doing it RIGHT NOW.",
+    "Welcome to the Hymn Hall. One slab, one song, ten generations of singers. We don't know what the words mean. We sing them anyway — SOMETHING remembers.",
+    "The bowl feeds whoever's hungriest that week. It always has. Don't ask me how it knows.",
+    "The liturgy's third verse was lost before my grandmother's grandmother. It bothers me like a missing tooth. Widow Sol half-remembers it, she claims. Sol claims a lot of things.",
    ]},
-  {id:'oro', map:'vantorr', name:'ORO', spr:'colB', x:9,y:3, dir:'down', wander:false,
+  {id:'sol', map:'vantorr', name:'WIDOW SOL', spr:'sol', x:11,y:3, dir:'down', wander:false,
+   lines:()=>[
+    "Keeper of the ossuary trail. Every niche gets a glass bell, every bell gets a name. Quiet work. Good work.",
+    "My grandmother sang the lost verse to the bells, you know. 'Four hands to tune it, four rings to ring it.' ...Four. Yes. That's how it went.",
+    "Hm? No, dear, the sky has three. It's a SONG. Songs exaggerate. Ask anyone.",
+   ]},
+  {id:'pock', map:'vantorr', name:'POCK', spr:'pock', x:12,y:7, dir:'down', wander:true, home:[12,7],
+   lines:()=>{
+    if(searched['census-done']) return [
+      "Census update: the mice are STILL moving west. All of them. Away from the east quarter. I put it in my report.",
+      "Nobody reads my report. Kids notice first, you know. We're closer to the ground.",
+    ];
+    if(searched['census-started']){
+      const n2=(searched['mice-1']?1:0)+(searched['mice-2']?1:0)+(searched['mice-3']?1:0);
+      if(n2>=3){
+        searched['census-done']=true;
+        return [
+          "THREE confirmed sites?! Fieldwork DOES count double when you're tall. Census conclusion: every ring-mouse in the Crossing is moving AWAY from the east quarter. That's not foraging. That's EVACUATING.",
+          "...Also they've been hoarding. Under the shard plinth, in the crack. It's all shinies down there. As lead investigator I authorize you to check it. I'd do it myself but my arm doesn't fit.",
+        ];
+      }
+      return [`Sites confirmed: ${n2} of 3. Check where food falls and nobody sweeps: the bakery alley, under the shard plinth, up in the crane housing. FIELDWORK, deputy.`];
+    }
+    searched['census-started']=true;
+    return [
+      "Halt. Official business. I'm conducting a census of the ring-mice and I require tall personnel. Fieldwork counts double if you're tall.",
+      "Three known sites: the bakery alley, the crack under the shard plinth, and the crane housing. Count noses. Report back. This is IMPORTANT.",
+    ];
+   }},
+  {id:'cask', map:'vantorr', name:'CASK', spr:'cask', x:8,y:3, dir:'down', wander:false,
+   lines:()=>[
+    "Cask. I run the still. Ringshine — brewed off lamp-lichen, aged in whatever the wardens didn't count. The town runs on water, credit, and me.",
+    "The wardens tithe my still twice, you know. TWICE. Because they like it. There's a compliment buried in that extortion and some nights I almost dig it up.",
+   ]},
+  {id:'thess', map:'vantorr', name:'PILGRIM THESS', spr:'thess', x:17,y:6, dir:'left', wander:false,
+   lines:()=>[
+    "Pilgrim Thess. Crossed three systems to hear the famous shard. ...I expected it to be taller.",
+    "I've heard 'miracle tax' stories on four worlds now, and it's always the same grift: a man finds old machinery, calls it divinity, and charges the faithful admission. Your Ringwarden isn't a god, locals. He's a LANDLORD with a light show.",
+    "...What? I said it LOUDLY on purpose. Somebody here has to.",
+   ]},
+  {id:'brand', map:'vantorr', name:'BRAND', spr:'brand', x:27,y:9, dir:'left', wander:false,
+   when:()=>storyStage>=4,
+   lines:()=>{
+    if(ledgerSaved) return [
+      "You're the dock crew. Keep your voice down. I wore the sash ten years — I deserted the night I saw where the tithe PRISONERS go.",
+      "Dasha's book survived? Then there's proof. Page numbers the wardens want burned. The pit is real, salvager, and I can mark the trail... when you're ready to carry what you'll see.",
+    ];
+    return ["A gaunt man in half a warden uniform, the sash torn off. He watches the trail and says nothing. Whatever would make him talk... you don't have it."];
+   }},
+  {id:'nima', map:'vantorr', name:'NIMA', spr:'kid', x:14,y:6, dir:'up', wander:false,
+   lines:()=>{
+    if(storyStage>=3) return [
+      "The big glass sang ALL NIGHT during the raid. Nobody else heard it under the shooting. I heard it. It was scared too.",
+      "It's louder now. Every day a little louder. ...Isn't it prettier?",
+    ];
+    return [
+      "The big glass hums a song at night. Everyone says it's the wind.",
+      "...You're humming it too. You didn't notice? You're doing it RIGHT NOW.",
+    ];
+   }},
+  {id:'oro', map:'vantorr', name:'ORO', spr:'colB', x:18,y:5, dir:'down', wander:false,
    lines:()=>[
     "Ring-glass! Cut this morning! Colors that don't have names yet!",
     "...Stall opens after the festival. Which is after the OTHER festival. Come back. Bring credits. Bring FRIENDS with credits.",
    ]},
 ];
-/* worldsmith: ambient critters — dust-skitters, purely decorative */
+/* ═══ Act 2 state (persisted in save.js) ═══ */
+let cerilBriefed=false, hobJoined=false, dashaAsked=false;
+let dashaSaved=false, dashaLost=false, ledgerSaved=false, fenAsked=false;
+let defBonus={}, atkBonus={};   /* Crusty Bread / Glass Burr — parallel to hpBonus */
+let shardSyncT=0;
+/* worldsmith: ambient critters — dust-skitters (Rustharbor) + ring-mice
+   (the Crossing; they hoard glittering crumbs, and Pock is counting them) */
 const critters=[
-  {x:15,y:13, tx:15,ty:13, zone:[6,12,24,14], pause:0},
-  {x:12,y:18, tx:12,ty:18, zone:[6,17,26,20], pause:0},
-  {x:10,y:2,  tx:10,ty:2,  zone:[5,1,23,3],  pause:0},
+  {map:'town', spr:'critter', x:15,y:13, tx:15,ty:13, zone:[6,12,24,14], pause:0},
+  {map:'town', spr:'critter', x:12,y:18, tx:12,ty:18, zone:[6,17,26,20], pause:0},
+  {map:'town', spr:'critter', x:10,y:2,  tx:10,ty:2,  zone:[5,1,23,3],  pause:0},
+  {map:'vantorr', spr:'ringmouse', x:9,y:8,  tx:9,ty:8,  zone:[2,7,13,9],  pause:0},
+  {map:'vantorr', spr:'ringmouse', x:13,y:8, tx:13,ty:8, zone:[10,6,16,9], pause:0},
+  {map:'vantorr', spr:'ringmouse', x:7,y:4,  tx:7,ty:4,  zone:[2,3,12,4],  pause:0},
 ];
 let ripples=[], rippleT=0, gooShapeT=8000, gooShape=null, gooRect=null;
 function findGooRect(){
@@ -569,8 +886,8 @@ function findGooRect(){
   return gooRect;
 }
 function updateCritters(dt){
-  if(curMap!=='town') return;
   for(const c of critters){
+    if(c.map!==curMap) continue;
     if(c.pause>0){ c.pause-=dt; continue; }
     const dx=c.tx-c.x, dy=c.ty-c.y;
     const d=Math.hypot(dx,dy);
@@ -601,6 +918,16 @@ const LOOTS={
 const SHRINE={x:24,y:2};
 /* worldsmith: coordinate-keyed flavor examines (no loot, just lives) */
 const FLAVOR={
+  vantorr:{
+    '4,10':"The tollhouse desk, seen through the doorway: two chairs. Ceril's, worn shiny — and a second one, squared to the desk, waiting for the late shift.",
+    '2,2':"Mirrit and Fen's door. Two names on the plate. The second name's paint is fresher — it gets redone every year, you'd guess.",
+    '7,2':"Cask's door. The still behind it thumps like a slow heart, and the whole doorframe smells faintly of licorice and crime.",
+    '12,2':"Widow Sol's door. A wind-string of glass chimes hangs over it: cyan, magenta, lime. And one colorless bell she never explains.",
+    '4,4':"An old mural of the sky, painted on the adobe. You count the rings twice. You get a different number each time.",
+    '3,6':"Bale's window sill. One loaf, still warm, set out facing the rings. It's always the first of the batch. Nobody in town would dream of touching it.",
+    '4,14':"The dock edge drops into the canyon dark. Somewhere below, wind threads old machinery, and the machinery hums back. Everything on this world sings SOMETHING.",
+    '27,2':"Directly above: the sealed crack in the canyon wall. Ring-mice used to nest along this stretch. Used to.",
+  },
   town:{
     '17,14':"A hopscotch grid chalked into the plaza stone. The final square just says 'SPACE'.",
     '16,3':"A coolant grate. Something below it is humming along with the flow — slightly flat.",
@@ -610,6 +937,13 @@ const FLAVOR={
     '1,8':"SHAFT NINE — the west adit. The elevator cage is up, the lights are on, and nobody sent for either.",
   },
 };
+const KEP_STOCK=[
+  {name:'Ration Pack', price:20, desc:'Restores HP in the field.'},
+  {name:'Repair Spray', price:30, desc:'Patches armor and bots alike.'},
+  {name:'Cell Pack', price:25, desc:'Restores a caster\u2019s MP.'},
+  {name:'Glass Charm', price:90, desc:'\u201cKeeps the hymn out of your dreams.\u201d That\u2019s the pitch. Kep doesn\u2019t write the pitches.'},
+];
+let activeShop={stock:null, keeper:'VENN'};
 const SHOP_STOCK=[
   {name:'Ration Pack', price:20, desc:'Restores HP in the field.'},
   {name:'Repair Spray', price:30, desc:'Patches armor and bots alike.'},
@@ -629,13 +963,17 @@ function openShop(){
   document.getElementById('shop-cr').textContent='₡ '+credits;
   const list=document.getElementById('shop-list');
   list.innerHTML='';
-  for(const it of SHOP_STOCK){
-    const owned = it.name==='Dormant Spore' && inventory.includes('Dormant Spore');
+  const stock=activeShop.stock||SHOP_STOCK;
+  const disc=activeShop.keeper==='KEP'&&ledgerSaved;
+  for(const it of stock){
+    const oneOff = it.name==='Dormant Spore'||it.name==='Glass Charm';
+    const owned = oneOff && inventory.includes(it.name);
+    const price = disc? Math.ceil(it.price*0.8) : it.price;
     const b=document.createElement('button');
     b.className='shopitem';
-    b.innerHTML=`<span>${owned?'<s>'+it.name+'</s> (sold)':it.name}<small>${it.desc}</small></span><span class="pr">₡${it.price}</span>`;
+    b.innerHTML=`<span>${owned?'<s>'+it.name+'</s> (sold)':it.name}<small>${it.desc}</small></span><span class="pr">₡${price}</span>`;
     b.disabled=owned;
-    b.onclick=()=>buyItem(it);
+    b.onclick=()=>buyItem(Object.assign({},it,{price}));
     list.appendChild(b);
   }
   const ex=document.createElement('button');
@@ -648,13 +986,25 @@ function openShop(){
 function buyItem(it){
   if(credits<it.price){
     shopEl.classList.remove('show');
-    openDialog('VENN',["Credits first, salvage after. That's the whole economy, friend."]);
+    if(activeShop.keeper==='KEP') openDialog('KEP',["The book says you can't afford it. The book is never wrong and never sorry."]);
+    else openDialog('VENN',["Credits first, salvage after. That's the whole economy, friend."]);
     return;
   }
   credits-=it.price;
   inventory.push(it.name);
   renderHUD();
   shopEl.classList.remove('show');
+  if(it.name==='Glass Charm'){
+    openDialog('KEP',[
+      "The charm. Huh. Third one I've sold in ten years.",
+      "For the record: I don't know if it works. The woman who cuts them sleeps like a stone and hums in her sleep, so make of that what you will.",
+    ]);
+    return;
+  }
+  if(activeShop.keeper==='KEP'){
+    openDialog('KEP',["Entered. Paid. Witnessed. The book thanks you \u2014 I'm merely its spokesman."]);
+    return;
+  }
   if(it.name==='Dormant Spore'){
     openDialog('VENN',[
       "...You're actually buying it? Huh.",
@@ -681,13 +1031,21 @@ function openItems(){
     b.className='shopitem';
     let note='';
     if(it==='Worm Soup') note='Rich, mineral, faintly wriggling. Still warm — somehow.';
+    else if(it==='Crusty Bread') note='Dense as a brick, warm as a promise. It keeps.';
+    else if(it==='Glass Burr') note='A whetstone of ring-glass. It sings against a blade.';
+    else if(it==='Glass Charm') note='Cool to the touch. You have, in fairness, been sleeping fine.';
     else if(it==='Dormant Spore') note='Warm. Slightly warmer than yesterday, if you\u2019re honest.';
     else if(it==='Ration Pack') note='In battle: your action, +12 HP.';
     else if(it==='Repair Spray') note='In battle: your action, +18 HP.';
     else if(it==='Cell Pack') note='In battle: your action, +8 MP.';
     else note='Best saved for the field.';
-    b.innerHTML=`<span>${it}<small>${note}</small></span><span class="pr">${it==='Worm Soup'?'USE ▸':''}</span>`;
-    b.onclick=()=>{ if(it==='Worm Soup') pickSoupTarget(); };
+    const usable = it==='Worm Soup'||it==='Crusty Bread'||it==='Glass Burr';
+    b.innerHTML=`<span>${it}<small>${note}</small></span><span class="pr">${usable?'USE ▸':''}</span>`;
+    b.onclick=()=>{
+      if(it==='Worm Soup') pickSoupTarget();
+      else if(it==='Crusty Bread') pickBuffTarget('Crusty Bread', defBonus, 2, 'DEF', n2=>`${n2} eats the heel slowly, crust first. It tastes like being LOOKED AFTER. DEF permanently +2!`);
+      else if(it==='Glass Burr') pickBuffTarget('Glass Burr', atkBonus, 1, 'ATK', n2=>`${n2} draws a blade across the burr — one pass, one clear ringing note. ATK permanently +1!`);
+    };
     list.appendChild(b);
   }
   if(Object.keys(hpBonus).length){
@@ -707,6 +1065,7 @@ function pickSoupTarget(){
   const list=document.getElementById('items-list');
   list.innerHTML='<div style="font-size:12px; padding:2px 8px 8px; color:var(--dim)">Who slurps the worm soup?</div>';
   for(const n2 of CREW){
+    if(n2==='Hob'&&!hobJoined) continue;
     const b=document.createElement('button');
     b.className='shopitem';
     b.innerHTML=`<span>${n2}</span><span class="pr">▸</span>`;
@@ -725,6 +1084,30 @@ function pickSoupTarget(){
   const ex=document.createElement('button');
   ex.className='shopitem exit';
   ex.innerHTML='<span>Never mind — keep the soup</span>';
+  ex.onclick=()=>{itemsEl.classList.remove('show'); tstate='walk';};
+  list.appendChild(ex);
+}
+function pickBuffTarget(itemName, bonusMap, amt, statName, msgFn){
+  const list=document.getElementById('items-list');
+  list.innerHTML=`<div style="font-size:12px; padding:2px 8px 8px; color:var(--dim)">Who uses the ${itemName.toLowerCase()}?</div>`;
+  for(const n2 of CREW){
+    if(n2==='Hob'&&!hobJoined) continue;
+    const b=document.createElement('button');
+    b.className='shopitem';
+    b.innerHTML=`<span>${n2}</span><span class="pr">▸</span>`;
+    b.onclick=()=>{
+      let removed=false;
+      inventory=inventory.filter(i=>{ if(!removed&&i===itemName){removed=true; return false;} return true; });
+      bonusMap[n2]=(bonusMap[n2]||0)+amt;
+      renderHUD();
+      itemsEl.classList.remove('show'); tstate='walk';
+      openDialog('—',[msgFn(n2)]);
+    };
+    list.appendChild(b);
+  }
+  const ex=document.createElement('button');
+  ex.className='shopitem exit';
+  ex.innerHTML='<span>Never mind</span>';
   ex.onclick=()=>{itemsEl.classList.remove('show'); tstate='walk';};
   list.appendChild(ex);
 }
@@ -755,6 +1138,36 @@ function exitHouse(){
     hero.moving=false; hero.prog=0;
   });
 }
+function enterLedger(){
+  startFade(()=>{
+    curMap='ledger'; tstate='walk';
+    hero.x=4; hero.y=4; hero.dir='up';
+    hero.moving=false; hero.prog=0;
+  });
+}
+function exitLedger(){
+  startFade(()=>{
+    curMap='vantorr'; tstate='walk';
+    hero.x=23; hero.y=8; hero.dir='down';
+    hero.moving=false; hero.prog=0;
+  });
+}
+let bowlGaveThisVisit=false;
+function enterHall(){
+  startFade(()=>{
+    curMap='hall'; tstate='walk';
+    bowlGaveThisVisit=false;
+    hero.x=4; hero.y=5; hero.dir='up';
+    hero.moving=false; hero.prog=0;
+  });
+}
+function exitHall(){
+  startFade(()=>{
+    curMap='vantorr'; tstate='walk';
+    hero.x=22; hero.y=3; hero.dir='down';
+    hero.moving=false; hero.prog=0;
+  });
+}
 function enterTemple(){
   setMode('town');
   curMap='temple';
@@ -771,7 +1184,7 @@ function enterVantorr(){
   setMode('town');
   curMap='vantorr';
   tstate='walk';
-  hero.x=4; hero.y=8; hero.dir='right';
+  hero.x=7; hero.y=12; hero.dir='right';
   hero.hidden=false; hero.moving=false; hero.prog=0;
   tCamInit=false;
   const sub=document.getElementById('subline');
@@ -779,8 +1192,15 @@ function enterVantorr(){
   openDialog('—',[
     "Ceril's Crossing — a bazaar grown up around a fallen shard of the halo, still glowing after ten thousand years.",
     "Above the canyon walls, three broken rings arc across an orange sky. The relic in Dax's pack has gone quiet — the way a singer goes quiet to listen.",
-    "ACT 2 begins. (End of current build — the Crossing is yours to explore.)",
-  ]);
+    "It's tithe week. Half the stalls are shuttered, the dock is too quiet, and there's a citation stapled to the shuttle before the engines even cool.",
+  ], ()=>{
+    openDialog('VESPER',[
+      "...Dax. The shard. Do you hear it? No — of course you don't. It's not sound, it's PRESSURE. Like a choir leaning on the inside of my skull.",
+      "I'll be fine. I just need to sit down. Possibly on another planet.",
+    ], ()=>{
+      openDialog('GUNNAR-7',["ALERT: uniformed personnel approaching with CLIPBOARDS. In my experience nothing good has ever approached with a clipboard.","ACT 2 — THE RINGLIT WORLD. Talk to everyone. Search everything."]);
+    });
+  });
 }
 function talkChef(){
   chefTalks++;
@@ -856,7 +1276,7 @@ function bfsPath(sx,sy,tx2,ty2){
       if(seen.has(kk)) continue;
       if(nx<0||ny<0||nx>=M.w||ny>=M.h) continue;
       if(!WALK.has(M.grid[ny][nx])) continue;
-      if(npcs.some(n2=>n2.map===curMap&&n2.x===nx&&n2.y===ny)) continue;
+      if(npcs.some(n2=>n2.map===curMap&&(!n2.when||n2.when())&&n2.x===nx&&n2.y===ny)) continue;
       seen.add(kk); prev[kk]=x+','+y; q.push([nx,ny]);
     }
   }
@@ -908,7 +1328,23 @@ function updateLaunch(dt){
 /* interaction */
 const DIRV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 function checkTrailExits(){
-  if(curMap!=='town'||tstate!=='walk'||dlgActive) return;
+  if(tstate!=='walk'||dlgActive) return;
+  if(curMap==='vantorr'){
+    if(hero.x>=29&&hero.y===9){
+      hero.x=28; hero.moving=false; hero.prog=0;
+      if(storyStage===2){
+        openDialog('—',["The east canyon trail, past the ossuary bells. A warden checkpoint bars the narrows — tithe week. \u201cThe fields are CLOSED for assessment,\u201d the sign says. The warden under the sign doesn't even look up."]);
+      } else {
+        openDialog('—',[
+          "The east canyon opens toward the ring-fall fields. When the wind turns, the whole horizon RINGS — thousands of glass bells nobody hung.",
+          "Somewhere out there: Fen's vapor rig, the warden sweep... and whatever they're really harvesting. (THE GLASS FIELDS — the next battle — arrives in the next build.)",
+        ]);
+      }
+      return;
+    }
+    return;
+  }
+  if(curMap!=='town') return;
   if(hero.x>=32&&hero.y===20){
     hero.x=31; hero.moving=false; hero.prog=0;
     if(storyStage===0){
@@ -942,18 +1378,56 @@ function checkTrailExits(){
     return;
   }
 }
+/* ═══ THE QUIET BOWL — the act's planted secret. Never explained. ═══ */
+function bowlInteract(){
+  const given=searched['bowl-given']||0;
+  const contents = given>=3 ? "It holds two bent chits, a button, and whatever kindness looks like when it's counted."
+    : "It holds two bent chits and a button.";
+  openDialog('—',["A wooden bowl, older than the benches. "+contents], ()=>{
+    openChoice('THE TITHE BOWL','Leave something?',[
+      {label:'LEAVE 10₡', cb:()=>{
+        if(credits<10){ openDialog('—',["You reach for chits you don't have. The bowl doesn't judge. The bowl has seen weeks like yours."]); return; }
+        credits-=10; renderHUD();
+        if(!bowlGaveThisVisit){
+          bowlGaveThisVisit=true;
+          searched['bowl-given']=(searched['bowl-given']||0)+1;
+        }
+        openDialog('—',["The chits settle among the button and the bent ones. Nothing happens. Nobody saw."]);
+      }},
+      {label:'NOT TODAY', cb:null},
+    ]);
+  });
+}
+/* ═══ TITHE NIGHT falls — the Act 2 Battle 1 trigger ═══ */
+function nightFall(){
+  startFade(()=>{
+    hero.hidden=true;
+    openDialog('—',[
+      "The dock lamps brown out one by one. Someone scheduled this.",
+      "Boots on plating. Many. Early. A loudhailer crackles across the dark dock, bored and official:",
+      "\u201cBY ORDER OF THE RINGWARDEN: this dock is cited for arrears. Stand clear of your property while it stops being yours.\u201d",
+      "Hob is already pulling on her gloves. \u201cThey're not collecting. They're STRIPPING the dock. Wake everyone \u2014 and somebody tell the clerk to RUN.\u201d",
+    ], ()=>{
+      hero.hidden=false;
+      startBattle(MISSION_TITHE);
+    });
+  });
+}
 function interact(){
   if(mode!=='town') return;
   if(dlgActive){ advanceDialog(); return; }
   if(tstate!=='walk') return;
   const [dx,dy]=DIRV[hero.dir];
   const tx2=hero.x+dx, ty2=hero.y+dy;
-  const n2=npcs.find(n3=>n3.map===curMap&&n3.x===tx2&&n3.y===ty2);
+  const n2=npcs.find(n3=>n3.map===curMap&&(!n3.when||n3.when())&&n3.x===tx2&&n3.y===ty2);
   if(n2){
     n2.dir = hero.dir==='up'?'down':hero.dir==='down'?'up':hero.dir==='left'?'right':'left';
     if(n2.id==='chef'){ talkChef(); return; }
     if(n2.id==='mech'){ talkRiga(); return; }
-    if(n2.shop){ openDialog(n2.name, n2.lines(), openShop); }
+    if(n2.shop){
+      activeShop = n2.id==='kep' ? {stock:KEP_STOCK, keeper:'KEP'} : {stock:SHOP_STOCK, keeper:'VENN'};
+      openDialog(n2.name, n2.lines(), openShop);
+    }
     else{ openDialog(n2.name, n2.lines()); }
     return;
   }
@@ -973,6 +1447,63 @@ function interact(){
     }
     return;
   }
+  /* ═══ Ceril's Crossing interactions ═══ */
+  if(curMap==='hall'&&ch==='t'){ bowlInteract(); return; }
+  if(curMap==='vantorr'){
+    /* the shuttle: rest = the night trigger (ACT2.md, storyStage 2) */
+    if(ch==='p'||tileAt(hero.x,hero.y)==='p'){
+      if(storyStage>=3){ openDialog('—',["The shuttle ticks as it cools. Gunnar-7 has re-catalogued the hold twice out of spite. It's starting to feel like home, which worries everyone."]); return; }
+      if(!cerilBriefed){ openDialog('—',["A warden citation is stapled to the gangway: MASS TARIFF ARREARS — DO NOT DEPART. Stapled. To a starship. The dockmaster's tollhouse is just north of the pads."]); return; }
+      if(!hobJoined){ openDialog('SISTER HALE',["Vesper's resting in the hold — the shard's hymn presses on her hard, poor thing, and Gunnar is... filing objections from his cage.","We are down two, Dax. If there's a spare pair of hands on this dock, find them before nightfall. The dockmaster mentioned the dray pens."]); return; }
+      openChoice('THE SHUTTLE','Tithe night falls within the hour. Turn in aboard the shuttle?',[
+        {label:'▸ TURN IN', cb:nightFall},
+        {label:'NOT YET', cb:null},
+      ]);
+      return;
+    }
+    /* ring-mouse census fieldwork (Pock's three sites) */
+    if(searched['census-started']&&!searched['census-done']){
+      const spot = kkey==='8,6'?'mice-1' : kkey==='15,6'?'mice-2' : (kkey==='10,10'||kkey==='11,10')?'mice-3' : null;
+      if(spot&&!searched[spot]){
+        searched[spot]=true;
+        const msgs={
+          'mice-1':"Behind the bakery: a crumb-cache the size of a helmet. Ring-mice everywhere — all packing, all headed WEST. Noses counted: lots.",
+          'mice-2':"The crack under the shard plinth. Warm air rises out of it, and a queue of ring-mice files out of the dark, single-file, carrying their shinies. Moving west. All of them.",
+          'mice-3':"Up in the crane housing: a nest, freshly abandoned. Dry grass still warm. Whatever the mice know, they knew it here first.",
+        };
+        openDialog('—',[msgs[spot]+" (Pock will want this reported.)"]);
+        return;
+      }
+    }
+    if(kkey==='15,6'&&searched['census-done']&&!searched['mice-hoard']){
+      searched['mice-hoard']=true;
+      credits+=30; inventory.push('Glass Burr'); renderHUD();
+      openDialog('—',[
+        "You reach into the plinth crack, past ten generations of mouse. The hoard: 30 credits in 'borrowed' chits... and a whetstone of pure ring-glass. ✦ Got GLASS BURR.",
+        "Somewhere behind you, Pock makes a noise only dogs should hear.",
+      ]);
+      return;
+    }
+    if(ch==='i'){
+      if(storyStage<3) openDialog('GUNNAR-7',["GUNNAR-7 stands very still inside a cage rated for ore. The cage is fine. His dignity is not.","\u201cI have prepared REMARKS,\u201d he says. \u201cForty minutes of remarks. The proctor will hear ALL of them.\u201d"]);
+      else openDialog('—',["The impound cage stands empty. Someone has scratched a serial number into the bars from the INSIDE, followed by the word: NEVER."]);
+      return;
+    }
+    if(ch==='n'){ openDialog('—',["Tuck's crane. The hook swings its slow patient arc over the pads. A hand-painted plate on the base reads: CAPACITY 40T. FEELINGS: 0T."]); return; }
+    if(ch==='y'){
+      if(hobJoined) openDialog('—',["The dray pens. Feed's been measured out to the gram by someone who isn't here anymore. The drays keep looking down the dock, the way she went."]);
+      else openDialog('—',["The dray pens — rails chewed, straw churned, one water trough dented into a shape best described as 'argument'."]);
+      return;
+    }
+    if(ch==='e'){ openDialog('—',["A hairline crack in the canyon wall, sealed generations ago with dock-grade plate. Tonight the plate is warm.","If you hold your breath, the crack is humming. The same tune as everything else on this world — one note lower."]); return; }
+    if(ch==='m'){ openDialog('—',["The vapor-well. The mist ribbon leans toward you as you stand here — Meres swears it does that to everyone. The waterline mark on the stone is a hand's width above the water."]); return; }
+    if(ch==='G'){ openDialog('—',["The Hymn Hall: one curved slab of fallen ring, raised whole. Every few breaths a ripple of light runs its length, like a note traveling somewhere patient."]); return; }
+    if(ch==='g'||ch==='w'){ openDialog('—',["A wall of salvaged ring-glass panes. Cyan, magenta, lime — the sky's colors, paying rent."]); return; }
+    if(ch==='r'){ openDialog('—',["The stall is OPEN — first time in weeks, the seller says, to anyone, repeatedly. Ring-glass trinkets, vapor-fruit, hand-bells. The Crossing, breathing again."]); return; }
+    if(ch==='v'){ openDialog('—',["Niche-graves cut into the canyon wall, each holding a small glass bell. When the wind threads the canyon just right, the dead ring softly. Widow Sol tunes them."]); return; }
+    if(ch==='F'){ openDialog('—',["Sun-baked adobe, patched with crate lids and optimism."]); return; }
+  }
+  if(curMap==='hall'&&ch==='b'){ openDialog('—',["A bench worn smooth by ten generations of singers. Someone has carved a tiny fourth ring into the corner. Someone else has tried to sand it off."]); return; }
   const L=(LOOTS[curMap]||{})[kkey];
   if(L){
     const skey=curMap+':'+kkey;
@@ -985,8 +1516,17 @@ function interact(){
     return;
   }
   if(ch==='C'||ch==='B'){ openDialog('—',["Nothing inside."]); return; }
-  if(ch==='d'){ if(tx2===SHOP_DOOR.x&&ty2===SHOP_DOOR.y){ enterShop(); } else { enterHouse(); } return; }
-  if(ch==='D'){ openDialog('—',["Locked. Colony folk keep their doors sealed since the quakes started."]); return; }
+  if(ch==='d'){
+    if(curMap==='vantorr'){ if(ty2===2) enterHall(); else enterLedger(); return; }
+    if(tx2===SHOP_DOOR.x&&ty2===SHOP_DOOR.y){ enterShop(); } else { enterHouse(); }
+    return;
+  }
+  if(ch==='D'){
+    const fl=FLAVOR[curMap]&&FLAVOR[curMap][kkey];
+    if(fl){ openDialog('—',[fl]); return; }
+    openDialog('—',[curMap==='vantorr'?"Sealed for tithe week. The Crossing locks what it loves.":"Locked. Colony folk keep their doors sealed since the quakes started."]);
+    return;
+  }
   if(ch==='W'){ openDialog('—',["Lights on inside. Someone's watching a drama-feed."]); return; }
   if(ch==='~'||ch==='|'){ openDialog('—',["Coolant runoff from the ridge reservoir. It glows a little. Best not to touch it."]); return; }
   if(ch==='!'){
@@ -1006,10 +1546,13 @@ function interact(){
   if(ch==='c'){ openDialog('—',["A crystal sconce, older than any charted civilization. Its light pulses in time with the relic in your pack."]); return; }
   if(ch==='Y'){ openDialog('—',["Seamless stone. No tool marks. No dust. Ten millennia and no dust."]); return; }
   if(ch==='T'){ /* counter — talk across it to whoever stands behind */
-    const n3=npcs.find(n4=>n4.map===curMap&&Math.abs(n4.x-tx2)<=1&&Math.abs(n4.y-ty2)<=1);
+    const n3=npcs.find(n4=>n4.map===curMap&&(!n4.when||n4.when())&&Math.abs(n4.x-tx2)<=1&&Math.abs(n4.y-ty2)<=1);
     if(n3){
       n3.dir = hero.dir==='up'?'down':hero.dir==='down'?'up':hero.dir==='left'?'right':'left';
-      if(n3.shop) openDialog(n3.name, n3.lines(), openShop);
+      if(n3.shop){
+        activeShop = n3.id==='kep' ? {stock:KEP_STOCK, keeper:'KEP'} : {stock:SHOP_STOCK, keeper:'VENN'};
+        openDialog(n3.name, n3.lines(), openShop);
+      }
       else openDialog(n3.name, n3.lines());
       return;
     }
@@ -1033,8 +1576,12 @@ function tryMove(dir){
     if(nx===SHOP_DOOR.x&&ny===SHOP_DOOR.y) enterShop(); else enterHouse();
     return;
   }
+  if(curMap==='vantorr'&&ch==='d'){
+    if(ny===2) enterHall(); else enterLedger();
+    return;
+  }
   if(!WALK.has(ch)) return;
-  if(npcs.some(n2=>n2.map===curMap&&n2.x===nx&&n2.y===ny)) return;
+  if(npcs.some(n2=>n2.map===curMap&&(!n2.when||n2.when())&&n2.x===nx&&n2.y===ny)) return;
   hero.moving=true; hero.mx=dx; hero.my=dy; hero.prog=0;
 }
 function updateHero(dt){
@@ -1046,6 +1593,8 @@ function updateHero(dt){
       hero.moving=false; hero.prog=0;
       if(curMap==='worm'&&tileAt(hero.x,hero.y)==='x'){ exitHouse(); }
       else if(curMap==='shopint'&&tileAt(hero.x,hero.y)==='x'){ exitShop(); }
+      else if(curMap==='ledger'&&tileAt(hero.x,hero.y)==='x'){ exitLedger(); }
+      else if(curMap==='hall'&&tileAt(hero.x,hero.y)==='x'){ exitHall(); }
       if(curMap==='temple'&&hero.x===3&&hero.y===2&&!entityFired){ entityFired=true; startEntity(); }
     }
   }
@@ -1074,7 +1623,7 @@ function updateNPCs(dt){
       const ch=tileAt(nx,ny);
       if(!WALK.has(ch)||ch==='/') continue;
       if(nx===hero.x&&ny===hero.y) continue;
-      if(npcs.some(o=>o!==n2&&o.map===curMap&&o.x===nx&&o.y===ny)) continue;
+      if(npcs.some(o=>o!==n2&&o.map===curMap&&(!o.when||o.when())&&o.x===nx&&o.y===ny)) continue;
       n2.x=nx; n2.y=ny; n2.dir=d;
     }
   }
@@ -1104,7 +1653,9 @@ function drawTown(now,dt){
   for(let y=y0;y<=y0+VH;y++){
     for(let x=x0;x<=x0+VW;x++){
       if(x<0||y<0||x>=M.w||y>=M.h) continue;
-      const ch=M.grid[y][x];
+      let ch=M.grid[y][x];
+      /* the market healing: shuttered stalls open when the tithe breaks */
+      if(ch==='a'&&curMap==='vantorr'&&storyStage>=3) ch='r';
       const cache=townTiles[ch]||townTiles[curMap==='town'?',':'.'];
       const dx=x*TS-tCamX, dy=y*TS-tCamY;
       cx.drawImage(cache[(x+y)%2], dx, dy);
@@ -1256,6 +1807,66 @@ function drawTown(now,dt){
         cx.fillStyle=`rgba(72,224,208,${g})`;
         cx.beginPath(); cx.arc(dx+TS/2, dy+TS*.3, TS*.9, 0, 7); cx.fill();
       }
+      /* ═══ Act 2: Ceril's Crossing living tiles ═══ */
+      if(ch==='w'){ /* ring-glass windows flicker cyan/magenta/lime */
+        const cols=['72,224,208','255,90,210','184,255,74'];
+        const pick=cols[(x*3+y+((now/1600)|0))%3];
+        const a=.16+.14*Math.sin(now/620+x*2.1+y*1.3);
+        cx.fillStyle=`rgba(${pick},${a})`;
+        cx.fillRect(dx+3*PXS, dy+3*PXS, 10*PXS, 11*PXS);
+      }
+      if(ch==='G'&&curMap==='vantorr'){ /* a note travels the hall slab every ~20s */
+        const ph=((now/50)%400)-x*8;
+        if(ph>0&&ph<16){
+          cx.fillStyle=`rgba(180,240,255,${.14*(1-Math.abs(ph-8)/8)})`;
+          cx.fillRect(dx,dy,TS,TS);
+        }
+      }
+      if(ch==='o'){ /* the seam-oven breathes at the hymn's tempo */
+        const g=.25+.22*Math.max(0,Math.sin(now/430));
+        cx.fillStyle=`rgba(255,120,40,${g})`;
+        cx.fillRect(dx+4*PXS, dy+7*PXS, 8*PXS, 8*PXS);
+        if(((now/700)|0)%4===0){
+          cx.fillStyle='rgba(255,210,120,.8)';
+          cx.fillRect(dx+(6+((now/90)|0)%4)*PXS, dy+(10-((now/130)|0)%4)*PXS, PXS, PXS);
+        }
+      }
+      if(ch==='n'&&tileAt(x-1,y)!=='n'){ /* the crane hook, slow-swinging */
+        const sw=Math.sin(now/1100)*9;
+        const hx=dx+TS+sw, hy=dy-8;
+        cx.strokeStyle='#8a94ac'; cx.lineWidth=2;
+        cx.beginPath(); cx.moveTo(dx+TS,dy-26); cx.lineTo(hx,hy); cx.stroke();
+        cx.lineWidth=1;
+        cx.fillStyle='#5a6278'; cx.fillRect(hx-3,hy,6,7);
+        cx.fillStyle='#ffd23a'; cx.fillRect(hx-1,hy+7,2,3);
+      }
+      if(ch==='i'){ /* GUNNAR-7, impounded. The cage is fine. His dignity is not. */
+        if(storyStage<3){
+          drawSprite(cx,'gunnar', dx+TS/2, dy+TS-6, 2, ((now/2600)|0)%2===0, 0, .95);
+          cx.fillStyle='#98a0b4';
+          for(let xx=2;xx<15;xx+=3) cx.fillRect(dx+xx*PXS, dy+PXS, PXS-1, 14*PXS);
+          if(((now/1500)|0)%3===0){
+            cx.fillStyle='rgba(232,48,72,.9)';
+            cx.fillRect(dx+13*PXS, dy+7*PXS, PXS, PXS);
+          }
+        }
+      }
+      if(ch==='e'){ /* the sealed crack hums, faintly, patiently */
+        const g=.10+.10*Math.sin(now/900);
+        cx.fillStyle=`rgba(72,224,208,${g})`;
+        cx.fillRect(dx+6*PXS, dy+3*PXS, 3*PXS, 13*PXS);
+      }
+      if(ch==='m'){ /* vapor-well mist */
+        for(let i=0;i<3;i++){
+          const p=((now/1900)+i*0.33)%1;
+          cx.fillStyle=`rgba(220,240,244,${.30*(1-p)})`;
+          cx.fillRect(dx+(6+Math.sin(p*7+i*2)*2.5)*PXS, dy+(7-p*9)*PXS, 2*PXS, 2*PXS);
+        }
+      }
+      if(ch==='v'&&((now/1100+x*3)|0)%5===0){ /* a bell catches the ring-light */
+        cx.fillStyle='rgba(168,248,236,.8)';
+        cx.fillRect(dx+((x%2)?4:10)*PXS, dy+((y%2)?6:12)*PXS, PXS, PXS);
+      }
     }
   }
   /* ═══ worldsmith ambient pass: living edges, ripples, the shape in the goo ═══ */
@@ -1374,10 +1985,23 @@ function drawTown(now,dt){
     cx.fillStyle='rgba(255,150,60,.05)';
     cx.fillRect(0,0,cv.width,cv.height);
     /* the shuttle, parked and cooling */
-    drawSprite(cx,'ship', 2.5*TS-tCamX, 8.6*TS-tCamY, 2.4, false, 0);
+    drawSprite(cx,'ship', 3.5*TS-tCamX, 13.3*TS-tCamY, 2.4, false, 0);
     if(((now/500)|0)%3===0){
       cx.fillStyle='rgba(180,180,200,.25)';
-      cx.beginPath(); cx.arc(2.9*TS-tCamX, 7.7*TS-tCamY, 3+((now/120)%6), 0, 7); cx.fill();
+      cx.beginPath(); cx.arc(3.9*TS-tCamX, 12.3*TS-tCamY, 3+((now/120)%6), 0, 7); cx.fill();
+    }
+    /* the shard syncs with the pack — stand close long enough and it answers.
+       never explained. */
+    if(tstate==='walk'&&Math.abs(hero.x-15)+Math.abs(hero.y-5)<=1) shardSyncT+=dt; else shardSyncT=0;
+    if(shardSyncT>10000){
+      const sx=15*TS+TS/2-tCamX, sy=5*TS+TS*.3-tCamY;
+      const p=((shardSyncT-10000)%2400)/2400;
+      if(p<.5){
+        cx.strokeStyle=`rgba(255,255,255,${.7*(1-p*2)})`;
+        cx.lineWidth=2;
+        cx.beginPath(); cx.arc(sx,sy, 6+p*90, 0, 7); cx.stroke();
+        cx.lineWidth=1;
+      }
     }
   }
   if(curMap==='temple'){
@@ -1394,13 +2018,14 @@ function drawTown(now,dt){
   }
   updateCritters(dt);
   checkTrailExits();
-  if(curMap==='town') for(const c of critters){
+  for(const c of critters){
+    if(c.map!==curMap) continue;
     const fx=c.x*TS+TS/2-tCamX, fy=c.y*TS+TS/2-tCamY;
     if(fx<-TS||fx>cv.width+TS||fy<-TS||fy>cv.height+TS) continue;
     const scuttle=c.pause>0?0:((now/90)|0)%2;
-    drawSprite(cx,'critter',fx,fy,2,c.tx<c.x,scuttle?-1:0);
+    drawSprite(cx,c.spr||'critter',fx,fy,2,c.tx<c.x,scuttle?-1:0);
   }
-  const ents=[...npcs.filter(n2=>n2.map===curMap).map(n2=>({t:'npc',n:n2, fy:n2.y*TS+TS-2}))];
+  const ents=[...npcs.filter(n2=>n2.map===curMap&&(!n2.when||n2.when())).map(n2=>({t:'npc',n:n2, fy:n2.y*TS+TS-2}))];
   if(!hero.hidden) ents.push({t:'hero', fy:hero.py+TS-2});
   ents.sort((a,b)=>a.fy-b.fy);
   for(const e of ents){

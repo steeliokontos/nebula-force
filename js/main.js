@@ -7,8 +7,10 @@ function setMode(m){
   document.body.className='mode-'+m;
   const sub=document.getElementById('subline');
   if(sub){
-    sub.textContent = m==='town' ? 'Rustharbor Colony · talk to everyone · search everything'
-      : m==='battle' ? 'KR-7 claim war · protect Dax · kill Vash Reeve'
+    sub.textContent = m==='town' ? (curMap==='vantorr'||curMap==='ledger'||curMap==='hall'
+        ? "Vantorr · Ceril's Crossing · talk to everyone · search everything"
+        : 'Rustharbor Colony · talk to everyone · search everything')
+      : m==='battle' ? ((typeof mission!=='undefined'&&mission)? mission.name+' · protect Dax' : 'battle')
       : m==='space' ? 'the belt'
       : m==='return' ? 'the long way home' : '';
   }

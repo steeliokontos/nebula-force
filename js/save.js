@@ -24,6 +24,7 @@ function missionById(id){
     case 'sump':   return MISSION_SUMP;
     case 'shaft9': return MISSION_SHAFT9;
     case 'kr7':    return MISSION_KR7;
+    case 'tithe':  return MISSION_TITHE;
   }
   return null;
 }
@@ -69,6 +70,9 @@ function saveGame(kind){
     storyStage, metOkari, haleJoined, entityFired, chefTalks, sumpJetFound,
     credits, inventory, hpBonus, searched,
     weapons:equippedWeapons, lost:[...lostCrew], prog:CREW_PROG,
+    /* Act 2 */
+    cerilBriefed, hobJoined, dashaAsked, dashaSaved, dashaLost, ledgerSaved,
+    fenAsked, defBonus, atkBonus,
   };
   try{ localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }catch(_){/* storage full/blocked: play on unsaved */}
 }
@@ -98,6 +102,10 @@ function applySave(s){
   entityFired=s.entityFired; chefTalks=s.chefTalks; sumpJetFound=s.sumpJetFound;
   credits=s.credits; inventory=s.inventory||[];
   hpBonus=s.hpBonus||{}; searched=s.searched||{};
+  cerilBriefed=!!s.cerilBriefed; hobJoined=!!s.hobJoined; dashaAsked=!!s.dashaAsked;
+  dashaSaved=!!s.dashaSaved; dashaLost=!!s.dashaLost; ledgerSaved=!!s.ledgerSaved;
+  fenAsked=!!s.fenAsked;
+  defBonus=s.defBonus||{}; atkBonus=s.atkBonus||{};
   CREW_PROG=s.prog||{};
   for(const k of Object.keys(equippedWeapons)) delete equippedWeapons[k];
   Object.assign(equippedWeapons, s.weapons||{});
@@ -109,8 +117,8 @@ function applySave(s){
     /* unknown mission id (old save vs newer build): fall back to town */
     s.cp={type:'town', map:'town', x:14, y:12, dir:'down'};
   }
-  setMode('town');
   curMap=MAPS[s.cp.map]?s.cp.map:'town';
+  setMode('town'); /* after curMap so the subline names the right town */
   tstate='walk';
   hero.x=s.cp.x; hero.y=s.cp.y; hero.dir=s.cp.dir||'down';
   hero.hidden=false; hero.moving=false; hero.prog=0;
