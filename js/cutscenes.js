@@ -503,11 +503,7 @@ function updateIntro(dt){
     iv.fade=Math.min(1,(performance.now()-iv.done)/800);
     if(iv.fade>=1){
       iv=null;
-      setMode('town');
-      openDialog('RUSTHARBOR',[
-        "Rustharbor Colony — three terraces carved into an old impact crater. Population: miners, moss farmers, and people who came here to be nobody in particular.",
-        "You have: one jacket, one empty pack, one magnificent robot, and zero credits. FOREMAN OKARI runs the digs from the plaza. Word is he's hiring.",
-      ]);
+      startArrival(); /* ship sets down on the pad; the camera walks you to Okari */
     }
   }
 }

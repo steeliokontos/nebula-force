@@ -5,7 +5,7 @@ const TS=48;
 const TOWN_RAW=[
 "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
 "K,,,,,,,,,,,,,,,~~,,,,,,,,,,,,,,K",
-"K,,,,,,,,,,,,,,,~~,,,,,,AB,,,,,,K",
+"K,,,,,,,,,,,,,,,~~,,,,,,A,,,,,,,K",
 "K,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K",
 "KKKKKKKKKKKKK//K||K//KKKKKKKKKKKK",
 "KKKKKKKKKKKKK//K||K//KKKKKKKKKKKK",
@@ -20,7 +20,7 @@ const TOWN_RAW=[
 "K,,,,=,,,,,,,,,,,,,,,,,=,,,,,,,,K",
 "KKKKKKKKKK//KKKKKKKKKKKKKK//KKKKK",
 "KKKKKKKKKK//KKKKKKKKKKKKKK//KKKKK",
-"KRRR,,,,,,,,,11111,,B,,,,,,,,,,,K",
+"KRRRB,,,,,,,,11111,,B,,,,,,,,,,,K",
 "KEEE,PPP,,,,,22222,,,,,,,,,,,MM,K",
 "K#D#,PPP,,,,,#WdW#,,,,,!!!!,,MM,K",
 "K,,,,PPP,,C,,,,,,,,,,,,!!!!,,,,,,",
@@ -906,7 +906,7 @@ function updateCritters(dt){
 let pipLine=0;
 const LOOTS={
   town:{
-    '25,2':{msg:'Behind the barrel, a miner\u2019s pouch — found 25 credits!', credits:25},
+    '4,17':{msg:'Behind the barrel, a miner\u2019s pouch — found 25 credits!', credits:25},
     '20,17':{msg:'Found 15 credits in an old coolant can!', credits:15},
     '10,20':{msg:'Found a REPAIR SPRAY inside!', item:'Repair Spray'},
   },
@@ -1282,7 +1282,63 @@ function bfsPath(sx,sy,tx2,ty2){
   }
   return [];
 }
+/* ═══ ARRIVAL — the opening: the shuttle sets down on the landing pad and
+   Dax walks up the terrace stairs straight into Foreman Okari. No wander
+   loop: the first conversation finds YOU. ═══ */
+function startArrival(){
+  setMode('town');
+  curMap='town'; tstate='cutscene';
+  hero.x=PAD_CENTER.x; hero.y=PAD_CENTER.y+1;
+  hero.px=hero.x*TS; hero.py=hero.y*TS;
+  hero.hidden=true; hero.moving=false; hero.prog=0; hero.dir='up';
+  tCamInit=false;
+  cut={kind:'arrive', phase:'fly-in', t:0, ship:{x:0,y:0}, dust:[], path:null};
+}
+function updateArrival(dt){
+  const padPx=PAD_CENTER.x*TS+TS/2, padPy=PAD_CENTER.y*TS+TS/2;
+  cut.t+=dt;
+  if(cut.phase==='fly-in'){
+    const p=Math.min(1,cut.t/2100);
+    const e=ease(p);
+    cut.ship.x = padPx + (1-e)*620;
+    cut.ship.y = padPy - 6 - (1-e)*380;
+    if(p>=1){
+      cut.phase='dust'; cut.t=0;
+      for(let i=0;i<10;i++) cut.dust.push({a:Math.random()*6.28, r:6+Math.random()*8, sp:.05+Math.random()*.08, life:0});
+    }
+  } else if(cut.phase==='dust'){
+    if(cut.t>600){
+      cut.phase='narrate'; cut.t=0;
+      hero.hidden=false;
+      openDialog('RUSTHARBOR',[
+        "Rustharbor Colony — three terraces carved into an old impact crater. Population: miners, moss farmers, and people who came here to be nobody in particular.",
+        "You have: one jacket, one empty pack, one magnificent robot, and zero credits.",
+      ], ()=>{
+        tstate='cutscene'; /* the dialog close reset us to walk — stay cinematic */
+        cut.phase='walkup'; cut.t=0;
+        cut.path=bfsPath(hero.x,hero.y,14,12); /* the plaza, beside the foreman */
+      });
+    }
+  } else if(cut.phase==='walkup'){
+    if(!hero.moving){
+      if(cut.path&&cut.path.length){
+        const [nx,ny]=cut.path.shift();
+        hero.dir = nx>hero.x?'right':nx<hero.x?'left':ny>hero.y?'down':'up';
+        hero.moving=true; hero.mx=nx-hero.x; hero.my=ny-hero.y; hero.prog=0;
+      } else {
+        cut.phase='greet'; cut.t=0;
+        hero.dir='left';
+        const ok=npcs.find(n2=>n2.id==='elder');
+        if(ok){ ok.x=13; ok.y=12; ok.dir='right'; } /* the foreman meets you */
+        openDialog('FOREMAN OKARI', ok?ok.lines():["Work? See the shrine on the ridge."], ()=>{
+          cut=null; tstate='walk';
+        });
+      }
+    }
+  }
+}
 function updateLaunch(dt){
+  if(cut&&cut.kind==='arrive'){ updateArrival(dt); return; }
   const padPx=PAD_CENTER.x*TS+TS/2, padPy=PAD_CENTER.y*TS+TS/2;
   cut.t+=dt;
   if(cut.phase==='fly-in'){
@@ -1642,7 +1698,7 @@ function drawTown(now,dt){
   else { updateHero(dt); updateLaunch(dt); }
   const M=MAPS[curMap];
   let fx2=hero.px+TS/2, fy2=hero.py+TS/2;
-  if(tstate==='cutscene'){
+  if(tstate==='cutscene'&&cut&&cut.kind!=='arrive'){
     fx2=PAD_CENTER.x*TS+TS/2+60; fy2=PAD_CENTER.y*TS+TS/2-40;
   }
   let tx2=Math.max(0,Math.min(Math.max(0,M.w*TS-VW*TS), fx2-VW*TS/2));

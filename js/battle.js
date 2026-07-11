@@ -147,6 +147,7 @@ function mkUnit(o){
     alive:true, fly:false, rng:[1,1], maxmp:0,
     lvl:1, xp:0, spells:[], learn:{}, special:null, boss:false,
     bulwark:false, regen:0,
+    guard:false, group:null, aggro:4, aggroed:false, shape:null, heals:null,
     ox:0, oy:0, flash:0, walk:null,
   }, o);
   u.hp=u.maxhp; u.mp=u.maxmp;
@@ -606,6 +607,7 @@ async function sceneDeath(u,credit){
 }
 async function sceneStrike(att,dfn,opts={},label){
   await sLunge(att,140,170);
+  aggroGroup(dfn,true);
   const le=landLE(dfn);
   const missed=!opts.sure && Math.random()<(0.08+le);
   if(missed){
@@ -634,6 +636,7 @@ async function strike(att,dfn,opts={},label){
   await lungeMap(att,dfn.x,dfn.y,150);
   const le=landLE(dfn);
   const missed=!opts.sure && Math.random()<(0.08+le);
+  aggroGroup(dfn,true); /* even a miss is an engagement */
   if(missed){
     floatText(dfn.x,dfn.y,'MISS','#aab4d8');
     log(`${tag(att)} attacks ${tag(dfn)} — <span class="d">evaded!</span>`);
@@ -673,6 +676,7 @@ async function doAttack(att,dfn,opts={},label,cutin){
 async function doSpell(att,tgt,s2){
   bstate='anim'; renderActions();
   att.mp-=s2.cost;
+  if(tgt&&tgt.side==='enemy') aggroGroup(tgt,true);
   if(s2.kind==='aura'){
     focusUnit(att);
     impacts.push({type:'ring', x:att.x*BT+BT/2, y:att.y*BT+BT/2, t:0, color:'#48e060', max:BT*2.6});
@@ -1076,6 +1080,7 @@ async function resolveAsteroids(){
       u.flash=12;
       floatText(w.x,w.y,dmg,'#ff7088',true);
       log(`${tag(u)} is struck by ${w.big?'a HEAVY meteor':'falling rock'} — <b>${dmg}</b> dmg`);
+      aggroGroup(u,true);
       checkBossPhase(u);
       if(u.hp<=0&&u.alive) await killUnit(u,null);
     } else if(Math.random()<(w.big?.45:.3) && bGrid[w.y][w.x]===0){
@@ -1313,7 +1318,29 @@ async function npcTurn(u){
   await endTurn();
 }
 
-/* — AI: kills first, then the wounded, then the squishy — */
+/* — AI: kills first, then the wounded, then the squishy.
+   GUARD GROUPS (Shining Force doctrine): units flagged guard:true hold
+   their ground until an ally strays inside their aggro radius, they take
+   damage, or anyone in their group is engaged — then the whole pocket
+   commits, permanently. They will still strike anything that wanders
+   into their reach while holding. — */
+function aggroGroup(u,quiet){
+  if(u.side!=='enemy'||u.aggroed) return;
+  u.aggroed=true;
+  let n=0;
+  if(u.group) for(const o of units){
+    if(o!==u&&o.side==='enemy'&&o.alive&&o.group===u.group&&!o.aggroed){ o.aggroed=true; n++; }
+  }
+  if(!quiet&&u.guard) log(`<span class="ev">⚠ ${u.name}${n?' and its pack':''} turns toward the crew.</span>`);
+}
+/* attack geometry: default is manhattan rng[min,max]; 'knight' strikes in
+   an L (like the chess piece); 'cross' only along straight lines */
+function inStrike(u,x,y,t){
+  const dx=Math.abs(t.x-x), dy=Math.abs(t.y-y), d=dx+dy;
+  if(u.shape==='knight') return (dx===1&&dy===2)||(dx===2&&dy===1);
+  if(u.shape==='cross') return (dx===0||dy===0)&&d>=u.rng[0]&&d<=u.rng[1];
+  return d>=u.rng[0]&&d<=u.rng[1];
+}
 function tilePenalty(u,x,y){
   let p=0;
   if(isWarned(x,y)) p-=35;
@@ -1321,26 +1348,83 @@ function tilePenalty(u,x,y){
   p+=TERRAIN[bGrid[y][x]].le*18;
   return p;
 }
+async function doHealAI(u,t){
+  focusPair(u,t);
+  const pow=u.heals.pow;
+  t.hp=Math.min(t.maxhp,t.hp+pow);
+  impacts.push({type:'ring', x:t.x*BT+BT/2, y:t.y*BT+BT/2, t:0, color:'#8be04e', max:BT*1.2});
+  floatText(t.x,t.y,'+'+pow,'#48e060');
+  log(`${tag(u)} tends ${tag(t)} — <b>+${pow}</b> HP <span class="d">(spore balm)</span>`);
+  renderCard(t);
+  if(!fastMode) await wait(420);
+}
 async function aiTurn(u){
   await wait(fastMode?120:380);
+  /* guard groups: wake if anyone strayed inside the aggro radius */
+  if(u.guard&&!u.aggroed){
+    const near=[...aliveOf('ally'),...aliveOf('npc')].some(t=>mdist(u,t)<=(u.aggro||4));
+    if(near) aggroGroup(u);
+  }
+  /* a holding guard doesn't advance — but it strikes what's in reach,
+     and a holding tender keeps its pack healed */
+  if(u.guard&&!u.aggroed){
+    if(u.heals){
+      let hb=null;
+      for(const t of units){
+        if(t.side!=='enemy'||!t.alive||t===u||t.hp>=t.maxhp) continue;
+        const d=mdist(u,t);
+        if(d<u.heals.rng[0]||d>u.heals.rng[1]) continue;
+        const sc=(t.maxhp-t.hp);
+        if(!hb||sc>hb.sc) hb={t,sc};
+      }
+      if(hb){ await doHealAI(u,hb.t); await endTurn(); return; }
+    }
+    let tb=null;
+    for(const t of [...aliveOf('ally'),...aliveOf('npc')]){
+      if(!inStrike(u,u.x,u.y,t)) continue;
+      const sc=(Math.max(1,u.atk-effDef(t))>=t.hp?900:0)+(34-t.hp);
+      if(!tb||sc>tb.sc) tb={t,sc};
+    }
+    if(tb){ aggroGroup(u); await doAttack(u,tb.t); }
+    await endTurn();
+    return;
+  }
   const reach=reachable(u);
   reach.add(bkey(u.x,u.y));
+  /* field medics: an awake tender moves to patch its most-wounded packmate */
+  if(u.heals){
+    let hb=null;
+    for(const k of reach){
+      const x=k%BCOLS, y=(k/BCOLS)|0;
+      for(const t of units){
+        if(t.side!=='enemy'||!t.alive||t===u||t.hp>t.maxhp*0.75) continue;
+        const d=Math.abs(t.x-x)+Math.abs(t.y-y);
+        if(d<u.heals.rng[0]||d>u.heals.rng[1]) continue;
+        const sc=(t.maxhp-t.hp)*2+tilePenalty(u,x,y)-(Math.abs(u.x-x)+Math.abs(u.y-y))*0.5;
+        if(!hb||sc>hb.sc) hb={x,y,t,sc};
+      }
+    }
+    if(hb){
+      if(hb.x!==u.x||hb.y!==u.y) await walkUnit(u,hb.x,hb.y);
+      await doHealAI(u,hb.t);
+      await endTurn();
+      return;
+    }
+  }
   const gunnar=units.find(t=>t.id==='gunnar');
   const tauntOn=gunnar&&gunnar.alive&&gunnar.bulwark;
   let gunnarHittable=false;
   if(tauntOn){
     for(const k of reach){
       const x=k%BCOLS, y=(k/BCOLS)|0;
-      const d=Math.abs(gunnar.x-x)+Math.abs(gunnar.y-y);
-      if(d>=u.rng[0]&&d<=u.rng[1]){gunnarHittable=true; break;}
+      if(inStrike(u,x,y,gunnar)){gunnarHittable=true; break;}
     }
   }
   let best=null;
   for(const k of reach){
     const x=k%BCOLS, y=(k/BCOLS)|0;
     for(const t of aliveOf('ally').concat(aliveOf('npc'))){
-      const d=Math.abs(t.x-x)+Math.abs(t.y-y);
-      if(d<u.rng[0]||d>u.rng[1]) continue;
+      if(!inStrike(u,x,y,t)) continue;
       if(tauntOn&&gunnarHittable&&t.id!=='gunnar') continue;
       const est=Math.max(1,u.atk-effDef(t));
       let score=(est>=t.hp?900:0);
