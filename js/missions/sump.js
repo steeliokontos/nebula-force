@@ -54,7 +54,7 @@ const MISSION_SUMP={
     /* THE MAW'S COURT — it doesn't come for you. It waits. */
     {id:'t2', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:13,y:8, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3], guard:true, group:'court', aggro:5},
     {id:'h2', name:'SPORE TENDER', spr:'tender', cls:'Flora · MEND', x:14,y:6, maxhp:12, atk:4, def:1, agi:5, mov:3, heals:{pow:7,rng:[0,2]}, guard:true, group:'court', aggro:4},
-    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:16,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true, guard:true, group:'court', aggro:5},
+    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:16,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true, guard:true, group:'court', aggro:5, tripwire:{x0:13,y0:2,x1:17,y1:10}},
   ],
   config:{ storm:false, reinforcements:false, bossPhase:false, explore:true },
   pois:[
