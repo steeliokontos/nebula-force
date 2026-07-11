@@ -1360,10 +1360,14 @@ async function doHealAI(u,t){
 }
 async function aiTurn(u){
   await wait(fastMode?120:380);
-  /* guard groups: wake if anyone strayed inside the aggro radius */
+  /* guard groups: wake if anyone strayed inside the aggro radius —
+     or crossed this unit's tripwire zone (a map region, not a distance) */
   if(u.guard&&!u.aggroed){
-    const near=[...aliveOf('ally'),...aliveOf('npc')].some(t=>mdist(u,t)<=(u.aggro||4));
-    if(near) aggroGroup(u);
+    const bodies=[...aliveOf('ally'),...aliveOf('npc')];
+    const near=bodies.some(t=>mdist(u,t)<=(u.aggro||4));
+    const tripped=u.tripwire&&bodies.some(t=>
+      t.x>=u.tripwire.x0&&t.x<=u.tripwire.x1&&t.y>=u.tripwire.y0&&t.y<=u.tripwire.y1);
+    if(near||tripped) aggroGroup(u);
   }
   /* a holding guard doesn't advance — but it strikes what's in reach,
      and a holding tender keeps its pack healed */

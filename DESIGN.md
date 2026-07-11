@@ -154,20 +154,29 @@ condition checked at the moment of promotion (e.g. item in inventory).
   drag to pan; tap-vs-drag threshold 12px.
 - Crit 8% ×1.5; damage = max(1, ATK−DEF) ± 10%.
 
-## Enemy AI doctrine (guard groups — Erik's rule)
-Shining Force fights are about ENGAGING, not being chased. Enemies belong to
-POCKETS: units flagged `guard:true` (with a `group` name and `aggro` radius)
-hold their ground until an ally strays inside the radius, anyone in the group
-takes damage (melee, spell, even a miss counts as engagement), or a rock
-falls on them — then the whole pocket commits, permanently. Holding guards
-still strike anything that wanders into their reach, and holding tenders
-keep their pack healed. Every map should mix: one or two free hunters for
-early pressure, then staged pockets with mixed comps (melee + reach + a
-healer) so the player picks fights deliberately. Reach variety: `rng[min,max]`
-manhattan, `shape:'knight'` (L-strikes), `shape:'cross'` (straight lines
-only). Enemy healers (`heals:{pow,rng}`) make "kill the nurse first" a real
-decision. Built in battle.js (aggroGroup/inStrike/doHealAI); sump + kr7 are
-the reference configs.
+## Enemy AI doctrine (Erik's rules)
+Shining Force fights are about ENGAGING, not being chased — but VARIETY IS
+THE SPICE OF LIFE: not every battle groups up. The per-battle question is
+"what mix makes THIS fight require thought?" The toolbox:
+- **Hunters (default)** — no flags: the unit comes for you from round one.
+  Whole battles can be hunters (Shaft Nine; Tithe Night's raid SHOULD press).
+- **Guard pockets** — `guard:true` + `group` name + `aggro` radius: the
+  pocket holds until an ally strays inside the radius, anyone in the group
+  takes damage (even a miss counts as engagement), or a rock lands on them —
+  then the whole pocket commits, permanently. Holding guards still strike
+  anything that wanders into reach; holding tenders keep their pack healed.
+- **Tripwires** — `tripwire:{x0,y0,x1,y1}` on a guard: crossing that map
+  region wakes the group no matter how far its units stand. Use for "you
+  pushed past the midline and the reserves noticed."
+- **Reach variety** — `rng[min,max]` manhattan, `shape:'knight'` (L-strikes,
+  the safe square isn't where you think), `shape:'cross'` (straight lines).
+- **Enemy healers** — `heals:{pow,rng}`: "kill the nurse first" becomes a
+  real decision. Put one in a pocket, not in every pocket.
+Pick two or three tools per battle, never the same two as the last battle.
+Current spread: Sump = 2 hunters + 3 pockets w/ healer + knight-shape; KR-7 =
+hunting skiffs/boss + holding artillery/line; Shaft Nine = all hunters (the
+vermin swarm SHOULD feel mindless); Tithe Night = advancing raid vs. the
+clock. Built in battle.js (aggroGroup/inStrike/doHealAI/tripwire).
 
 ## Art & tone
 16×16-ish text-grid pixel sprites, Shining Force blue gradient windows
