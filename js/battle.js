@@ -6,6 +6,8 @@
    optional reinforcements, cinematic scenes (FAST skips them). ═══ */
 const BCOLS=18, BROWS=13, BT=48;
 const XP_PER_LEVEL=25;
+/* type 9 — GLASS CONDUIT (the node chamber's lit lanes): fast, thin cover,
+   stings 3 on LIME rounds only (see tileHazard) */
 const TERRAIN={
   0:{name:'Regolith', cost:1, le:0},
   1:{name:'Boulders', cost:2, le:0.15},
@@ -16,6 +18,7 @@ const TERRAIN={
   6:{name:'Lime sump', cost:2, le:0.10, hazard:2},
   7:{name:'Black goo', cost:1, le:0, void:true},
   8:{name:'Spore thicket', cost:2, le:0.30},
+  9:{name:'Glass conduit', cost:1, le:0.10},
 };
 let bGrid=[], chasmTiles=[];
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -51,7 +54,7 @@ let batTilesMade=false;
 function makeBattleTiles(){
   if(batTilesMade) return;
   batTilesMade=true;
-  for(let type=0; type<=8; type++){
+  for(let type=0; type<=9; type++){
     batTiles[type]=[];
     for(let v=0; v<2; v++){
       const c=document.createElement('canvas'); c.width=BT; c.height=BT;
@@ -136,6 +139,14 @@ function makeBattleTiles(){
         g2.beginPath(); g2.moveTo(5,41); g2.lineTo(17,27); g2.lineTo(13,13); g2.stroke();
         g2.beginPath(); g2.moveTo(43,11); g2.lineTo(31,23); g2.lineTo(39,39); g2.stroke();
       }
+      if(type===9){ /* glass conduit — a lit service lane in the node floor */
+        rr(g2,0,0,16,16,'#232c42');
+        rr(g2,0,0,16,1,'#2e3a56'); rr(g2,0,15,16,1,'#182034');
+        rr(g2,6,0,4,16,'#0a3844');
+        rr(g2,7,0,2,16,'#2c8a7e');
+        pxr(g2,7,(v?3:9),'#a8f8ec'); pxr(g2,8,(v?12:5),'#48e0d0');
+        pxr(g2,2,4,'#2e3a56'); pxr(g2,13,11,'#182034');
+      }
       batTiles[type].push(c);
     }
   }
@@ -148,6 +159,7 @@ function mkUnit(o){
     lvl:1, xp:0, spells:[], learn:{}, special:null, boss:false,
     bulwark:false, regen:0,
     guard:false, group:null, aggro:4, aggroed:false, shape:null, heals:null,
+    inert:false, nonlethal:false, pinned:false, flared:false, converted:false,
     ox:0, oy:0, flash:0, walk:null,
   }, o);
   u.hp=u.maxhp; u.mp=u.maxmp;
@@ -160,6 +172,7 @@ function buildCrewUnit(cd,x,y){
     id:cd.id, name:cd.name, spr:cd.spr, cls:cd.cls, side:'ally',
     x, y,
     maxhp:cd.maxhp, atk:cd.atk, def:cd.def, agi:cd.agi, mov:cd.mov,
+    rng:cd.rng||[1,1],
     fly:!!cd.fly, maxmp:cd.maxmp||0,
     spells:(cd.spells||[]).map(s2=>Object.assign({},s2)),
     learn:cd.learn||{},
@@ -180,6 +193,9 @@ function rosterInit(){
     const pos=mission.deploy[cd.id];
     if(!pos) continue;
     if(lostCrew.has(cd.id)) continue; /* missed forever */
+    if(cd.id==='hob'&&!hobJoined) continue;
+    if(cd.id==='vye'&&!vyeJoined) continue;
+    if(cd.id==='bracket'&&!bracketJoined) continue;
     units.push(buildCrewUnit(cd,pos[0],pos[1]));
   }
   for(const e of mission.enemies){
@@ -202,6 +218,18 @@ let warnTiles=[], impactRound=-1, stormAnnounced=false;
 let reinforced=false, phase2=false, phasePending=false, kharnRushPending=false;
 let casualties=0, cageSprung=false;
 let mapEvents=[], battleLoots=[], eventFollowups=[];
+let shardObjs=[], purgeState=null, webState=null, ringOrder=null, ringIdx=-1;
+const ringKey=()=>ringOrder?ringOrder[ringIdx%3]:null;
+const RING_COLORS={cyan:'#48e0d0', magenta:'#ff5ad2', lime:'#b8ff4a'};
+/* healing halved on MAGENTA (CRYO exempt — a revive is not a heal) */
+const healAdj=amt=>ringKey()==='magenta'?Math.ceil(amt/2):amt;
+/* conduits (terrain 9) bite on LIME; vents always bite */
+function tileHazard(x,y){
+  const t=bGrid[y][x];
+  return (TERRAIN[t].hazard||0) + (t===9&&ringKey()==='lime'?3:0);
+}
+/* CYAN stretches every reach>=2 attack/spell by 1 */
+function effMaxRng(rng){ return rng[1] + (ringKey()==='cyan'&&rng[1]>=2?1:0); }
 const bkey=(x,y)=>y*BCOLS+x;
 const inB=(x,y)=>x>=0&&y>=0&&x<BCOLS&&y<BROWS;
 const occ=(x,y)=>units.find(u=>u.alive&&u.x===x&&u.y===y);
@@ -448,13 +476,18 @@ async function walkUnit(u,tx,ty,msPerTile){
 }
 function targetsInRange(u,rng,side){
   const wantSide = side==='ally' ? u.side : (u.side==='ally'?'enemy':'ally');
-  return units.filter(t=>t.alive&&t.side===wantSide)
-    .filter(t=>{const d=mdist(u,t); return d>=rng[0]&&d<=rng[1];});
+  const mx=effMaxRng(rng);
+  return units.filter(t=>t.alive&&!t.inert&&t.side===wantSide)
+    .filter(t=>{const d=mdist(u,t); return d>=rng[0]&&d<=mx;});
 }
 function spellTargets(u,s2){
   if(s2.kind==='aura') return aliveOf(u.side).filter(t=>mdist(u,t)<=2&&t.hp<t.maxhp);
   if(s2.kind==='heal'){
-    const list=targetsInRange(u,s2.rng,'ally').filter(t=>t.hp<t.maxhp&&t!==u);
+    const mx=effMaxRng(s2.rng);
+    const list=units.filter(t=>t.alive&&!t.inert&&t!==u
+      &&(t.side===u.side||(u.side==='ally'&&t.side==='npc'))
+      &&t.hp<t.maxhp
+      &&mdist(u,t)>=s2.rng[0]&&mdist(u,t)<=mx);
     if(s2.rng[0]===0&&u.hp<u.maxhp) list.push(u);
     return list;
   }
@@ -466,12 +499,12 @@ function spellTargets(u,s2){
 const BATTLE_ITEMS={
   'Ration Pack':{ hint:'+12 HP',
     avail:u=>u.hp<u.maxhp,
-    use:u=>{ const amt=Math.min(12,u.maxhp-u.hp); u.hp+=amt;
+    use:u=>{ const amt=Math.min(healAdj(12),u.maxhp-u.hp); u.hp+=amt;
       floatText(u.x,u.y,'+'+amt,'#48e060');
       log(`${tag(u)} tears open a RATION PACK — recovers <b>${amt}</b> HP.`); }},
   'Repair Spray':{ hint:'+18 HP',
     avail:u=>u.hp<u.maxhp,
-    use:u=>{ const amt=Math.min(18,u.maxhp-u.hp); u.hp+=amt;
+    use:u=>{ const amt=Math.min(healAdj(18),u.maxhp-u.hp); u.hp+=amt;
       floatText(u.x,u.y,'+'+amt,'#48e060');
       log(`${tag(u)} hisses REPAIR SPRAY over the dents — recovers <b>${amt}</b> HP.`); }},
   'Cell Pack':{ hint:'+8 MP',
@@ -503,6 +536,15 @@ function calcDamage(att,dfn,{ignoreDef=false,bonus=0,mult=1}={}){
 }
 function xpFromDmg(dmg){ return Math.min(10, Math.max(2, Math.round(dmg*0.9))); }
 function applyDeath(u,credit){
+  /* nonlethal shells COLLAPSE — knocked down, never destroyed */
+  if(u.nonlethal&&!u.converted){
+    u.inert=true; u.hp=0; u.bulwark=false;
+    if(webState&&u.id===webState.bracket) webState.bracketDowned=true;
+    log(`<span class="ev">${u.downLog||u.name+' buckles and goes down — dented, dark… and intact.'}</span>`);
+    if(u.side==='npc'&&mission.onNpcDown) mission.onNpcDown(u);
+    if(credit&&credit.side==='ally'&&u.side!=='npc') giveXP(credit,10);
+    return;
+  }
   u.alive=false; u.bulwark=false;
   if(u.side==='npc'){
     log(`<span class="e">${u.name} is cut down.</span>`);
@@ -510,11 +552,71 @@ function applyDeath(u,credit){
   } else log(`${tag(u)} is destroyed!`);
   if(u.side==='ally') casualties++;
   if(credit&&credit.side==='ally') giveXP(credit,10);
+  /* the puppet web: a dead pylon frees (or recruits) its custodian */
+  if(webState&&webState.links[u.id]){
+    const c=units.find(t=>t.id===webState.links[u.id]);
+    if(c&&c.alive&&!c.inert&&!c.converted){
+      if(c.id===webState.bracket) convertBracket(c);
+      else freeCustodian(c);
+    }
+  }
+  /* the purge schedule reacts to its executors dying */
+  if(purgeState&&mission.config.purge.executors.includes(u.id)){
+    const ex=mission.config.purge.executors;
+    const other=units.find(t=>t.id===(u.id===ex[0]?ex[1]:ex[0]));
+    if(u.id===ex[0]&&other&&other.alive){
+      purgeState.reassignAt=round+(mission.config.purge.reassignDelay||1);
+      log(`<span class="ev">${mission.config.purge.reassignBark||'The schedule reassigns.'}</span>`);
+    } else if(!other||!other.alive){
+      purgeState.halted=true;
+      pushBanner('▸ THE SCHEDULE HALTS ◂','#48e060');
+      log(`<span class="ev">${mission.config.purge.haltBark||'No rated equipment remains. The schedule is suspended.'}</span>`);
+    }
+  }
   if(u.boss&&!gameOver){
-    if(units.filter(t=>t.side==='enemy'&&t.boss&&t.alive).length===0) battleWon();
+    if(units.filter(t=>t.side==='enemy'&&t.boss&&t.alive).length===0){
+      if(webState&&mission.config.web.onBossDeath==='freeAll'){
+        for(const [pid,cid] of Object.entries(webState.links)){
+          const c=units.find(t=>t.id===cid);
+          if(c&&c.alive&&!c.inert&&!c.converted){
+            if(c.id===webState.bracket){ webState.freedGently=!webState.bracketDowned; freeCustodian(c); }
+            else freeCustodian(c);
+          }
+        }
+        log(`<span class="ev">The hand-resonator dies with its owner — every string in the web goes slack at once.</span>`);
+      }
+      if(mission.config.bossDeathWins!==false) battleWon();
+    }
+  }
+  /* escort/rout missions can win by clearing the field */
+  if(!gameOver&&mission.config.routWins&&u.side==='enemy'){
+    if(units.filter(t=>t.side==='enemy'&&t.alive&&!t.inert).length===0) battleWon();
   }
 }
+/* — the Understack conversions — */
+function freeCustodian(c){
+  c.inert=true;
+  webState.wrecked; /* (wrecked counts only true deaths) */
+  pushBanner('▸ STRINGS CUT ◂','#48e060');
+  log(`<span class="ev">The pylon dies mid-note. ${c.name} sags — sets down an armful of rubble it has been holding for ten thousand years — and is still.</span>`);
+}
+function convertBracket(c){
+  webState.bracketConverted=true;
+  c.converted=true; c.inert=false;
+  c.side='ally'; c.id='bracket'; c.name='BRACKET'; c.spr='bracket';
+  c.cls='Ringwright · RIG';
+  c.maxhp=36; c.atk=9; c.def=9; c.agi=3; c.mov=4; c.rng=[1,2];
+  c.hp=c.maxhp; c.lvl=6; c.xp=0; c.boss=false; c.nonlethal=false;
+  c.base={maxhp:c.maxhp, atk:c.atk, def:c.def, agi:c.agi, maxmp:0};
+  c.special={name:'MAG-TETHER', type:'tether', used:false,
+    desc:'yank one enemy within 3 tiles adjacent — it cannot move next turn'};
+  pushBanner('✦ STRINGS CUT ✦','#48e060');
+  impacts.push({type:'ring', x:c.x*BT+BT/2, y:c.y*BT+BT/2, t:0, color:'#48e060', max:BT*2.2});
+  log(`<span class="s">BRACKET: "ORDER SOURCE: lost. …Lost is acceptable. Lost is QUIET."</span>`);
+  log(`<span class="s">BRACKET: "TASK: assist the string-cutters. Assigning self. It is good to be assigned." ✦ BRACKET fights beside you.</span>`);
+}
 async function killUnit(u,credit){
+  if(u.nonlethal&&!u.converted){ applyDeath(u,credit); if(!fastMode) await wait(350); return; }
   const px2=u.x*BT+BT/2, fy=u.y*BT+BT-4;
   const pxs=spritePixels(u.spr,PXS);
   const rw=SPRITES[u.spr][0].length;
@@ -610,7 +712,8 @@ async function sceneStrike(att,dfn,opts={},label){
   await sLunge(att,140,170);
   aggroGroup(dfn,true);
   const le=landLE(dfn);
-  const missed=!opts.sure && Math.random()<(0.08+le);
+  let missed=!opts.sure && Math.random()<(0.08+le);
+  if(att.flared){ missed=true; att.flared=false; log(`<span class="d">${att.name} swings at the flare's afterimage—</span>`); }
   if(missed){
     addPop(dfn,'MISS','#aab4d8');
     log(`${tag(att)} attacks ${tag(dfn)} — <span class="d">evaded!${le>0?' (terrain '+Math.round(le*100)+'%)':''}</span>`);
@@ -636,7 +739,8 @@ async function strike(att,dfn,opts={},label){
   focusPair(att,dfn);
   await lungeMap(att,dfn.x,dfn.y,150);
   const le=landLE(dfn);
-  const missed=!opts.sure && Math.random()<(0.08+le);
+  let missed=!opts.sure && Math.random()<(0.08+le);
+  if(att.flared){ missed=true; att.flared=false; log(`<span class="d">${att.name} swings at the flare's afterimage—</span>`); }
   aggroGroup(dfn,true); /* even a miss is an engagement */
   if(missed){
     floatText(dfn.x,dfn.y,'MISS','#aab4d8');
@@ -679,12 +783,13 @@ async function doSpell(att,tgt,s2){
   att.mp-=s2.cost;
   if(tgt&&tgt.side==='enemy') aggroGroup(tgt,true);
   if(s2.kind==='aura'){
+    /* (aura pow adjusted below via healAdj) */
     focusUnit(att);
     impacts.push({type:'ring', x:att.x*BT+BT/2, y:att.y*BT+BT/2, t:0, color:'#48e060', max:BT*2.6});
     if(!fastMode) await wait(420);
     let n2=0;
     for(const t of aliveOf(att.side).filter(t=>mdist(att,t)<=2&&t.hp<t.maxhp)){
-      const amt=s2.pow+Math.floor(Math.random()*3);
+      const amt=healAdj(s2.pow+Math.floor(Math.random()*3));
       t.hp=Math.min(t.maxhp,t.hp+amt);
       floatText(t.x,t.y,'+'+amt,'#48e060');
       n2++;
@@ -697,7 +802,7 @@ async function doSpell(att,tgt,s2){
   if(fastMode){
     focusPair(att,tgt);
     if(s2.kind==='heal'){
-      const amt=s2.pow+Math.floor(Math.random()*3);
+      const amt=healAdj(s2.pow+Math.floor(Math.random()*3));
       tgt.hp=Math.min(tgt.maxhp,tgt.hp+amt);
       floatText(tgt.x,tgt.y,'+'+amt,'#48e060',true);
       log(`${tag(att)} casts <span class="p">${s2.name}</span> — ${tag(tgt)} recovers <b>${amt}</b> HP`);
@@ -721,7 +826,7 @@ async function doSpell(att,tgt,s2){
   sRingFX(att, s2.kind==='heal'?'#48e060':'#b47ae8');
   await wait(420);
   if(s2.kind==='heal'){
-    const amt=s2.pow+Math.floor(Math.random()*3);
+    const amt=healAdj(s2.pow+Math.floor(Math.random()*3));
     tgt.hp=Math.min(tgt.maxhp,tgt.hp+amt);
     sSparkFX(tgt,'#48e060');
     addPop(tgt,'+'+amt,'#48e060',true);
@@ -902,6 +1007,17 @@ function useSpecial(){
   const sp2=cur.special;
   if(sp2.type==='riftbreak'){ startTarget('riftbreak'); return; }
   if(sp2.type==='jolt'){ startTarget('jolt'); return; }
+  if(sp2.type==='tether'){ startTarget('tether'); return; }
+  if(sp2.type==='flare'){
+    sp2.used=true;
+    let n2=0;
+    for(const e of aliveOf('enemy')){ if(!e.inert&&mdist(cur,e)<=2){ e.flared=true; n2++; } }
+    pushBanner('✦ RING FLARE ✦','#b8ff4a');
+    impacts.push({type:'ring', x:cur.x*BT+BT/2, y:cur.y*BT+BT/2, t:0, color:'#b8ff4a', max:BT*2.4});
+    log(`<span class="s">✦ ${tag(cur)}'s pocket shard flashbulbs — ${n2} nearby enemies will swing at afterimages.</span>`);
+    moveSet.clear(); renderCard(cur);
+    endTurn(); return;
+  }
   if(sp2.type==='rush'){
     sp2.used=true; kharnRushPending=true;
     pushBanner('✦ LUNAR RUSH ✦','#b47ae8');
@@ -1243,13 +1359,17 @@ async function fireMapEvent(e){
 async function checkZoneEvents(){
   for(const e of mapEvents){
     if(e.fired||!e.trigger||!e.trigger.zone) continue;
+    if(e.cond&&!e.cond()){ continue; }
     const z=e.trigger.zone;
     if(aliveOf('ally').some(t=>t.x>=z.x0&&t.x<=z.x1&&t.y>=z.y0&&t.y<=z.y1)) await fireMapEvent(e);
   }
 }
 async function checkRoundEvents(){
   for(const e of mapEvents){
-    if(!e.fired&&e.trigger&&e.trigger.round&&round>=e.trigger.round) await fireMapEvent(e);
+    if(!e.fired&&e.trigger&&e.trigger.round&&round>=e.trigger.round){
+      if(e.cond&&!e.cond()){ e.fired=true; continue; }
+      await fireMapEvent(e);
+    }
   }
   for(const f of eventFollowups.filter(f2=>!f2.done&&round>=f2.onRound)){
     f.done=true;
@@ -1264,6 +1384,33 @@ async function checkRoundEvents(){
     if(!fastMode) await wait(500);
   }
   eventFollowups=eventFollowups.filter(f=>!f.done);
+}
+/* ═══ RESONANT SHARDS (Glass Fields) — hitting a bell IS ringing it ═══ */
+const shardAt=(x,y)=>shardObjs.find(sh=>sh.x===x&&sh.y===y);
+async function ringShard(sh,striker){
+  sh.rings++;
+  focusUnit({x:sh.x,y:sh.y});
+  impacts.push({type:'ring', x:sh.x*BT+BT/2, y:sh.y*BT+BT/2, t:0, color:'#7ce8ff', max:BT*2.4});
+  impacts.push({type:'ring', x:sh.x*BT+BT/2, y:sh.y*BT+BT/2, t:0, color:'#ffffff', max:BT*1.4});
+  log(`<span class="ev">The shard RINGS (${sh.rings}/3) — the note goes through everyone near it.</span>`);
+  const rule=mission.config.shardRule||{ringDmg:4, ringRadius:2, ringsToCrumble:3, crumbleTile:1};
+  for(const t of units.filter(t2=>t2.alive&&!t2.inert)){
+    if(Math.abs(t.x-sh.x)+Math.abs(t.y-sh.y)>rule.ringRadius) continue;
+    t.hp=Math.max(0,t.hp-rule.ringDmg); t.flash=12;
+    floatText(t.x,t.y,rule.ringDmg,'#7ce8ff');
+    if(t.side==='enemy') aggroGroup(t,true);
+    checkBossPhase(t);
+    if(t.hp<=0&&t.alive) await killUnit(t, striker&&striker.side==='ally'?striker:null);
+  }
+  if(!mission._firstRing){ mission._firstRing=true; if(mission.onFirstRing) mission.onFirstRing(); }
+  if(sh.rings>=rule.ringsToCrumble){
+    bGrid[sh.y][sh.x]=rule.crumbleTile;
+    shardObjs.splice(shardObjs.indexOf(sh),1);
+    impacts.push({type:'boom', x:sh.x*BT+BT/2, y:sh.y*BT+BT/2, t:0});
+    log(`<span class="ev">The shard cracks down its whole length and crumbles — the orchard is quieter by one voice.</span>`);
+  }
+  if(!fastMode) await wait(450);
+  if(checkEnd()) return;
 }
 function collectLoot(u){
   const li=battleLoots.findIndex(l=>l.at[0]===u.x&&l.at[1]===u.y);
@@ -1283,8 +1430,18 @@ async function endTurn(){
   moveSet.clear(); targetSet.clear(); specialSet.clear();
   pendingAct=null; pendingSpell=null;
   if(cur&&cur.alive&&cur.side==='ally') collectLoot(cur);
-  if(cur && cur.alive && !cur.fly && TERRAIN[bGrid[cur.y][cur.x]].hazard){
-    const h2=TERRAIN[bGrid[cur.y][cur.x]].hazard;
+  if(cur&&cur.alive&&cur.side==='ally'&&mission.config.seize&&!gameOver){
+    const sz=mission.config.seize;
+    if(cur.x===sz.x&&cur.y===sz.y){
+      pushBanner('▸ '+(sz.label||'SEIZED')+' ◂','#ffd23a');
+      log(`<span class="ev">${tag(cur)} slams the release board — every latch on the row fires at once.</span>`);
+      if(mission.onSeize) mission.onSeize();
+      battleWon();
+      return;
+    }
+  }
+  if(cur && cur.alive && !cur.fly && tileHazard(cur.x,cur.y)){
+    const h2=tileHazard(cur.x,cur.y);
     cur.hp=Math.max(0,cur.hp-h2);
     floatText(cur.x,cur.y,h2+' VENT','#48e0d0');
     log(`${tag(cur)} takes <b>${h2}</b> dmg <span class="d">(crystal vent)</span>`);
@@ -1300,8 +1457,9 @@ async function endTurn(){
   if(!reinforced && mission.config.reinforcements){
     const rc=mission.config.reinforcements;
     const boss=units.find(u=>u.boss);
-    const minions=units.filter(u=>u.side==='enemy'&&!u.boss&&u.alive).length;
-    if(boss&&boss.alive&&(round>=(rc.onRound||3)||minions<=(rc.orWhenMinionsLeq||3))) callReinforcements();
+    const bossOk = rc.needBoss===false ? true : (boss&&boss.alive);
+    const minions=units.filter(u=>u.side==='enemy'&&!u.boss&&u.alive&&!u.inert).length;
+    if(bossOk&&(round>=(rc.onRound||3)||minions<=(rc.orWhenMinionsLeq||3))) callReinforcements();
   }
   if(kharnRushPending&&cur&&cur.id==='kharn'&&cur.alive){
     kharnRushPending=false;
@@ -1315,6 +1473,17 @@ async function nextTurn(){
   while(qi<queue.length && !queue[qi].alive) qi++;
   if(qi>=queue.length){
     round++;
+    if(ringOrder){
+      ringIdx++;
+      const k=ringKey(), nk=ringOrder[(ringIdx+1)%3];
+      pushBanner('▼ '+k.toUpperCase()+' KEY ▼', RING_COLORS[k]);
+      log(`<span class="ev">The node turns ${k.toUpperCase()}. ${nk.toUpperCase()} follows.${k==='cyan'?' (reach +1)':k==='magenta'?' (heals halved)':' (the lit lanes bite)'}</span>`);
+    }
+    if(purgeState&&!purgeState.posted&&round>=(mission.config.purge.startRound||2)){
+      purgeState.posted=true;
+      pushBanner(mission.config.purge.banners.post,'#ff7088');
+      log(`<span class="ev">Numbered markers flicker to life over the cage row. The schedule is public. That's the point of a schedule.</span>`);
+    }
     const obj=mission.config.objective;
     if(obj&&obj.type==='survive'&&round>obj.rounds){
       pushBanner(obj.banner||'▸ HELD ◂','#48e060');
@@ -1331,7 +1500,7 @@ async function nextTurn(){
     buildQueue();
   }
   cur=queue[qi];
-  if(!cur.alive){ qi++; nextTurn(); return; }
+  if(!cur.alive||cur.inert||cur.passive){ qi++; nextTurn(); return; }
   if(cur.stunned){
     cur.stunned=false;
     floatText(cur.x,cur.y,'STUNNED','#ffd23a');
@@ -1340,9 +1509,10 @@ async function nextTurn(){
   }
   if(cur.bulwark){ cur.bulwark=false; log(`${tag(cur)} relaxes out of BULWARK stance.`); }
   if(cur.regen>0&&cur.hp<cur.maxhp){
-    cur.hp=Math.min(cur.maxhp,cur.hp+cur.regen);
-    floatText(cur.x,cur.y,'+'+cur.regen,'#48e060');
-    log(`${tag(cur)} regenerates <b>${cur.regen}</b> HP <span class="d">(astril)</span>`);
+    const ra=healAdj(cur.regen);
+    cur.hp=Math.min(cur.maxhp,cur.hp+ra);
+    floatText(cur.x,cur.y,'+'+ra,'#48e060');
+    log(`${tag(cur)} regenerates <b>${ra}</b> HP${ringKey()==='magenta'?' <span class="d">(sealed: halved)</span>':''}`);
   }
   focusUnit(cur);
   renderCard(cur);
@@ -1357,26 +1527,72 @@ async function nextTurn(){
     bstate='move'; renderActions();
   }
 }
-/* — green units: hold one round, then run for the safe zone — */
+/* — green units: cages hold, barricaded ones wait for rescue, the rest run — */
 async function npcTurn(u){
   await wait(fastMode?100:320);
-  if(round<=1){
+  if(u.mov===0){ await endTurn(); return; } /* cage: furniture with a person in it */
+  if(u.activateRadius&&!u.activated){
+    const near=aliveOf('ally').some(t=>mdist(u,t)<=u.activateRadius);
+    if(near){
+      u.activated=true;
+      if(u.activateBark) log(`<span class="n">${u.activateBark}</span>`);
+    } else { await endTurn(); return; } /* barricaded — holding on */
+  }
+  if(!u.activateRadius&&u.holdFirst!==false&&round<=1){
     log(`<span class="n">${u.name}</span> freezes where she stands.`);
     await endTurn(); return;
   }
+  if(u.clingRange&&aliveOf('ally').some(t=>mdist(u,t)<=u.clingRange)
+     &&!(u.exitCol!==undefined)){
+    log(`<span class="n">${u.name}</span> stays close to the crew.`);
+    await endTurn(); return;
+  }
   const goal=u.fleeTo||{x:2,y:7};
+  /* true walking distance to safety (units are walls) — greedy manhattan
+     gets escorts stuck hovering beside blocked doors */
+  const dist=Array.from({length:BROWS},()=>Array(BCOLS).fill(9999));
+  const q2=[];
+  const seedOk=(x,y)=>{
+    if(!inB(x,y)) return false;
+    const t=TERRAIN[bGrid[y][x]];
+    if(t.void&&!u.fly) return false;
+    const o=occ(x,y);
+    return !o||o===u;
+  };
+  if(u.exitCol!==undefined){
+    for(let y=0;y<BROWS;y++) for(let x=0;x<=u.exitCol;x++) if(seedOk(x,y)){ dist[y][x]=0; q2.push([x,y]); }
+  } else if(seedOk(goal.x,goal.y)){ dist[goal.y][goal.x]=0; q2.push([goal.x,goal.y]); }
+  while(q2.length){
+    const [x,y]=q2.shift();
+    for(const [dx,dy] of DIRS){
+      const nx=x+dx, ny=y+dy;
+      if(!seedOk(nx,ny)) continue;
+      if(dist[ny][nx]<=dist[y][x]+1) continue;
+      dist[ny][nx]=dist[y][x]+1; q2.push([nx,ny]);
+    }
+  }
   const reach=reachable(u);
   reach.add(bkey(u.x,u.y));
   let bt=null;
   for(const k of reach){
     const x=k%BCOLS, y=(k/BCOLS)|0;
-    const d=Math.abs(goal.x-x)+Math.abs(goal.y-y);
-    const s2=-d*3+tilePenalty(u,x,y);
+    const d=dist[y][x]<9000?dist[y][x]:(Math.abs(goal.x-x)+Math.abs(goal.y-y)+40);
+    let s2=-d*3+tilePenalty(u,x,y);
+    if(aliveOf('ally').some(t=>Math.abs(t.x-x)+Math.abs(t.y-y)===1)) s2+=4; /* prefers company */
+    if(shardObjs.some(sh=>Math.abs(sh.x-x)+Math.abs(sh.y-y)<=2)) s2-=6;     /* avoids the bells */
     if(!bt||s2>bt.s2) bt={x,y,s2};
   }
   if(bt&&(bt.x!==u.x||bt.y!==u.y)){
-    log(`<span class="n">${u.name}</span> runs for the pads!`);
+    log(`<span class="n">${u.name}</span> ${u.exitCol!==undefined?'pushes for home!':'runs for the pads!'}`);
     await walkUnit(u,bt.x,bt.y);
+  }
+  if(u.exitCol!==undefined&&u.x<=u.exitCol){
+    u.rescued=true; u.alive=false;
+    impacts.push({type:'ring', x:u.x*BT+BT/2, y:u.y*BT+BT/2, t:0, color:'#48e060', max:BT*1.8});
+    pushBanner('▸ '+u.name+' IS HOME ◂','#48e060');
+    if(mission.onNpcRescued) mission.onNpcRescued(u);
+    battleWon();
+    return;
   }
   const sz=u.safe;
   if(sz && u.x<=sz.x && u.y>=sz.y0 && u.y<=sz.y1){
@@ -1409,19 +1625,19 @@ function aggroGroup(u,quiet){
 function inStrike(u,x,y,t){
   const dx=Math.abs(t.x-x), dy=Math.abs(t.y-y), d=dx+dy;
   if(u.shape==='knight') return (dx===1&&dy===2)||(dx===2&&dy===1);
-  if(u.shape==='cross') return (dx===0||dy===0)&&d>=u.rng[0]&&d<=u.rng[1];
-  return d>=u.rng[0]&&d<=u.rng[1];
+  if(u.shape==='cross') return (dx===0||dy===0)&&d>=u.rng[0]&&d<=effMaxRng(u.rng);
+  return d>=u.rng[0]&&d<=effMaxRng(u.rng);
 }
 function tilePenalty(u,x,y){
   let p=0;
   if(isWarned(x,y)) p-=35;
-  if(!u.fly&&TERRAIN[bGrid[y][x]].hazard) p-=20;
+  if(!u.fly&&tileHazard(x,y)) p-=20;
   p+=TERRAIN[bGrid[y][x]].le*18;
   return p;
 }
 async function doHealAI(u,t){
   focusPair(u,t);
-  const pow=u.heals.pow;
+  const pow=healAdj(u.heals.pow);
   t.hp=Math.min(t.maxhp,t.hp+pow);
   impacts.push({type:'ring', x:t.x*BT+BT/2, y:t.y*BT+BT/2, t:0, color:'#8be04e', max:BT*1.2});
   floatText(t.x,t.y,'+'+pow,'#48e060');
@@ -1429,8 +1645,33 @@ async function doHealAI(u,t){
   renderCard(t);
   if(!fastMode) await wait(420);
 }
+const npcBias=(u,t)=>{ if(t.side!=='npc') return 0;
+  const hb=(u.huntBonus!==undefined)?u.huntBonus:(u.hunter?40:10);
+  return hb; };
+function purgeExecutor(){
+  if(!purgeState||purgeState.halted) return null;
+  const ex=mission.config.purge.executors;
+  const e0=units.find(x=>x.id===ex[0]);
+  if(e0&&e0.alive) return ex[0];
+  if(purgeState.reassignAt!==null&&round>=purgeState.reassignAt){
+    const e1=units.find(x=>x.id===ex[1]);
+    if(e1&&e1.alive) return ex[1];
+  }
+  return null;
+}
+function purgeCage(){
+  if(!purgeState||purgeState.halted) return null;
+  if(round<(mission.config.purge.startRound||2)) return null;
+  for(const cid of mission.config.purge.order){
+    const c=units.find(x=>x.id===cid);
+    if(c&&c.alive&&!c.inert) return cid;
+  }
+  return null;
+}
 async function aiTurn(u){
   await wait(fastMode?120:380);
+  let rooted=false;
+  if(u.pinned){ u.pinned=false; rooted=true; log(`${tag(u)} strains against the tether — it cannot move.`); }
   /* guard groups: wake if anyone strayed inside the aggro radius —
      or crossed this unit's tripwire zone (a map region, not a distance) */
   if(u.guard&&!u.aggroed){
@@ -1456,6 +1697,8 @@ async function aiTurn(u){
     }
     let tb=null;
     for(const t of [...aliveOf('ally'),...aliveOf('npc')]){
+      if(t.inert) continue;
+      if(t.side==='npc'&&npcBias(u,t)<=0) continue;
       if(!inStrike(u,u.x,u.y,t)) continue;
       const sc=(Math.max(1,u.atk-effDef(t))>=t.hp?900:0)+(34-t.hp);
       if(!tb||sc>tb.sc) tb={t,sc};
@@ -1464,7 +1707,7 @@ async function aiTurn(u){
     await endTurn();
     return;
   }
-  const reach=reachable(u);
+  const reach=rooted?new Set():reachable(u);
   reach.add(bkey(u.x,u.y));
   /* field medics: an awake tender moves to patch its most-wounded packmate */
   if(u.heals){
@@ -1486,6 +1729,37 @@ async function aiTurn(u){
       return;
     }
   }
+  /* bell-ringers: a Chimer strikes a shard when the splash math pays
+     (crew within 2 count 4 each, Fen counts double; wardens subtract) */
+  if(u.ringer&&shardObjs.length){
+    let bestRing=null;
+    const reach2=rooted?new Set([bkey(u.x,u.y)]):reachable(u);
+    reach2.add(bkey(u.x,u.y));
+    for(const k of reach2){
+      const x=k%BCOLS, y=(k/BCOLS)|0;
+      for(const sh of shardObjs){
+        const d=Math.abs(sh.x-x)+Math.abs(sh.y-y);
+        if(d<u.rng[0]||d>effMaxRng(u.rng)) continue;
+        let val=0;
+        for(const t of units.filter(t2=>t2.alive&&!t2.inert)){
+          if(Math.abs(t.x-sh.x)+Math.abs(t.y-sh.y)>2) continue;
+          if(t.side==='ally') val+=4;
+          else if(t.side==='npc') val+=8;
+          else val-=4;
+        }
+        if(d<=2) val-=4; /* ringing from inside your own blast is bad accounting */
+        val+=tilePenalty(u,x,y)*0.1;
+        if(val>=8&&(!bestRing||val>bestRing.val)) bestRing={x,y,sh,val};
+      }
+    }
+    if(bestRing){
+      if(bestRing.x!==u.x||bestRing.y!==u.y) await walkUnit(u,bestRing.x,bestRing.y);
+      log(`${tag(u)} volleys the standing shard—`);
+      await ringShard(bestRing.sh,u);
+      await endTurn();
+      return;
+    }
+  }
   const gunnar=units.find(t=>t.id==='gunnar');
   const tauntOn=gunnar&&gunnar.alive&&gunnar.bulwark;
   let gunnarHittable=false;
@@ -1498,12 +1772,16 @@ async function aiTurn(u){
   let best=null;
   for(const k of reach){
     const x=k%BCOLS, y=(k/BCOLS)|0;
+    const exec=purgeExecutor(), pcage=purgeCage();
     for(const t of aliveOf('ally').concat(aliveOf('npc'))){
+      if(t.inert) continue;
       if(!inStrike(u,x,y,t)) continue;
       if(tauntOn&&gunnarHittable&&t.id!=='gunnar') continue;
+      if(t.side==='npc'&&npcBias(u,t)<=0&&!(u.id===exec&&t.id===pcage)) continue;
       const est=Math.max(1,u.atk-effDef(t));
       let score=(est>=t.hp?900:0);
-      if(t.side==='npc') score+=(u.hunter?40:10); /* greens are hunted — visibly, never scripted */
+      if(t.side==='npc') score+=npcBias(u,t);
+      if(u.id===exec&&t.id===pcage) score+=2000; /* the schedule is absolute */
       score+=(34-t.hp);
       if(t.maxmp>0) score+=22;
       if(effDef(t)<=4) score+=8;
@@ -1517,14 +1795,18 @@ async function aiTurn(u){
     await walkUnit(u,best.x,best.y);
     await doAttack(u,best.t);
   } else {
-    const foes=aliveOf('ally').concat(aliveOf('npc'));
+    const exec2=purgeExecutor(), pcage2=purgeCage();
+    const foes=aliveOf('ally').concat(aliveOf('npc')).filter(f=>!f.inert)
+      .filter(f=>f.side!=='npc'||npcBias(u,f)>0||(u.id===exec2&&f.id===pcage2));
     let target=null, tscore=-1e9;
     for(const f of foes){
       let s2=-mdist(u,f)*2.2 + (f.maxmp>0?8:0) + (34-f.hp)*0.35;
-      if(f.side==='npc') s2+=(u.hunter?40:10);
+      if(f.side==='npc') s2+=npcBias(u,f);
+      if(u.id===exec2&&f.id===pcage2) s2+=2000;
       if(tauntOn&&f.id!=='gunnar') s2-=100;
       if(s2>tscore){tscore=s2; target=f;}
     }
+    if(!target){ await endTurn(); return; }
     let bt=null;
     for(const k of reach){
       const x=k%BCOLS, y=(k/BCOLS)|0;
@@ -1547,7 +1829,14 @@ function startTarget(act,spell){
   let list;
   if(act==='attack'||act==='riftbreak') list=targetsInRange(cur,cur.rng,'enemy');
   else if(act==='jolt') list=targetsInRange(cur,[1,1],'enemy');
+  else if(act==='tether') list=targetsInRange(cur,[1,3],'enemy');
   else list=spellTargets(cur,spell);
+  if(act==='attack'){
+    for(const sh of shardObjs){
+      const d=Math.abs(cur.x-sh.x)+Math.abs(cur.y-sh.y);
+      if(d>=cur.rng[0]&&d<=effMaxRng(cur.rng)) targetSet.add(bkey(sh.x,sh.y));
+    }
+  }
   if(spell&&spell.kind==='aura'){
     moveSet.clear();
     (async()=>{ await doSpell(cur,cur,spell); await endTurn(); })();
@@ -1649,6 +1938,18 @@ function battleTap(clientX,clientY){
   if(bstate==='target'){
     if(targetSet.has(k)){
       const tgt=occ(x,y);
+      const sh=shardAt(x,y);
+      if(!tgt&&sh&&pendingAct==='attack'){
+        targetSet.clear(); moveSet.clear();
+        pendingAct=null; pendingSpell=null;
+        (async()=>{
+          bstate='anim'; renderActions();
+          log(`${tag(cur)} strikes the standing shard—`);
+          await ringShard(sh,cur);
+          if(!gameOver) await endTurn();
+        })();
+        return;
+      }
       if(!tgt) return;
       targetSet.clear();
       moveSet.clear(); /* acting locks your position */
@@ -1661,6 +1962,27 @@ function battleTap(clientX,clientY){
           log(`<span class="s">✦ ${tag(cur)}'s blade goes translucent — armor means nothing to it.</span>`);
           if(fastMode) pushBanner('✦ RIFTBREAK ✦','#b47ae8');
           await doAttack(cur,tgt,{ignoreDef:true,bonus:4,sure:true,fxColor:'#7ce8ff'},'rift-cuts','RIFTBREAK');
+        }
+        else if(act==='tether'){
+          cur.special.used=true;
+          let best=null;
+          for(const [ddx,ddy] of DIRS){
+            const ax=cur.x+ddx, ay=cur.y+ddy;
+            if(!inB(ax,ay)) continue;
+            const t2=TERRAIN[bGrid[ay][ax]];
+            if(t2.void&&!tgt.fly) continue;
+            if(occ(ax,ay)) continue;
+            const d2=Math.abs(tgt.x-ax)+Math.abs(tgt.y-ay);
+            if(!best||d2<best.d2) best={ax,ay,d2};
+          }
+          if(best){
+            impacts.push({type:'ring', x:tgt.x*BT+BT/2, y:tgt.y*BT+BT/2, t:0, color:'#7ce8ff', max:BT});
+            tgt.x=best.ax; tgt.y=best.ay; tgt.pinned=true;
+            impacts.push({type:'ring', x:tgt.x*BT+BT/2, y:tgt.y*BT+BT/2, t:0, color:'#7ce8ff', max:BT*1.4});
+            pushBanner('✦ MAG-TETHER ✦','#7ce8ff');
+            log(`<span class="s">✦ ${tag(cur)} fires the tether — ${tag(tgt)} is YANKED to the door and pinned there.</span>`);
+            if(!fastMode) await wait(500);
+          }
         }
         else if(act==='jolt'){
           cur.special.used=true;
@@ -1705,6 +2027,13 @@ function drawBattle(now,dt){
       const a=.08+.08*Math.sin(now/700+x*0.9+y*0.7);
       cx.fillStyle=`rgba(139,224,78,${a})`;
       cx.fillRect(x*BT,y*BT,BT,BT);
+    }
+    if(type===9&&ringOrder){
+      const kc=RING_COLORS[ringKey()]||'#48e0d0';
+      const a2=.14+.10*Math.sin(now/300+x+y);
+      cx.fillStyle=kc; cx.globalAlpha=a2; cx.fillRect(x*BT,y*BT,BT,BT); cx.globalAlpha=1;
+      cx.fillStyle=`rgba(255,255,255,${.10+.10*Math.sin(now/200+x*2)})`;
+      cx.fillRect(x*BT+BT/2-2, y*BT+4, 4, BT-8);
     }
     if(type===7&&((now/1300+x*7+y*3)|0)%9===0){
       cx.fillStyle='rgba(139,224,78,.12)';
@@ -1778,6 +2107,46 @@ function drawBattle(now,dt){
     if(cageSprung){ cx.fillStyle='rgba(255,210,58,.85)'; cx.fillRect(cx2+BT-14,cy2+BT/2,10,3); }
     else if(((now/1200)|0)%3===0){ cx.fillStyle='#e83048'; cx.fillRect(cx2+BT-10,cy2+8,4,4); }
   }
+  /* standing shards — the orchard */
+  for(const sh of shardObjs){
+    const sx=sh.x*BT, sy=sh.y*BT;
+    const hum=.5+.5*Math.sin(now/420+sh.x*2+sh.y);
+    cx.fillStyle=`rgba(124,232,255,${.10+.08*hum})`;
+    cx.beginPath(); cx.arc(sx+BT/2, sy+BT/2, BT*.9, 0, 7); cx.fill();
+    cx.fillStyle='#5a6278'; cx.fillRect(sx+16,sy+38,16,7);
+    cx.fillStyle='#0a3844'; cx.fillRect(sx+19,sy+6,10,34);
+    cx.fillStyle='#48e0d0'; cx.fillRect(sx+21,sy+4,6,36);
+    cx.fillStyle=`rgba(220,255,252,${.55+.35*hum})`; cx.fillRect(sx+23,sy+4,2,36);
+    cx.fillStyle='#ffffff'; cx.fillRect(sx+23,sy+2,2,3);
+    if(sh.rings>0){ cx.strokeStyle='rgba(10,20,26,.9)'; cx.lineWidth=1.5;
+      for(let c2=0;c2<sh.rings;c2++){ cx.beginPath(); cx.moveTo(sx+20,sy+12+c2*9); cx.lineTo(sx+28,sy+16+c2*9); cx.stroke(); }
+      cx.lineWidth=1; }
+  }
+  if(mission.config.seize){
+    const sz=mission.config.seize;
+    const p2=(Math.sin(now/260)+1)/2;
+    cx.strokeStyle=`rgba(255,210,58,${.4+.5*p2})`;
+    cx.lineWidth=3;
+    cx.strokeRect(sz.x*BT+4, sz.y*BT+4, BT-8, BT-8);
+    cx.lineWidth=1;
+    cx.fillStyle='#ffd23a';
+    cx.font='9px "Press Start 2P", monospace';
+    cx.textAlign='center';
+    cx.fillText('G', sz.x*BT+BT/2, sz.y*BT+BT/2+3);
+  }
+  if(purgeState&&purgeState.posted&&!purgeState.halted){
+    cx.font='9px "Press Start 2P", monospace'; cx.textAlign='center';
+    const ord=mission.config.purge.order;
+    let n3=1;
+    for(const cid of ord){
+      const c=units.find(t2=>t2.id===cid);
+      if(!c||!c.alive||c.inert) continue;
+      const flash=purgeCage()===cid&&((now/300)|0)%2===0;
+      cx.fillStyle=flash?'#ff5470':'#ffd0d8';
+      cx.fillText(String(n3), c.x*BT+BT/2, c.y*BT-6);
+      n3++;
+    }
+  }
   for(const L of battleLoots){
     const lx=L.at[0]*BT, ly=L.at[1]*BT;
     const pulse=(Math.sin(now/240)+1)/2;
@@ -1791,13 +2160,19 @@ function drawBattle(now,dt){
     cx.fillStyle='#ffd23a'; cx.fillRect(lx+22,ly+19,4,5);
     if(((now/300)|0)%3===0){ cx.fillStyle='#fff'; cx.fillRect(lx+16+((now/70)|0)%14, ly+16, 2, 2); }
   }
-  const draw=suppressBattleUnits?[]:[...units].filter(u=>u.alive).sort((a,b)=>(a.walk?a.walk.y:a.y*BT)-(b.walk?b.walk.y:b.y*BT));
+  const draw=suppressBattleUnits?[]:[...units].filter(u=>u.alive||u.inert).sort((a,b)=>(a.walk?a.walk.y:a.y*BT)-(b.walk?b.walk.y:b.y*BT));
   for(let i=0;i<draw.length;i++){
     const u=draw[i];
     const bx=u.walk?u.walk.x:u.x*BT;
     const by=u.walk?u.walk.y:u.y*BT;
     const px2=bx+BT/2+u.ox, fy=by+BT-4+u.oy;
-    const hop=u.walk ? (((now/120)|0)%2?0:-3) : (((now/340+i*0.7)|0)%2 ? 0 : -2);
+    const hop=(u.inert&&!u.alive)||u.inert ? 0 : u.walk ? (((now/120)|0)%2?0:-3) : (((now/340+i*0.7)|0)%2 ? 0 : -2);
+    if(u.inert){
+      cx.globalAlpha=.55;
+      drawSprite(cx, u.spr, px2, fy, PXS, u.side==='enemy', 0);
+      cx.globalAlpha=1;
+      continue;
+    }
     cx.fillStyle='rgba(0,0,0,.4)';
     cx.beginPath(); cx.ellipse(px2, fy, 13, 4, 0, 0, 7); cx.fill();
     if(u===cur && !gameOver){
@@ -1835,6 +2210,12 @@ function drawBattle(now,dt){
   }
   if(mission.config.night){
     cx.fillStyle='rgba(8,10,44,.30)';
+    cx.fillRect(ox,oy,cv.width,cv.height);
+  }
+  if(ringOrder){
+    const kc=ringKey();
+    const tints={cyan:'rgba(40,140,150,.10)', magenta:'rgba(150,40,120,.10)', lime:'rgba(110,150,40,.10)'};
+    cx.fillStyle=tints[kc]||'rgba(0,0,0,0)';
     cx.fillRect(ox,oy,cv.width,cv.height);
   }
   for(const f of impacts){
@@ -1966,7 +2347,25 @@ function startBattle(m){
   casualties=0; cageSprung=false; scene=null;
   mapEvents=(m.config.events||[]).map(e=>Object.assign({fired:false},e));
   battleLoots=[]; eventFollowups=[];
+  shardObjs=(m.config.shards||[]).map(([x,y])=>({x,y,rings:0}));
+  purgeState=m.config.purge?{posted:false, halted:false, reassignAt:null, exIdx:0}:null;
+  webState=null;
+  if(m.config.web){
+    const slots=Object.values(m.config.web.links);
+    webState={links:m.config.web.links,
+      bracket: m.config.web.bracketSlot==='random' ? slots[(Math.random()*slots.length)|0] : m.config.web.bracketSlot,
+      bracketDowned:false, bracketConverted:false, wrecked:0};
+  }
+  ringOrder=null; ringIdx=-1;
+  if(m.config.ringCycle){
+    ringOrder=m.config.ringCycle.order.slice();
+    ringIdx=m.config.ringCycle.randomStart?(Math.random()*3)|0:0;
+  }
   rosterInit();
+  if(webState){
+    const shell=units.find(u2=>u2.id===webState.bracket);
+    if(shell) shell.nonlethal=true;
+  }
   document.getElementById('log').innerHTML='';
   renderCard(null); renderActions();
   fitLayout();
@@ -1979,6 +2378,11 @@ function startBattle(m){
   log(`<span class="d">${m.briefing}</span>`);
   openDialog(m.intro.who, m.intro.lines, ()=>{
     log(`<span class="round">— ROUND 1 —</span>`);
+    if(ringOrder){
+      const k=ringKey(), nk=ringOrder[(ringIdx+1)%3];
+      pushBanner('▼ '+k.toUpperCase()+' KEY ▼', RING_COLORS[k]);
+      log(`<span class="ev">The node turns ${k.toUpperCase()}. ${nk.toUpperCase()} follows.</span>`);
+    }
     buildQueue();
     nextTurn();
   });

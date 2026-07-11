@@ -679,6 +679,26 @@ const npcs=[
   /* ═══ Vantorr: Ceril's Crossing — Act 2 cast (ACT2.md §3) ═══ */
   {id:'ceril', map:'vantorr', name:'CERIL', spr:'elder', x:2,y:10, dir:'right', wander:false,
    lines:()=>{
+    if(storyStage>=6) return [
+      "RING-RISE, salvager. Ten years the Crossing owed itself this party, and YOU get the first cup of whatever Cask is calling that.",
+      "Keldrin? Alive. Small. Crownless. I've begun un-paying him ten years of tithe receipts — one refund at a time, slowly, in public. Rustharbor math says grudges compound. So does gratitude.",
+      "Two relics in your pack and a heading in your bot's head. When you fly, the Crossing flies a little with you. Dockmaster's blessing. It's worth exactly one berth, ANY dock, forever.",
+    ];
+    if(storyStage===5){
+      cerilStage5=true;
+      return [
+        "The crews are stood down. Bale's baking through the night — somebody has to. Lunett sang the hall empty an hour ago.",
+        "He's up the ossuary trail, keying the node with that crown. Not a tax man anymore. Maybe he never was — maybe he was always just the man HOLDING the thing.",
+        "Go up the east trail when the crew is ready. Bring them all home. That's the whole harbor fee.",
+      ];
+    }
+    if(storyStage===4){
+      return [
+        dashaLost? "The wardens went underground — literally. The dig under the east quarter never stops now. The well drops, the mice run west, and Nima's gone through the crack after that SONG."
+                 : "Dasha's ledger says ten years of tithe went DOWN, not off-world. The dig under the east quarter never stops now. And Nima's gone through the crack after that song.",
+        ledgerSaved&&!tithepitDone&&!brandTalked? "One more thing. The deserter by the east trail — Brand. He'll talk to someone carrying PROOF. Dasha's book is proof. There are people in a hole out there, salvager." : "The crack in the northeast wall stands open. Whatever you're going to do about it... the town would rather not know until it's done.",
+      ];
+    }
     if(storyStage>=3){
       if(dashaLost) return [
         "First tithe night in ten years the Crossing kept its own. The dock crews are calling it a holiday. I'm calling it a Tuesday — morale's cheaper that way.",
@@ -775,6 +795,14 @@ const npcs=[
    ]},
   {id:'mirrit', map:'vantorr', name:'MIRRIT', spr:'mirrit', x:4,y:3, dir:'down', wander:false,
    lines:()=>{
+    if(fenSaved) return [
+      "He's home. He says he wasn't worried. The tin came back empty, so I wasn't either.",
+      storyStage>=6? "We watch the festival from the glasshouse roof. The panes catch all three ring-colors at once. Fen says it's the second prettiest thing on four worlds, and then he looks at me. Twenty years and he still DOES that." : "He's already talking about one more haul. ALWAYS one more haul. …Thank you. Both of us. All of it.",
+    ];
+    if(fenLost) return [
+      "The tin came back full.",
+      "…The glasshouse grows vapor-fruit best in the dark, did you know. So it's fine. The dark is fine.",
+    ];
     if(storyStage>=3){
       if(!fenAsked){
         fenAsked=true;
@@ -837,14 +865,30 @@ const npcs=[
   {id:'brand', map:'vantorr', name:'BRAND', spr:'brand', x:27,y:9, dir:'left', wander:false,
    when:()=>storyStage>=4,
    lines:()=>{
-    if(ledgerSaved) return [
-      "You're the dock crew. Keep your voice down. I wore the sash ten years — I deserted the night I saw where the tithe PRISONERS go.",
-      "Dasha's book survived? Then there's proof. Page numbers the wardens want burned. The pit is real, salvager, and I can mark the trail... when you're ready to carry what you'll see.",
+    if(tithepitDone) return [
+      "You emptied it. The pit. I filed ten years of paper into that hole and you emptied it in a NIGHT.",
+      vyeJoined? "The guide walked out with you. Good. She's the only one who ever cost them anything going IN." : "…The guide's cage. I saw the manifest. I'm sorry. She was the only one who ever cost them anything going in.",
     ];
+    if(storyStage>=5&&!tithepitDone) return ["Too late for the pit. The wardens purged it the hour the Understack fell. Paper burns FAST when it's evidence.","…You hear it too, don't you. The crown. It never shuts up. Lately it's started ANSWERING."];
+    if(ledgerSaved){
+      brandTalked=true;
+      return [
+        "You're the dock crew. Keep your voice down. I wore the sash ten years — I deserted the night I saw where the tithe PRISONERS go.",
+        "Dasha's book survived? Then there's proof. Page numbers the wardens want burned. The pit is real, salvager — a quarry-prison with a clipboard, and the clipboard has a SCHEDULE.",
+        "I've marked the side adit on the east trail. Go before the Understack business breaks open — once it does, they purge the pit and everyone in it. That's procedure. Everything they do is procedure.",
+      ];
+    }
     return ["A gaunt man in half a warden uniform, the sash torn off. He watches the trail and says nothing. Whatever would make him talk... you don't have it."];
    }},
   {id:'nima', map:'vantorr', name:'NIMA', spr:'kid', x:14,y:6, dir:'up', wander:false,
+   when:()=>!(storyStage===4&&!nimaSaved&&!nimaStruck), /* she's gone through the crack */
    lines:()=>{
+    if(nimaStruck) return ["…","(She watches the shard with eyes full of ring-light. She doesn't sing anymore. The shard glows a little brighter when she's near, like it's leaning down.)"];
+    if(nimaSaved&&storyStage>=6) return [
+      "I conducted the WHOLE festival from the plinth! The ring-mice were terrible. Musically. As musicians.",
+      "The song's different now. It's not calling anymore. It's just... singing. That's better. That's so much better.",
+    ];
+    if(nimaSaved) return ["It knew a kind voice! I TOLD you it just wanted someone to sing back properly.","Pock says I'm grounded from following songs. Pock is not the boss of me. ...I'm still a LITTLE grounded."];
     if(storyStage>=3) return [
       "The big glass sang ALL NIGHT during the raid. Nobody else heard it under the shooting. I heard it. It was scared too.",
       "It's louder now. Every day a little louder. ...Isn't it prettier?",
@@ -855,14 +899,38 @@ const npcs=[
     ];
    }},
   {id:'oro', map:'vantorr', name:'ORO', spr:'colB', x:18,y:5, dir:'down', wander:false,
-   lines:()=>[
-    "Ring-glass! Cut this morning! Colors that don't have names yet!",
-    "...Stall opens after the festival. Which is after the OTHER festival. Come back. Bring credits. Bring FRIENDS with credits.",
-   ]},
+   lines:()=>{
+    if(storyStage>=6) return [
+      "THE STALL. IS. OPEN. Ten years of 'after the festival', and the festival CAME.",
+      "Ring-glass! Slightly used! Historically significant as of YESTERDAY! Commemorative shards of the actual battle — I swept them up MYSELF!",
+    ];
+    return [
+      "Ring-glass! Cut this morning! Colors that don't have names yet!",
+      "...Stall opens after the festival. Which is after the OTHER festival. Come back. Bring credits. Bring FRIENDS with credits.",
+    ];
+   }},
+  /* Fen, home — gives the Signal Lens (Act 3+ seed) */
+  {id:'fen', map:'vantorr', name:'FEN', spr:'fen', x:3,y:3, dir:'down', wander:false,
+   when:()=>fenSaved&&storyStage>=4,
+   lines:()=>{
+    if(!searched['signal-lens']){
+      searched['signal-lens']=true;
+      inventory.push('Signal Lens');
+      return [
+        "The crew that walked me out of my own orchard. Mirrit fed you yet? She will. Resistance is impolite and also futile.",
+        "Here — my grandfather's. A halo-diver's SIGNAL LENS. \u201cShows you the true shape of a thing, if the light's honest.\u201d Never worked for me. Maybe I never looked at anything untrue enough.",
+        "✦ Got SIGNAL LENS. It's inert. It's heavy. Fen looks lighter without it.",
+      ];
+    }
+    return ["The orchard regrows from the quiet ones. Thirty years to a full stand of singers. I'll be seventy. The wardens will be a story we bore the kids with. Good trade."];
+   }},
 ];
 /* ═══ Act 2 state (persisted in save.js) ═══ */
 let cerilBriefed=false, hobJoined=false, dashaAsked=false;
 let dashaSaved=false, dashaLost=false, ledgerSaved=false, fenAsked=false;
+let fenSaved=false, fenLost=false, brandTalked=false, tithepitDone=false;
+let nimaSaved=false, nimaStruck=false, bracketJoined=false, vyeJoined=false;
+let custodiansSpared=false, relicTwo=false, cerilStage5=false;
 let defBonus={}, atkBonus={};   /* Crusty Bread / Glass Burr — parallel to hpBonus */
 let shardSyncT=0;
 /* worldsmith: ambient critters — dust-skitters (Rustharbor) + ring-mice
@@ -1034,6 +1102,8 @@ function openItems(){
     else if(it==='Crusty Bread') note='Dense as a brick, warm as a promise. It keeps.';
     else if(it==='Glass Burr') note='A whetstone of ring-glass. It sings against a blade.';
     else if(it==='Glass Charm') note='Cool to the touch. You have, in fairness, been sleeping fine.';
+    else if(it==='Signal Lens') note='Shows the true shape of a thing, if the light\u2019s honest. Inert. For now.';
+    else if(it==='Halo Heart') note='The second relic. It harmonizes with the first, quietly, all the time now.';
     else if(it==='Dormant Spore') note='Warm. Slightly warmer than yesterday, if you\u2019re honest.';
     else if(it==='Ration Pack') note='In battle: your action, +12 HP.';
     else if(it==='Repair Spray') note='In battle: your action, +18 HP.';
@@ -1066,6 +1136,8 @@ function pickSoupTarget(){
   list.innerHTML='<div style="font-size:12px; padding:2px 8px 8px; color:var(--dim)">Who slurps the worm soup?</div>';
   for(const n2 of CREW){
     if(n2==='Hob'&&!hobJoined) continue;
+    if(n2==='Vye'&&!vyeJoined) continue;
+    if(n2==='Bracket'&&!bracketJoined) continue;
     const b=document.createElement('button');
     b.className='shopitem';
     b.innerHTML=`<span>${n2}</span><span class="pr">▸</span>`;
@@ -1092,6 +1164,8 @@ function pickBuffTarget(itemName, bonusMap, amt, statName, msgFn){
   list.innerHTML=`<div style="font-size:12px; padding:2px 8px 8px; color:var(--dim)">Who uses the ${itemName.toLowerCase()}?</div>`;
   for(const n2 of CREW){
     if(n2==='Hob'&&!hobJoined) continue;
+    if(n2==='Vye'&&!vyeJoined) continue;
+    if(n2==='Bracket'&&!bracketJoined) continue;
     const b=document.createElement('button');
     b.className='shopitem';
     b.innerHTML=`<span>${n2}</span><span class="pr">▸</span>`;
@@ -1390,11 +1464,36 @@ function checkTrailExits(){
       hero.x=28; hero.moving=false; hero.prog=0;
       if(storyStage===2){
         openDialog('—',["The east canyon trail, past the ossuary bells. A warden checkpoint bars the narrows — tithe week. \u201cThe fields are CLOSED for assessment,\u201d the sign says. The warden under the sign doesn't even look up."]);
-      } else {
+      } else if(storyStage===3){
         openDialog('—',[
           "The east canyon opens toward the ring-fall fields. When the wind turns, the whole horizon RINGS — thousands of glass bells nobody hung.",
-          "Somewhere out there: Fen's vapor rig, the warden sweep... and whatever they're really harvesting. (THE GLASS FIELDS — the next battle — arrives in the next build.)",
-        ]);
+          "Somewhere out there: Fen's crashed vapor rig, and the warden sweep working toward it, cutting only the glass that SINGS.",
+        ], ()=>startBattle(MISSION_GLASSFIELDS));
+      } else if(storyStage===4){
+        if(brandTalked&&!tithepitDone){
+          openChoice('THE OSSUARY TRAIL','Brand\u2019s mark on the canyon wall points to a side adit — the tithe-pit. The schedule down there doesn\u2019t wait.',[
+            {label:'▸ THE TITHE-PIT', cb:()=>openDialog('BRAND',[
+              "Through here. Quiet on the ramps — the pit-boss posts a SCHEDULE, and you do not want to see what it's a schedule OF.",
+              "The guide's cage is the third one. If you do nothing else down there... the third one.",
+            ], ()=>startBattle(MISSION_TITHEPIT))},
+            {label:'NOT YET', cb:null},
+          ]);
+        } else if(tithepitDone){
+          openDialog('—',["The fields lie quiet, cut and counted. The pit stands open and empty behind its broken gate. Whatever is left of this act is UNDER the town now — the crack in the northeast wall."]);
+        } else {
+          openDialog('—',["The fields lie quiet now. Further up the trail, a side adit — and a man in half a warden uniform watching it. He might talk. He'd need a REASON to."]);
+        }
+      } else if(storyStage===5){
+        if(!cerilStage5){
+          openDialog('—',["The ossuary trail climbs toward a crown-colored glare on the ridge. Ceril is standing the dock crews down — talk to him before the crew marches. Some walks you only take once."]);
+        } else {
+          openDialog('—',[
+            "The trail past the ossuary. Every bell is ringing, very softly, all together — the way glass does when something enormous is being sung one canyon over.",
+            "At the top: the node chamber, the cradle, and the man wearing the halo's crown.",
+          ], ()=>startBattle(MISSION_RINGWARDEN));
+        }
+      } else {
+        openDialog('—',["The canyon trail, after. The bells ring for the festival now. Nobody is counting anything out here anymore."]);
       }
       return;
     }
@@ -1551,12 +1650,39 @@ function interact(){
       else openDialog('—',["The dray pens — rails chewed, straw churned, one water trough dented into a shape best described as 'argument'."]);
       return;
     }
-    if(ch==='e'){ openDialog('—',["A hairline crack in the canyon wall, sealed generations ago with dock-grade plate. Tonight the plate is warm.","If you hold your breath, the crack is humming. The same tune as everything else on this world — one note lower."]); return; }
+    if(ch==='e'){
+      if(storyStage<4){
+        openDialog('—',["A hairline crack in the canyon wall, sealed generations ago with dock-grade plate. Tonight the plate is warm.","If you hold your breath, the crack is humming. The same tune as everything else on this world — one note lower."]);
+      } else if(storyStage===4){
+        openChoice('THE UNDERSTACK','The plate hangs torn open. Nima\u2019s chalk doodles stop at the threshold. The song comes UP out of the dark. Go down?',[
+          {label:'▸ DESCEND', cb:()=>{
+            if(!vyeJoined&&!tithepitDone) lostCrew.add('vye'); /* the wardens purge the pit once the Understack falls */
+            openDialog('—',[
+              "The service stair drops through ten thousand years of fill. Below: dig-lights, drill-song, and something older keeping time.",
+              "POCK (behind you, small): \u201cShe went DOWN there. Following the song. You bring her back, deputy. That's an ORDER.\u201d",
+            ], ()=>startBattle(MISSION_UNDERSTACK));
+          }},
+          {label:'NOT YET', cb:null},
+        ]);
+      } else if(storyStage===5){
+        openDialog('—',["The way down stands open, dark and quiet. The fight isn't below anymore. It's up the ossuary trail, wearing a crown."]);
+      } else {
+        openDialog('—',[custodiansSpared
+          ? "Two freed custodians stand watch at the crack, patient as furniture. They have appointed themselves. Tuck down at the docks says they take their job 'extremely seriously and also zero percent seriously'. They wave at children."
+          : "The crack stands open and empty. Cold air rises out of the Understack, carrying nothing at all."]);
+      }
+      return;
+    }
     if(ch==='m'){ openDialog('—',["The vapor-well. The mist ribbon leans toward you as you stand here — Meres swears it does that to everyone. The waterline mark on the stone is a hand's width above the water."]); return; }
     if(ch==='G'){ openDialog('—',["The Hymn Hall: one curved slab of fallen ring, raised whole. Every few breaths a ripple of light runs its length, like a note traveling somewhere patient."]); return; }
     if(ch==='g'||ch==='w'){ openDialog('—',["A wall of salvaged ring-glass panes. Cyan, magenta, lime — the sky's colors, paying rent."]); return; }
     if(ch==='r'){ openDialog('—',["The stall is OPEN — first time in weeks, the seller says, to anyone, repeatedly. Ring-glass trinkets, vapor-fruit, hand-bells. The Crossing, breathing again."]); return; }
-    if(ch==='v'){ openDialog('—',["Niche-graves cut into the canyon wall, each holding a small glass bell. When the wind threads the canyon just right, the dead ring softly. Widow Sol tunes them."]); return; }
+    if(ch==='v'){
+      const newBells=(dashaLost?1:0)+(fenLost?1:0)+(tithepitDone?Math.max(0,4-(searched['pit-freed']||0)):0);
+      openDialog('—',["Niche-graves cut into the canyon wall, each holding a small glass bell. When the wind threads the canyon just right, the dead ring softly. Widow Sol tunes them."
+        .concat(newBells>0?` …${newBells===1?'One niche is':newBells+' niches are'} cut too recently. The glass in ${newBells===1?'it':'them'} is still bright.`:'')]);
+      return;
+    }
     if(ch==='F'){ openDialog('—',["Sun-baked adobe, patched with crate lids and optimism."]); return; }
   }
   if(curMap==='hall'&&ch==='b'){ openDialog('—',["A bench worn smooth by ten generations of singers. Someone has carved a tiny fourth ring into the corner. Someone else has tried to sand it off."]); return; }
@@ -1864,7 +1990,7 @@ function drawTown(now,dt){
         cx.beginPath(); cx.arc(dx+TS/2, dy+TS*.3, TS*.9, 0, 7); cx.fill();
       }
       /* ═══ Act 2: Ceril's Crossing living tiles ═══ */
-      if(ch==='w'){ /* ring-glass windows flicker cyan/magenta/lime */
+      if(ch==='w'&&!(curMap==='vantorr'&&fenLost&&x===3&&y===1)){ /* ring-glass windows flicker — except the one that went dark */
         const cols=['72,224,208','255,90,210','184,255,74'];
         const pick=cols[(x*3+y+((now/1600)|0))%3];
         const a=.16+.14*Math.sin(now/620+x*2.1+y*1.3);

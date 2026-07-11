@@ -45,6 +45,17 @@ PWA manifest. Hosted on GitHub Pages (see README.md).
 - `js/missions/tithe.js` — Act 2 battle 1 (Tithe Night): survive-N objective,
   green rescue unit (Dasha), player-sprung ally cage, night tint — the
   engine features for all of these live in battle.js and are config-driven
+- `js/missions/glassfields.js` — Act 2 battle 2: escort objective (Fen),
+  resonant shards (strike = ring, 4 dmg r2, 3 rings crumble), ringer AI
+- `js/missions/tithepit.js` — Act 2 battle 3 (OPTIONAL, gated on ledgerSaved
+  + Brand talk, window closes at battle 4): purge schedule, seize objective,
+  healable cage NPCs, missable recruit VYE (RING FLARE)
+- `js/missions/understack.js` — Act 2 battle 4: puppet web (pylon →
+  custodian links), mid-battle enemy→ally conversion (BRACKET, MAG-TETHER),
+  nonlethal knockdowns, Nima green unit
+- `js/missions/ringwarden.js` — Act 2 battle 5 (finale): ringCycle keys
+  (CYAN reach / MAGENTA seal / LIME conduit sting), terrain type 9, phased
+  Keldrin, act epilogue → storyStage 6 + relicTwo
 - `js/save.js` — persistent progression (CREW_PROG: levels/XP/spells survive
   between battles) + localStorage autosave; CONTINUE/NEW GAME boot prompt
 - `js/main.js` — mode manager (`setMode`), all input routing, story flow, boot
@@ -84,11 +95,18 @@ ledgerSaved flags, market opens). Interiors: 'ledger' (Kep's shop, per-map
 stock + ledgerSaved discount) and 'hall' (Hymn Hall — the tithe bowl secret:
 3 donations → Bale gives Crusty Bread, +2 DEF via defBonus). Pock's
 ring-mouse census → Glass Burr (+1 ATK via atkBonus). East exit at (29,9)
-teases Battle 2 (THE GLASS FIELDS, not yet built).
+→ MISSION_GLASSFIELDS (stage 3; win → stage 4, fenSaved/fenLost, Fen gives
+SIGNAL LENS). Stage 4: Brand (ossuary, needs ledgerSaved) [brandTalked] →
+east exit choice → MISSION_TITHEPIT (optional; c3 cage = Vye; entering the
+Understack first sets lostCrew 'vye'); Understack crack 'e' at (27,0) →
+MISSION_UNDERSTACK (win → stage 5, bracketJoined, nimaSaved/nimaStruck,
+custodiansSpared). Stage 5: talk Ceril [cerilStage5] → east exit →
+MISSION_RINGWARDEN (win → stage 6, relicTwo, Halo Heart, festival town
+state, Oro's stall payoff). Act 3 not built.
 
 
 ## Agents (agents/*.md)
-Two role prompts live in `agents/`. In Claude Code, register them as subagents
+Three role prompts live in `agents/`. In Claude Code, register them as subagents
 (copy into `.claude/agents/` — check current docs for the exact mechanism).
 In a plain chat session, Erik says "run the worldsmith on <location>" or
 "architect: <battle premise>" and the session adopts that file as its
@@ -97,8 +115,11 @@ operating instructions.
   Strictly additive flavor; never mechanics, items, or balance.
 - **encounter-architect.md** — designs complete battles from a one-line
   premise: design memo (with threat math) for approval, then the mission file.
-Both must obey CLAUDE.md + DESIGN.md; both end by running the concat check
-and rebuilding the single file.
+- **battle-polisher.md** — the second set of eyes on FINISHED battles:
+  returns 3–5 approval-gated suggestions (flavor / theme / smile moments),
+  never edits during analysis, never touches balance or adds mechanics.
+All must obey CLAUDE.md + DESIGN.md; all end by running the concat check
+and rebuilding the single file (the polisher only after Erik approves items).
 
 ## Known gaps / roadmap (see DESIGN.md for detail)
 - ~~No save system~~ BUILT (js/save.js): levels/XP/spells persist between
@@ -113,5 +134,7 @@ and rebuilding the single file.
 - XP doctrine is live (DESIGN.md rule 10): every mission MUST declare `lvl`
   (see kr7.js), XP decays when crew outlevel the mission, heal XP pays at
   damage parity, casters gain +1 max MP on even levels.
-- Acts 2–9, 7+ more recruits (incl. Bracket), promotion at L15
+- ~~Act 2 battles~~ ALL FIVE BUILT (tithe, glassfields, tithepit,
+  understack, ringwarden) with recruits Hob, Vye (missable), Bracket.
+- Acts 3–9, more recruits, promotion at L15
   (SF-style: new class, reset to L1, stats carry — not built yet).
