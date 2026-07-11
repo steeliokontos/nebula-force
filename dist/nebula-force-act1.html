@@ -554,6 +554,7 @@ function typeLine(){
   },16);
 }
 function advanceDialog(){
+  if(!dlgActive) return;
   if(dlgChoices.classList.contains('show')) return;
   if(typing){
     clearInterval(typeTimer);
@@ -649,7 +650,7 @@ const TS=48;
 const TOWN_RAW=[
 "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
 "K,,,,,,,,,,,,,,,~~,,,,,,,,,,,,,,K",
-"K,,,,,,,,,,,,,,,~~,,,,,,AB,,,,,,K",
+"K,,,,,,,,,,,,,,,~~,,,,,,A,,,,,,,K",
 "K,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K",
 "KKKKKKKKKKKKK//K||K//KKKKKKKKKKKK",
 "KKKKKKKKKKKKK//K||K//KKKKKKKKKKKK",
@@ -664,7 +665,7 @@ const TOWN_RAW=[
 "K,,,,=,,,,,,,,,,,,,,,,,=,,,,,,,,K",
 "KKKKKKKKKK//KKKKKKKKKKKKKK//KKKKK",
 "KKKKKKKKKK//KKKKKKKKKKKKKK//KKKKK",
-"KRRR,,,,,,,,,11111,,B,,,,,,,,,,,K",
+"KRRRB,,,,,,,,11111,,B,,,,,,,,,,,K",
 "KEEE,PPP,,,,,22222,,,,,,,,,,,MM,K",
 "K#D#,PPP,,,,,#WdW#,,,,,!!!!,,MM,K",
 "K,,,,PPP,,C,,,,,,,,,,,,!!!!,,,,,,",
@@ -1550,7 +1551,7 @@ function updateCritters(dt){
 let pipLine=0;
 const LOOTS={
   town:{
-    '25,2':{msg:'Behind the barrel, a miner\u2019s pouch — found 25 credits!', credits:25},
+    '4,17':{msg:'Behind the barrel, a miner\u2019s pouch — found 25 credits!', credits:25},
     '20,17':{msg:'Found 15 credits in an old coolant can!', credits:15},
     '10,20':{msg:'Found a REPAIR SPRAY inside!', item:'Repair Spray'},
   },
@@ -1926,7 +1927,63 @@ function bfsPath(sx,sy,tx2,ty2){
   }
   return [];
 }
+/* ═══ ARRIVAL — the opening: the shuttle sets down on the landing pad and
+   Dax walks up the terrace stairs straight into Foreman Okari. No wander
+   loop: the first conversation finds YOU. ═══ */
+function startArrival(){
+  setMode('town');
+  curMap='town'; tstate='cutscene';
+  hero.x=PAD_CENTER.x; hero.y=PAD_CENTER.y+1;
+  hero.px=hero.x*TS; hero.py=hero.y*TS;
+  hero.hidden=true; hero.moving=false; hero.prog=0; hero.dir='up';
+  tCamInit=false;
+  cut={kind:'arrive', phase:'fly-in', t:0, ship:{x:0,y:0}, dust:[], path:null};
+}
+function updateArrival(dt){
+  const padPx=PAD_CENTER.x*TS+TS/2, padPy=PAD_CENTER.y*TS+TS/2;
+  cut.t+=dt;
+  if(cut.phase==='fly-in'){
+    const p=Math.min(1,cut.t/2100);
+    const e=ease(p);
+    cut.ship.x = padPx + (1-e)*620;
+    cut.ship.y = padPy - 6 - (1-e)*380;
+    if(p>=1){
+      cut.phase='dust'; cut.t=0;
+      for(let i=0;i<10;i++) cut.dust.push({a:Math.random()*6.28, r:6+Math.random()*8, sp:.05+Math.random()*.08, life:0});
+    }
+  } else if(cut.phase==='dust'){
+    if(cut.t>600){
+      cut.phase='narrate'; cut.t=0;
+      hero.hidden=false;
+      openDialog('RUSTHARBOR',[
+        "Rustharbor Colony — three terraces carved into an old impact crater. Population: miners, moss farmers, and people who came here to be nobody in particular.",
+        "You have: one jacket, one empty pack, one magnificent robot, and zero credits.",
+      ], ()=>{
+        tstate='cutscene'; /* the dialog close reset us to walk — stay cinematic */
+        cut.phase='walkup'; cut.t=0;
+        cut.path=bfsPath(hero.x,hero.y,14,12); /* the plaza, beside the foreman */
+      });
+    }
+  } else if(cut.phase==='walkup'){
+    if(!hero.moving){
+      if(cut.path&&cut.path.length){
+        const [nx,ny]=cut.path.shift();
+        hero.dir = nx>hero.x?'right':nx<hero.x?'left':ny>hero.y?'down':'up';
+        hero.moving=true; hero.mx=nx-hero.x; hero.my=ny-hero.y; hero.prog=0;
+      } else {
+        cut.phase='greet'; cut.t=0;
+        hero.dir='left';
+        const ok=npcs.find(n2=>n2.id==='elder');
+        if(ok){ ok.x=13; ok.y=12; ok.dir='right'; } /* the foreman meets you */
+        openDialog('FOREMAN OKARI', ok?ok.lines():["Work? See the shrine on the ridge."], ()=>{
+          cut=null; tstate='walk';
+        });
+      }
+    }
+  }
+}
 function updateLaunch(dt){
+  if(cut&&cut.kind==='arrive'){ updateArrival(dt); return; }
   const padPx=PAD_CENTER.x*TS+TS/2, padPy=PAD_CENTER.y*TS+TS/2;
   cut.t+=dt;
   if(cut.phase==='fly-in'){
@@ -2286,7 +2343,7 @@ function drawTown(now,dt){
   else { updateHero(dt); updateLaunch(dt); }
   const M=MAPS[curMap];
   let fx2=hero.px+TS/2, fy2=hero.py+TS/2;
-  if(tstate==='cutscene'){
+  if(tstate==='cutscene'&&cut&&cut.kind!=='arrive'){
     fx2=PAD_CENTER.x*TS+TS/2+60; fy2=PAD_CENTER.y*TS+TS/2-40;
   }
   let tx2=Math.max(0,Math.min(Math.max(0,M.w*TS-VW*TS), fx2-VW*TS/2));
@@ -3250,11 +3307,7 @@ function updateIntro(dt){
     iv.fade=Math.min(1,(performance.now()-iv.done)/800);
     if(iv.fade>=1){
       iv=null;
-      setMode('town');
-      openDialog('RUSTHARBOR',[
-        "Rustharbor Colony — three terraces carved into an old impact crater. Population: miners, moss farmers, and people who came here to be nobody in particular.",
-        "You have: one jacket, one empty pack, one magnificent robot, and zero credits. FOREMAN OKARI runs the digs from the plaza. Word is he's hiring.",
-      ]);
+      startArrival(); /* ship sets down on the pad; the camera walks you to Okari */
     }
   }
 }
@@ -3536,6 +3589,7 @@ function mkUnit(o){
     alive:true, fly:false, rng:[1,1], maxmp:0,
     lvl:1, xp:0, spells:[], learn:{}, special:null, boss:false,
     bulwark:false, regen:0,
+    guard:false, group:null, aggro:4, aggroed:false, shape:null, heals:null,
     ox:0, oy:0, flash:0, walk:null,
   }, o);
   u.hp=u.maxhp; u.mp=u.maxmp;
@@ -3995,6 +4049,7 @@ async function sceneDeath(u,credit){
 }
 async function sceneStrike(att,dfn,opts={},label){
   await sLunge(att,140,170);
+  aggroGroup(dfn,true);
   const le=landLE(dfn);
   const missed=!opts.sure && Math.random()<(0.08+le);
   if(missed){
@@ -4023,6 +4078,7 @@ async function strike(att,dfn,opts={},label){
   await lungeMap(att,dfn.x,dfn.y,150);
   const le=landLE(dfn);
   const missed=!opts.sure && Math.random()<(0.08+le);
+  aggroGroup(dfn,true); /* even a miss is an engagement */
   if(missed){
     floatText(dfn.x,dfn.y,'MISS','#aab4d8');
     log(`${tag(att)} attacks ${tag(dfn)} — <span class="d">evaded!</span>`);
@@ -4062,6 +4118,7 @@ async function doAttack(att,dfn,opts={},label,cutin){
 async function doSpell(att,tgt,s2){
   bstate='anim'; renderActions();
   att.mp-=s2.cost;
+  if(tgt&&tgt.side==='enemy') aggroGroup(tgt,true);
   if(s2.kind==='aura'){
     focusUnit(att);
     impacts.push({type:'ring', x:att.x*BT+BT/2, y:att.y*BT+BT/2, t:0, color:'#48e060', max:BT*2.6});
@@ -4465,6 +4522,7 @@ async function resolveAsteroids(){
       u.flash=12;
       floatText(w.x,w.y,dmg,'#ff7088',true);
       log(`${tag(u)} is struck by ${w.big?'a HEAVY meteor':'falling rock'} — <b>${dmg}</b> dmg`);
+      aggroGroup(u,true);
       checkBossPhase(u);
       if(u.hp<=0&&u.alive) await killUnit(u,null);
     } else if(Math.random()<(w.big?.45:.3) && bGrid[w.y][w.x]===0){
@@ -4702,7 +4760,29 @@ async function npcTurn(u){
   await endTurn();
 }
 
-/* — AI: kills first, then the wounded, then the squishy — */
+/* — AI: kills first, then the wounded, then the squishy.
+   GUARD GROUPS (Shining Force doctrine): units flagged guard:true hold
+   their ground until an ally strays inside their aggro radius, they take
+   damage, or anyone in their group is engaged — then the whole pocket
+   commits, permanently. They will still strike anything that wanders
+   into their reach while holding. — */
+function aggroGroup(u,quiet){
+  if(u.side!=='enemy'||u.aggroed) return;
+  u.aggroed=true;
+  let n=0;
+  if(u.group) for(const o of units){
+    if(o!==u&&o.side==='enemy'&&o.alive&&o.group===u.group&&!o.aggroed){ o.aggroed=true; n++; }
+  }
+  if(!quiet&&u.guard) log(`<span class="ev">⚠ ${u.name}${n?' and its pack':''} turns toward the crew.</span>`);
+}
+/* attack geometry: default is manhattan rng[min,max]; 'knight' strikes in
+   an L (like the chess piece); 'cross' only along straight lines */
+function inStrike(u,x,y,t){
+  const dx=Math.abs(t.x-x), dy=Math.abs(t.y-y), d=dx+dy;
+  if(u.shape==='knight') return (dx===1&&dy===2)||(dx===2&&dy===1);
+  if(u.shape==='cross') return (dx===0||dy===0)&&d>=u.rng[0]&&d<=u.rng[1];
+  return d>=u.rng[0]&&d<=u.rng[1];
+}
 function tilePenalty(u,x,y){
   let p=0;
   if(isWarned(x,y)) p-=35;
@@ -4710,26 +4790,83 @@ function tilePenalty(u,x,y){
   p+=TERRAIN[bGrid[y][x]].le*18;
   return p;
 }
+async function doHealAI(u,t){
+  focusPair(u,t);
+  const pow=u.heals.pow;
+  t.hp=Math.min(t.maxhp,t.hp+pow);
+  impacts.push({type:'ring', x:t.x*BT+BT/2, y:t.y*BT+BT/2, t:0, color:'#8be04e', max:BT*1.2});
+  floatText(t.x,t.y,'+'+pow,'#48e060');
+  log(`${tag(u)} tends ${tag(t)} — <b>+${pow}</b> HP <span class="d">(spore balm)</span>`);
+  renderCard(t);
+  if(!fastMode) await wait(420);
+}
 async function aiTurn(u){
   await wait(fastMode?120:380);
+  /* guard groups: wake if anyone strayed inside the aggro radius */
+  if(u.guard&&!u.aggroed){
+    const near=[...aliveOf('ally'),...aliveOf('npc')].some(t=>mdist(u,t)<=(u.aggro||4));
+    if(near) aggroGroup(u);
+  }
+  /* a holding guard doesn't advance — but it strikes what's in reach,
+     and a holding tender keeps its pack healed */
+  if(u.guard&&!u.aggroed){
+    if(u.heals){
+      let hb=null;
+      for(const t of units){
+        if(t.side!=='enemy'||!t.alive||t===u||t.hp>=t.maxhp) continue;
+        const d=mdist(u,t);
+        if(d<u.heals.rng[0]||d>u.heals.rng[1]) continue;
+        const sc=(t.maxhp-t.hp);
+        if(!hb||sc>hb.sc) hb={t,sc};
+      }
+      if(hb){ await doHealAI(u,hb.t); await endTurn(); return; }
+    }
+    let tb=null;
+    for(const t of [...aliveOf('ally'),...aliveOf('npc')]){
+      if(!inStrike(u,u.x,u.y,t)) continue;
+      const sc=(Math.max(1,u.atk-effDef(t))>=t.hp?900:0)+(34-t.hp);
+      if(!tb||sc>tb.sc) tb={t,sc};
+    }
+    if(tb){ aggroGroup(u); await doAttack(u,tb.t); }
+    await endTurn();
+    return;
+  }
   const reach=reachable(u);
   reach.add(bkey(u.x,u.y));
+  /* field medics: an awake tender moves to patch its most-wounded packmate */
+  if(u.heals){
+    let hb=null;
+    for(const k of reach){
+      const x=k%BCOLS, y=(k/BCOLS)|0;
+      for(const t of units){
+        if(t.side!=='enemy'||!t.alive||t===u||t.hp>t.maxhp*0.75) continue;
+        const d=Math.abs(t.x-x)+Math.abs(t.y-y);
+        if(d<u.heals.rng[0]||d>u.heals.rng[1]) continue;
+        const sc=(t.maxhp-t.hp)*2+tilePenalty(u,x,y)-(Math.abs(u.x-x)+Math.abs(u.y-y))*0.5;
+        if(!hb||sc>hb.sc) hb={x,y,t,sc};
+      }
+    }
+    if(hb){
+      if(hb.x!==u.x||hb.y!==u.y) await walkUnit(u,hb.x,hb.y);
+      await doHealAI(u,hb.t);
+      await endTurn();
+      return;
+    }
+  }
   const gunnar=units.find(t=>t.id==='gunnar');
   const tauntOn=gunnar&&gunnar.alive&&gunnar.bulwark;
   let gunnarHittable=false;
   if(tauntOn){
     for(const k of reach){
       const x=k%BCOLS, y=(k/BCOLS)|0;
-      const d=Math.abs(gunnar.x-x)+Math.abs(gunnar.y-y);
-      if(d>=u.rng[0]&&d<=u.rng[1]){gunnarHittable=true; break;}
+      if(inStrike(u,x,y,gunnar)){gunnarHittable=true; break;}
     }
   }
   let best=null;
   for(const k of reach){
     const x=k%BCOLS, y=(k/BCOLS)|0;
     for(const t of aliveOf('ally').concat(aliveOf('npc'))){
-      const d=Math.abs(t.x-x)+Math.abs(t.y-y);
-      if(d<u.rng[0]||d>u.rng[1]) continue;
+      if(!inStrike(u,x,y,t)) continue;
       if(tauntOn&&gunnarHittable&&t.id!=='gunnar') continue;
       const est=Math.max(1,u.atk-effDef(t));
       let score=(est>=t.hp?900:0);
@@ -5557,7 +5694,12 @@ function drawTempleRise(now,dt){
    spore thickets are heavy cover.
    Legend: 0 crater ground · 1 crater rim · 8 spore thicket
    6 lime sump (cost 2, stings) · 7 black goo (impassable) ═══ */
-SPRITES.crawler=SPRITES.gloop.map(r=>r.replace(/e/g,'e').replace(/E/g,'D'));
+/* the crawler is NOT the friendly town goo — spined, violet, wrong */
+SPRITES.crawler=["................","..k...k...k.....",".kPk.kPk.kPk....","..kppppppppk....",".kpppppppppPk...","kpprrpprrpppPk..","kpprrpprrpppPk..",".kppppppppppXk..","..kpXppXppXk....","..kXk.kXk.kXk...","..kk...kk..kk...","................"];
+/* spore tender — the sump's pale field-medic */
+SPRITES.tender=["................",".....kkkkkk.....","...kkttttttkk...","..kttettetttTk..","..ktttttttttTk..","...kTTTTTTTTk...","....kwwvwwk.....","....kwwvwwk.....","...kwwwvwwwk....","...kewwwwwek....","....kkkkkkk.....","................"];
+/* mire weaver — a lasher that strikes in an L, tongue first */
+SPRITES.weaver=["................","....kkk.........","...khhhk.kkkk...","..khhrhhkhhhhk..",".krrkhhhhhhhhhk.","..k.khyyhhTThhk.","....khhhhhhhhhk.",".....khhkkhhk...","....khhk..khhk..","....kkk....kkk.."];
 SPRITES.spitter=SPRITES.drone.map(r=>r.replace(/g/g,'E').replace(/G/g,'D').replace(/r/g,'e'));
 SPRITES.maw=SPRITES.rig.map(r=>r.replace(/g/g,'D').replace(/G/g,'E').replace(/o/g,'e').replace(/O/g,'E'));
 
@@ -5582,16 +5724,26 @@ const MISSION_SUMP={
     "000000000000000000",
   ],
   deploy:{ dax:[1,6], hale:[1,8], gunnar:[2,7] },
+  /* AI doctrine (Erik): the sump fights in POCKETS. Two hungry crawlers
+     come to you; everything else holds its ground until you stray into its
+     aggro radius, hurt one of its pack, or hit it from range — then the
+     whole pocket commits. Engage on your terms. */
   enemies:[
-    {id:'c1', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:7,y:2,  maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c2', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:8,y:9,  maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c3', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:11,y:4, maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c4', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:12,y:10,maxhp:14, atk:9, def:2, agi:6, mov:4},
+    /* the hungry pair — first contact comes to you */
     {id:'c5', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:6,y:11, maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c6', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:10,y:11,maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'t1', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:10,y:1, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3]},
-    {id:'t2', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:13,y:8, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3]},
-    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:15,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true},
+    {id:'c6', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:10,y:9, maxhp:14, atk:9, def:2, agi:6, mov:4},
+    /* THE GATE — holds the north crossing */
+    {id:'c1', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:6,y:2,  maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'gate', aggro:4},
+    {id:'c3', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:14,y:1, maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'gate', aggro:4},
+    /* THE MIRE — heals itself, strikes in an L */
+    {id:'w1', name:'MIRE WEAVER', spr:'weaver', cls:'Fauna · LASH', x:10,y:10, maxhp:14, atk:10, def:2, agi:6, mov:3, rng:[1,2], shape:'knight', guard:true, group:'mire', aggro:4},
+    {id:'c2', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:12,y:9, maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'mire', aggro:4},
+    {id:'h1', name:'SPORE TENDER', spr:'tender', cls:'Flora · MEND', x:12,y:10, maxhp:12, atk:4, def:1, agi:5, mov:3, heals:{pow:7,rng:[0,2]}, guard:true, group:'mire', aggro:4},
+    {id:'t1', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:7,y:1, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3], guard:true, group:'gate', aggro:5},
+    /* THE MAW'S COURT — it doesn't come for you. It waits. */
+    {id:'t2', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:13,y:8, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3], guard:true, group:'court', aggro:5},
+    {id:'h2', name:'SPORE TENDER', spr:'tender', cls:'Flora · MEND', x:14,y:6, maxhp:12, atk:4, def:1, agi:5, mov:3, heals:{pow:7,rng:[0,2]}, guard:true, group:'court', aggro:4},
+    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:16,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true, guard:true, group:'court', aggro:5},
   ],
   config:{ storm:false, reinforcements:false, bossPhase:false, explore:true },
   pois:[
@@ -5645,7 +5797,7 @@ const MISSION_SUMP={
        });
      }},
   ],
-  briefing:'The Eastern Sump — three of you, and the bog is not neutral. Lime pools STING (2 dmg at turn end). Black goo is bottomless. Thickets hide you (30% evade). Kill the Maw.',
+  briefing:'The Eastern Sump — three of you, and the bog is not neutral. Lime pools STING (2 dmg at turn end). Black goo is bottomless. Thickets hide you (30% evade). The sump hunts in POCKETS: most of it holds ground until you get close or draw blood — pick your fight, finish it, breathe, pick the next. TENDERS heal their pack: kill the nurse first. The WEAVER strikes in an L — where it can reach is not where you think. Kill the Maw.',
   intro:{
     who:'GUNNAR-7',
     lines:[
@@ -5836,10 +5988,12 @@ const MISSION_KR7={
     {id:'s2', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:12,y:8,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
     {id:'s3', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:11,y:11, maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
     {id:'s4', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:13,y:5,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
-    {id:'p1', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:2,  maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3]},
-    {id:'p2', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:10, maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3]},
-    {id:'b1', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:5, maxhp:24, atk:11, def:6, agi:4, mov:4},
-    {id:'b2', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:7, maxhp:24, atk:11, def:6, agi:4, mov:4},
+    /* the ridge guns and the wall of bruisers HOLD their claim — skiffs
+       harass, but the line only commits when you push it (AI doctrine) */
+    {id:'p1', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:2,  maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3], guard:true, group:'ridge', aggro:5},
+    {id:'p2', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:10, maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3], guard:true, group:'ridge', aggro:5},
+    {id:'b1', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:5, maxhp:24, atk:11, def:6, agi:4, mov:4, guard:true, group:'line', aggro:4},
+    {id:'b2', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:7, maxhp:24, atk:11, def:6, agi:4, mov:4, guard:true, group:'line', aggro:4},
     {id:'ov', name:'CAPT. VASH REEVE', spr:'overseer', cls:'Scrapfang · BOSS', x:16,y:6, maxhp:48, atk:12, def:6, agi:7, mov:4, rng:[1,2], boss:true},
   ],
   config:{

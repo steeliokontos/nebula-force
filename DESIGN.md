@@ -154,6 +154,21 @@ condition checked at the moment of promotion (e.g. item in inventory).
   drag to pan; tap-vs-drag threshold 12px.
 - Crit 8% ×1.5; damage = max(1, ATK−DEF) ± 10%.
 
+## Enemy AI doctrine (guard groups — Erik's rule)
+Shining Force fights are about ENGAGING, not being chased. Enemies belong to
+POCKETS: units flagged `guard:true` (with a `group` name and `aggro` radius)
+hold their ground until an ally strays inside the radius, anyone in the group
+takes damage (melee, spell, even a miss counts as engagement), or a rock
+falls on them — then the whole pocket commits, permanently. Holding guards
+still strike anything that wanders into their reach, and holding tenders
+keep their pack healed. Every map should mix: one or two free hunters for
+early pressure, then staged pockets with mixed comps (melee + reach + a
+healer) so the player picks fights deliberately. Reach variety: `rng[min,max]`
+manhattan, `shape:'knight'` (L-strikes), `shape:'cross'` (straight lines
+only). Enemy healers (`heals:{pow,rng}`) make "kill the nurse first" a real
+decision. Built in battle.js (aggroGroup/inStrike/doHealAI); sump + kr7 are
+the reference configs.
+
 ## Art & tone
 16×16-ish text-grid pixel sprites, Shining Force blue gradient windows
 (#3448b8→#16206e) with white/ink borders, gold accent #ffd23a, teal Precursor

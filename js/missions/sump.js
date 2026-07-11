@@ -5,7 +5,12 @@
    spore thickets are heavy cover.
    Legend: 0 crater ground · 1 crater rim · 8 spore thicket
    6 lime sump (cost 2, stings) · 7 black goo (impassable) ═══ */
-SPRITES.crawler=SPRITES.gloop.map(r=>r.replace(/e/g,'e').replace(/E/g,'D'));
+/* the crawler is NOT the friendly town goo — spined, violet, wrong */
+SPRITES.crawler=["................","..k...k...k.....",".kPk.kPk.kPk....","..kppppppppk....",".kpppppppppPk...","kpprrpprrpppPk..","kpprrpprrpppPk..",".kppppppppppXk..","..kpXppXppXk....","..kXk.kXk.kXk...","..kk...kk..kk...","................"];
+/* spore tender — the sump's pale field-medic */
+SPRITES.tender=["................",".....kkkkkk.....","...kkttttttkk...","..kttettetttTk..","..ktttttttttTk..","...kTTTTTTTTk...","....kwwvwwk.....","....kwwvwwk.....","...kwwwvwwwk....","...kewwwwwek....","....kkkkkkk.....","................"];
+/* mire weaver — a lasher that strikes in an L, tongue first */
+SPRITES.weaver=["................","....kkk.........","...khhhk.kkkk...","..khhrhhkhhhhk..",".krrkhhhhhhhhhk.","..k.khyyhhTThhk.","....khhhhhhhhhk.",".....khhkkhhk...","....khhk..khhk..","....kkk....kkk.."];
 SPRITES.spitter=SPRITES.drone.map(r=>r.replace(/g/g,'E').replace(/G/g,'D').replace(/r/g,'e'));
 SPRITES.maw=SPRITES.rig.map(r=>r.replace(/g/g,'D').replace(/G/g,'E').replace(/o/g,'e').replace(/O/g,'E'));
 
@@ -30,16 +35,26 @@ const MISSION_SUMP={
     "000000000000000000",
   ],
   deploy:{ dax:[1,6], hale:[1,8], gunnar:[2,7] },
+  /* AI doctrine (Erik): the sump fights in POCKETS. Two hungry crawlers
+     come to you; everything else holds its ground until you stray into its
+     aggro radius, hurt one of its pack, or hit it from range — then the
+     whole pocket commits. Engage on your terms. */
   enemies:[
-    {id:'c1', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:7,y:2,  maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c2', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:8,y:9,  maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c3', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:11,y:4, maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c4', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:12,y:10,maxhp:14, atk:9, def:2, agi:6, mov:4},
+    /* the hungry pair — first contact comes to you */
     {id:'c5', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:6,y:11, maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'c6', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:10,y:11,maxhp:14, atk:9, def:2, agi:6, mov:4},
-    {id:'t1', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:10,y:1, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3]},
-    {id:'t2', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:13,y:8, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3]},
-    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:15,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true},
+    {id:'c6', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:10,y:9, maxhp:14, atk:9, def:2, agi:6, mov:4},
+    /* THE GATE — holds the north crossing */
+    {id:'c1', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:6,y:2,  maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'gate', aggro:4},
+    {id:'c3', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:14,y:1, maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'gate', aggro:4},
+    /* THE MIRE — heals itself, strikes in an L */
+    {id:'w1', name:'MIRE WEAVER', spr:'weaver', cls:'Fauna · LASH', x:10,y:10, maxhp:14, atk:10, def:2, agi:6, mov:3, rng:[1,2], shape:'knight', guard:true, group:'mire', aggro:4},
+    {id:'c2', name:'SUMP CRAWLER', spr:'crawler', cls:'Fauna', x:12,y:9, maxhp:14, atk:9, def:2, agi:6, mov:4, guard:true, group:'mire', aggro:4},
+    {id:'h1', name:'SPORE TENDER', spr:'tender', cls:'Flora · MEND', x:12,y:10, maxhp:12, atk:4, def:1, agi:5, mov:3, heals:{pow:7,rng:[0,2]}, guard:true, group:'mire', aggro:4},
+    {id:'t1', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:7,y:1, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3], guard:true, group:'gate', aggro:5},
+    /* THE MAW'S COURT — it doesn't come for you. It waits. */
+    {id:'t2', name:'SPORE SPITTER', spr:'spitter', cls:'Flora · ARTY', x:13,y:8, maxhp:10, atk:8, def:1, agi:5, mov:3, rng:[2,3], guard:true, group:'court', aggro:5},
+    {id:'h2', name:'SPORE TENDER', spr:'tender', cls:'Flora · MEND', x:14,y:6, maxhp:12, atk:4, def:1, agi:5, mov:3, heals:{pow:7,rng:[0,2]}, guard:true, group:'court', aggro:4},
+    {id:'mw', name:'THE SUMP MAW', spr:'maw', cls:'Apex · BOSS', x:16,y:5, maxhp:36, atk:11, def:4, agi:4, mov:3, rng:[1,1], boss:true, guard:true, group:'court', aggro:5},
   ],
   config:{ storm:false, reinforcements:false, bossPhase:false, explore:true },
   pois:[
@@ -93,7 +108,7 @@ const MISSION_SUMP={
        });
      }},
   ],
-  briefing:'The Eastern Sump — three of you, and the bog is not neutral. Lime pools STING (2 dmg at turn end). Black goo is bottomless. Thickets hide you (30% evade). Kill the Maw.',
+  briefing:'The Eastern Sump — three of you, and the bog is not neutral. Lime pools STING (2 dmg at turn end). Black goo is bottomless. Thickets hide you (30% evade). The sump hunts in POCKETS: most of it holds ground until you get close or draw blood — pick your fight, finish it, breathe, pick the next. TENDERS heal their pack: kill the nurse first. The WEAVER strikes in an L — where it can reach is not where you think. Kill the Maw.',
   intro:{
     who:'GUNNAR-7',
     lines:[

@@ -32,6 +32,7 @@ function typeLine(){
   },16);
 }
 function advanceDialog(){
+  if(!dlgActive) return;
   if(dlgChoices.classList.contains('show')) return;
   if(typing){
     clearInterval(typeTimer);
