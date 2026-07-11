@@ -201,6 +201,7 @@ let bfade=1, bsmoke=[];
 let warnTiles=[], impactRound=-1, stormAnnounced=false;
 let reinforced=false, phase2=false, phasePending=false, kharnRushPending=false;
 let casualties=0, cageSprung=false;
+let mapEvents=[], battleLoots=[], eventFollowups=[];
 const bkey=(x,y)=>y*BCOLS+x;
 const inB=(x,y)=>x>=0&&y>=0&&x<BCOLS&&y<BROWS;
 const occ=(x,y)=>units.find(u=>u.alive&&u.x===x&&u.y===y);
@@ -1213,9 +1214,75 @@ function showOverlayRaw(title, sub, lose){
   document.getElementById('ov-sub').textContent=sub;
   ov.classList.add('show');
 }
+/* ═══ MAP EVENTS — tripwire zones / round timers that reshape the field:
+   cave-ins, floods, breaches. Bad news that sometimes opens a door — and
+   the door doesn't stay open (config.events, see shaft9.js). ═══ */
+async function fireMapEvent(e){
+  e.fired=true;
+  bstate='event'; renderActions();
+  if(e.focus) camFocus(e.focus[0]*BT+BT/2, e.focus[1]*BT+BT/2);
+  if(e.banner) pushBanner(e.banner, e.color||'#ff9a2a');
+  if(!fastMode) await wait(550);
+  for(const [x,y,t] of (e.tiles||[])){
+    impacts.push({type:'boom', x:x*BT+BT/2, y:y*BT+BT/2, t:0});
+    bGrid[y][x]=t;
+    const u=occ(x,y);
+    if(u&&(e.damage||0)>0){
+      u.hp=Math.max(0,u.hp-e.damage); u.flash=12;
+      floatText(x,y,e.damage,'#ff7088',true);
+      log(`${tag(u)} is caught in it — <b>${e.damage}</b> dmg`);
+      aggroGroup(u,true);
+      if(u.hp<=0&&u.alive) await killUnit(u,null);
+    }
+  }
+  if(e.log) log(`<span class="ev">${e.log}</span>`);
+  if(e.loot) battleLoots.push(Object.assign({},e.loot));
+  if(e.then) eventFollowups.push(Object.assign({onRound:round+(e.then.afterRounds||2)},e.then));
+  if(!fastMode) await wait(800);
+}
+async function checkZoneEvents(){
+  for(const e of mapEvents){
+    if(e.fired||!e.trigger||!e.trigger.zone) continue;
+    const z=e.trigger.zone;
+    if(aliveOf('ally').some(t=>t.x>=z.x0&&t.x<=z.x1&&t.y>=z.y0&&t.y<=z.y1)) await fireMapEvent(e);
+  }
+}
+async function checkRoundEvents(){
+  for(const e of mapEvents){
+    if(!e.fired&&e.trigger&&e.trigger.round&&round>=e.trigger.round) await fireMapEvent(e);
+  }
+  for(const f of eventFollowups.filter(f2=>!f2.done&&round>=f2.onRound)){
+    f.done=true;
+    if(f.banner) pushBanner(f.banner, f.color||'#ff9a2a');
+    for(const [x,y,t] of (f.tiles||[])){
+      impacts.push({type:'boom', x:x*BT+BT/2, y:y*BT+BT/2, t:0});
+      bGrid[y][x]=t;
+      const li=battleLoots.findIndex(l=>l.at[0]===x&&l.at[1]===y);
+      if(li>=0){ battleLoots.splice(li,1); if(f.lostLog) log(`<span class="e">${f.lostLog}</span>`); }
+    }
+    if(f.log) log(`<span class="ev">${f.log}</span>`);
+    if(!fastMode) await wait(500);
+  }
+  eventFollowups=eventFollowups.filter(f=>!f.done);
+}
+function collectLoot(u){
+  const li=battleLoots.findIndex(l=>l.at[0]===u.x&&l.at[1]===u.y);
+  if(li<0) return;
+  const L=battleLoots.splice(li,1)[0];
+  pushBanner('✦ '+(L.name||'RECOVERED')+' ✦','#ffd23a');
+  impacts.push({type:'ring', x:u.x*BT+BT/2, y:u.y*BT+BT/2, t:0, color:'#ffd23a', max:BT*1.6});
+  if(L.weapon){
+    equippedWeapons[L.weapon.id]={name:L.weapon.name, atk:L.weapon.atk, strongVs:L.weapon.strongVs};
+    const w=units.find(u2=>u2.id===L.weapon.id&&u2.alive!==undefined);
+    /* raise base too so victory harvest doesn't double-count the weapon */
+    if(w){ w.atk+=L.weapon.atk; w.base.atk+=L.weapon.atk; w.weapon=equippedWeapons[L.weapon.id]; if(w===cur) renderCard(w); }
+  } else if(L.item) inventory.push(L.item);
+  if(L.msg) log(`<span class="p">${L.msg}</span>`);
+}
 async function endTurn(){
   moveSet.clear(); targetSet.clear(); specialSet.clear();
   pendingAct=null; pendingSpell=null;
+  if(cur&&cur.alive&&cur.side==='ally') collectLoot(cur);
   if(cur && cur.alive && !cur.fly && TERRAIN[bGrid[cur.y][cur.x]].hazard){
     const h2=TERRAIN[bGrid[cur.y][cur.x]].hazard;
     cur.hp=Math.max(0,cur.hp-h2);
@@ -1227,6 +1294,8 @@ async function endTurn(){
   }
   if(gameOver) return;
   if(checkEnd()) return;
+  await checkZoneEvents();
+  if(gameOver||checkEnd()) return;
   if(phasePending){ await bossPhaseEvent(); if(checkEnd()) return; }
   if(!reinforced && mission.config.reinforcements){
     const rc=mission.config.reinforcements;
@@ -1253,6 +1322,8 @@ async function nextTurn(){
       battleWon(); return;
     }
     log(`<span class="round">— ROUND ${round} —</span>`);
+    await checkRoundEvents();
+    if(gameOver||checkEnd()) return;
     if(impactRound===round){
       await resolveAsteroids();
       if(gameOver||checkEnd()) return;
@@ -1707,6 +1778,19 @@ function drawBattle(now,dt){
     if(cageSprung){ cx.fillStyle='rgba(255,210,58,.85)'; cx.fillRect(cx2+BT-14,cy2+BT/2,10,3); }
     else if(((now/1200)|0)%3===0){ cx.fillStyle='#e83048'; cx.fillRect(cx2+BT-10,cy2+8,4,4); }
   }
+  for(const L of battleLoots){
+    const lx=L.at[0]*BT, ly=L.at[1]*BT;
+    const pulse=(Math.sin(now/240)+1)/2;
+    cx.strokeStyle=`rgba(255,210,58,${.35+.45*pulse})`;
+    cx.lineWidth=2;
+    cx.beginPath(); cx.arc(lx+BT/2, ly+BT/2, 14+pulse*5, 0, 7); cx.stroke();
+    cx.lineWidth=1;
+    cx.fillStyle='#5e4626'; cx.fillRect(lx+13,ly+18,22,16);
+    cx.fillStyle='#8a6a3a'; cx.fillRect(lx+13,ly+14,22,7);
+    cx.fillStyle='#b08a4e'; cx.fillRect(lx+13,ly+14,22,2);
+    cx.fillStyle='#ffd23a'; cx.fillRect(lx+22,ly+19,4,5);
+    if(((now/300)|0)%3===0){ cx.fillStyle='#fff'; cx.fillRect(lx+16+((now/70)|0)%14, ly+16, 2, 2); }
+  }
   const draw=suppressBattleUnits?[]:[...units].filter(u=>u.alive).sort((a,b)=>(a.walk?a.walk.y:a.y*BT)-(b.walk?b.walk.y:b.y*BT));
   for(let i=0;i<draw.length;i++){
     const u=draw[i];
@@ -1880,6 +1964,8 @@ function startBattle(m){
   warnTiles=[]; impactRound=-1; stormAnnounced=false;
   reinforced=false; phase2=false; phasePending=false; kharnRushPending=false;
   casualties=0; cageSprung=false; scene=null;
+  mapEvents=(m.config.events||[]).map(e=>Object.assign({fired:false},e));
+  battleLoots=[]; eventFollowups=[];
   rosterInit();
   document.getElementById('log').innerHTML='';
   renderCard(null); renderActions();

@@ -47,8 +47,26 @@ const MISSION_SHAFT9={
       unit:{name:'GNASHER VERMIN', spr:'vermin', cls:'Vermin', maxhp:13, atk:9, def:2, agi:7, mov:5},
       bark:'The tunnels SEETHE —'},
     bossPhase:false,
+    /* MAP EVENT — the cave-in: pushing into the mid-gallery brings the
+       roof down (6 dmg where it lands, fresh rubble)… and the slide tears
+       the old pit wall open. Something glints down there. Two rounds
+       before the mountain finishes its thought. */
+    events:[
+      {id:'cavein',
+       trigger:{zone:{x0:7,y0:0,x1:8,y1:12}},
+       banner:'▼ CAVE-IN ▼', color:'#ff9a2a', focus:[8,6], damage:6,
+       tiles:[[6,2,1],[7,3,1],[5,9,1],[8,5,0],[8,6,0],[8,7,0]],
+       log:'The tunnel roof lets go — rubble hammers the gallery! When the dust thins, the slide has torn the old pit wall OPEN. Down in the breach, something GLINTS, half-buried. The mountain will not leave it uncovered for long.',
+       loot:{at:[8,7], name:'SEAM-GLASS FANG',
+             weapon:{id:'kharn', name:'SEAM-GLASS FANG', atk:2, strongVs:'Machine'},
+             msg:'✦ Wrenched from the breach: a SEAM-GLASS FANG — mine-glass knapped into a blade, still warm from the deep seam. (Kharn: ATK +2, keen against Machines.)'},
+       then:{afterRounds:2, tiles:[[8,5,1],[8,6,1],[8,7,1]],
+             banner:'▼ THE SLIDE SETTLES ▼',
+             log:'The mountain finishes its thought — rubble reclaims the breach.',
+             lostLog:'Whatever glinted down there is buried for good.'}},
+    ],
   },
-  briefing:'Shaft Nine — the deep machines woke up wrong. Narrow tunnels: plug them with Gunnar. Vermin keep coming from the dark until EXCAVATOR PRIME dies. Gas vents burn (3 dmg).',
+  briefing:'Shaft Nine — the deep machines woke up wrong. Narrow tunnels: plug them with Gunnar. Vermin keep coming from the dark until EXCAVATOR PRIME dies. Gas vents burn (3 dmg). And the roof over the mid-gallery does not sound structural.',
   intro:{
     who:'KHARN',
     lines:[

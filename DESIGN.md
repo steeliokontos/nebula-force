@@ -172,6 +172,13 @@ THE SPICE OF LIFE: not every battle groups up. The per-battle question is
   the safe square isn't where you think), `shape:'cross'` (straight lines).
 - **Enemy healers** — `heals:{pow,rng}`: "kill the nurse first" becomes a
   real decision. Put one in a pocket, not in every pocket.
+- **Map events** — `config.events`: tripwire zones or round timers that
+  reshape the field mid-battle (cave-ins, floods, breaches): terrain
+  rewrites with damage where it lands, mini-cinematic presentation (camera
+  pull, banner, booms), and optionally a LOOT WINDOW — a chest the slide
+  uncovers that a follow-up event re-buries N rounds later. Miss it and
+  it's gone forever (missable-cruelty doctrine, battlefield edition).
+  Reference: shaft9.js cave-in (Seam-Glass Fang, 2-round window).
 Pick two or three tools per battle, never the same two as the last battle.
 Current spread: Sump = 2 hunters + 3 pockets w/ healer + knight-shape; KR-7 =
 hunting skiffs/boss + holding artillery/line; Shaft Nine = all hunters (the
