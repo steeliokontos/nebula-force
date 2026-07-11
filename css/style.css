@@ -223,7 +223,7 @@ body.mode-return #ui-battle, body.mode-return #ui-town{display:none;}
   touch-action:pan-y;
 }
 #log p{margin-bottom:1px;}
-#log .a{color:var(--ally);} #log .e{color:var(--enemy);}
+#log .a{color:var(--ally);} #log .e{color:var(--enemy);} #log .n,.n{color:#48e060;}
 #log .p{color:var(--accent);} #log .d{color:var(--dim);}
 #log .s{color:var(--special);}
 #log .ev{color:#48e0d0;}

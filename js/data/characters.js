@@ -27,9 +27,14 @@ const CREW_DATA=[
    learn:{5:{name:'AURA', cost:5, rng:[0,0], kind:'aura', pow:7},
           8:{name:'MEND II', cost:5, rng:[0,2], kind:'heal', pow:16}},
    special:{name:'CRYO-CALL', type:'cryo', desc:'call one fallen ally back at half HP'}},
+  /* Act 2 — joins at Ceril's Crossing (ACT2.md §5). Off-tank: HP/DEF between
+     Gunnar and Kharn; a wall with opinions, not a duelist. */
+  {id:'hob', name:'HOB', spr:'hob', cls:'Dock wrangler · DRVR',
+   maxhp:29, atk:9, def:7, agi:7, mov:5,
+   special:{name:'JOLT PROD', type:'jolt', desc:'stun one adjacent enemy — it loses its next turn'}},
 ];
-const CREW=['Dax','Kharn','Gunnar-7','Jet','Vesper','Sister Hale'];
-const ID2CREW={dax:'Dax',kharn:'Kharn',gunnar:'Gunnar-7',jet:'Jet',vesper:'Vesper',hale:'Sister Hale'};
+const CREW=['Dax','Kharn','Gunnar-7','Jet','Vesper','Sister Hale','Hob'];
+const ID2CREW={dax:'Dax',kharn:'Kharn',gunnar:'Gunnar-7',jet:'Jet',vesper:'Vesper',hale:'Sister Hale',hob:'Hob'};
 
 /* ═══ persistent progression layer (survives between battles this session) ═══ */
 const equippedWeapons={};          /* id → {name, atk, strongVs} */

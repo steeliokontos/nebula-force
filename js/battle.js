@@ -154,30 +154,39 @@ function mkUnit(o){
   return u;
 }
 let units=[];
+function buildCrewUnit(cd,x,y){
+  const u=mkUnit({
+    id:cd.id, name:cd.name, spr:cd.spr, cls:cd.cls, side:'ally',
+    x, y,
+    maxhp:cd.maxhp, atk:cd.atk, def:cd.def, agi:cd.agi, mov:cd.mov,
+    fly:!!cd.fly, maxmp:cd.maxmp||0,
+    spells:(cd.spells||[]).map(s2=>Object.assign({},s2)),
+    learn:cd.learn||{},
+    special:cd.special?Object.assign({used:false},cd.special):null,
+  });
+  const bn=ID2CREW[u.id];
+  if(bn&&hpBonus[bn]){ u.maxhp+=hpBonus[bn]; u.hp=u.maxhp; u.base.maxhp=u.maxhp; }
+  if(bn&&defBonus[bn]){ u.def+=defBonus[bn]; u.base.def=u.def; }
+  if(bn&&atkBonus[bn]){ u.atk+=atkBonus[bn]; u.base.atk=u.atk; }
+  const wpn=equippedWeapons[u.id];
+  if(wpn){ u.atk+=wpn.atk; u.base.atk=u.atk; u.weapon=wpn; }
+  applyProgress(u); /* levels/XP/spells carried from past victories (save.js) */
+  return u;
+}
 function rosterInit(){
   units=[];
   for(const cd of CREW_DATA){
     const pos=mission.deploy[cd.id];
     if(!pos) continue;
     if(lostCrew.has(cd.id)) continue; /* missed forever */
-    const u=mkUnit({
-      id:cd.id, name:cd.name, spr:cd.spr, cls:cd.cls, side:'ally',
-      x:pos[0], y:pos[1],
-      maxhp:cd.maxhp, atk:cd.atk, def:cd.def, agi:cd.agi, mov:cd.mov,
-      fly:!!cd.fly, maxmp:cd.maxmp||0,
-      spells:(cd.spells||[]).map(s2=>Object.assign({},s2)),
-      learn:cd.learn||{},
-      special:cd.special?Object.assign({used:false},cd.special):null,
-    });
-    const bn=ID2CREW[u.id];
-    if(bn&&hpBonus[bn]){ u.maxhp+=hpBonus[bn]; u.hp=u.maxhp; u.base.maxhp=u.maxhp; }
-    const wpn=equippedWeapons[u.id];
-    if(wpn){ u.atk+=wpn.atk; u.base.atk=u.atk; u.weapon=wpn; }
-    applyProgress(u); /* levels/XP/spells carried from past victories (save.js) */
-    units.push(u);
+    units.push(buildCrewUnit(cd,pos[0],pos[1]));
   }
   for(const e of mission.enemies){
     units.push(mkUnit(Object.assign({side:'enemy'},e)));
+  }
+  /* green units — neutral rescue NPCs (ACT2.md engine need #1) */
+  for(const n of (mission.npcs||[])){
+    units.push(mkUnit(Object.assign({side:'npc', atk:0, rng:[1,1]}, n)));
   }
 }
 
@@ -190,7 +199,7 @@ let floaters=[], banners=[], impacts=[], gameOver=false, fastMode=false;
 let bfade=1, bsmoke=[];
 let warnTiles=[], impactRound=-1, stormAnnounced=false;
 let reinforced=false, phase2=false, phasePending=false, kharnRushPending=false;
-let casualties=0;
+let casualties=0, cageSprung=false;
 const bkey=(x,y)=>y*BCOLS+x;
 const inB=(x,y)=>x>=0&&y>=0&&x<BCOLS&&y<BROWS;
 const occ=(x,y)=>units.find(u=>u.alive&&u.x===x&&u.y===y);
@@ -205,7 +214,7 @@ function log(html){
   el.insertAdjacentHTML('beforeend', `<p>${html}</p>`);
   el.scrollTop=el.scrollHeight;
 }
-const tag=u=>`<span class="${u.side==='ally'?'a':'e'}">${u.name}</span>`;
+const tag=u=>`<span class="${u.side==='ally'?'a':u.side==='npc'?'n':'e'}">${u.name}</span>`;
 function floatText(x,y,text,color,big){
   floaters.push({x:x*BT+BT/2, y:y*BT+8, text, color, age:0, big:!!big});
 }
@@ -226,7 +235,7 @@ function spriteCanvas(name, size, big){
 function renderCard(u){
   const c=document.getElementById('card');
   if(!u){c.innerHTML='<span style="color:var(--dim);font-size:10px">Tap a unit to inspect · drag the map to look around</span>'; return;}
-  const col=u.side==='ally'?'var(--ally)':'var(--enemy)';
+  const col=u.side==='ally'?'var(--ally)':u.side==='npc'?'#48e060':'var(--enemy)';
   let bars=`<div class="barlabel"><span>HP</span><span>${u.hp}/${u.maxhp}</span></div>
             <div class="bar hp"><i style="width:${u.hp/u.maxhp*100}%"></i></div>`;
   if(u.maxmp>0){
@@ -290,6 +299,13 @@ function renderActions(){
       const bI=document.createElement('button'); bI.textContent='ITEM';
       bI.onclick=()=>{bstate='item'; renderActions();};
       a.appendChild(bI);
+    }
+    const cg=mission.config.cage;
+    if(cg&&!cageSprung&&cur&&cur.side==='ally'&&Math.abs(cur.x-cg.at[0])+Math.abs(cur.y-cg.at[1])===1){
+      const bG=document.createElement('button'); bG.className='special';
+      bG.textContent=cg.label||'SPRING THE CAGE';
+      bG.onclick=springCage;
+      a.appendChild(bG);
     }
     const bW=document.createElement('button'); bW.textContent='WAIT';
     bW.onclick=()=>{moveSet.clear(); endTurn();};
@@ -486,7 +502,10 @@ function calcDamage(att,dfn,{ignoreDef=false,bonus=0,mult=1}={}){
 function xpFromDmg(dmg){ return Math.min(10, Math.max(2, Math.round(dmg*0.9))); }
 function applyDeath(u,credit){
   u.alive=false; u.bulwark=false;
-  log(`${tag(u)} is destroyed!`);
+  if(u.side==='npc'){
+    log(`<span class="e">${u.name} is cut down.</span>`);
+    if(mission.onNpcDeath) mission.onNpcDeath(u);
+  } else log(`${tag(u)} is destroyed!`);
   if(u.side==='ally') casualties++;
   if(credit&&credit.side==='ally') giveXP(credit,10);
   if(u.boss&&!gameOver){
@@ -641,7 +660,7 @@ async function unlunge(u,ms){
 }
 async function doAttack(att,dfn,opts={},label,cutin){
   bstate='anim'; renderActions();
-  if(fastMode){ await strike(att,dfn,opts,label); return; }
+  if(fastMode||att.side==='npc'||dfn.side==='npc'){ await strike(att,dfn,opts,label); return; }
   scene=newScene(att,dfn);
   await sceneIn();
   await wait(280);
@@ -877,6 +896,7 @@ function drawScene(now,dt){
 function useSpecial(){
   const sp2=cur.special;
   if(sp2.type==='riftbreak'){ startTarget('riftbreak'); return; }
+  if(sp2.type==='jolt'){ startTarget('jolt'); return; }
   if(sp2.type==='rush'){
     sp2.used=true; kharnRushPending=true;
     pushBanner('✦ LUNAR RUSH ✦','#b47ae8');
@@ -908,6 +928,24 @@ function useSpecial(){
     bstate='swap'; renderActions(); return;
   }
   if(sp2.type==='cryo'){ bstate='cryo'; renderActions(); return; }
+}
+/* — the impound cage: one lever, one price (Tithe Night's twist) — */
+async function springCage(){
+  const cg=mission.config.cage;
+  if(!cg||cageSprung) return;
+  cageSprung=true;
+  bstate='anim'; renderActions();
+  const cd=CREW_DATA.find(c=>c.id===cg.unit);
+  const u=buildCrewUnit(cd,cg.deployAt[0],cg.deployAt[1]);
+  units.push(u);
+  queue.push(u);
+  impacts.push({type:'ring', x:cg.at[0]*BT+BT/2, y:cg.at[1]*BT+BT/2, t:0, color:'#ffd23a', max:BT*2});
+  pushBanner('▸ '+u.name+' JOINS THE LINE ◂','#48e060');
+  log(`<span class="s">✦ The cage lock shears. ${tag(u)}: "RELEASED. I'll be filing my objections in PERSON."</span>`);
+  focusUnit(u);
+  if(!fastMode) await wait(700);
+  moveSet.clear();
+  await endTurn();
 }
 async function doCryo(fallen){
   cur.special.used=true;
@@ -1203,6 +1241,12 @@ async function nextTurn(){
   while(qi<queue.length && !queue[qi].alive) qi++;
   if(qi>=queue.length){
     round++;
+    const obj=mission.config.objective;
+    if(obj&&obj.type==='survive'&&round>obj.rounds){
+      pushBanner(obj.banner||'▸ HELD ◂','#48e060');
+      if(obj.winLog) log(`<span class="ev">${obj.winLog}</span>`);
+      battleWon(); return;
+    }
     log(`<span class="round">— ROUND ${round} —</span>`);
     if(impactRound===round){
       await resolveAsteroids();
@@ -1212,6 +1256,12 @@ async function nextTurn(){
   }
   cur=queue[qi];
   if(!cur.alive){ qi++; nextTurn(); return; }
+  if(cur.stunned){
+    cur.stunned=false;
+    floatText(cur.x,cur.y,'STUNNED','#ffd23a');
+    log(`${tag(cur)} is STUNNED — its turn fizzles out.`);
+    qi++; nextTurn(); return;
+  }
   if(cur.bulwark){ cur.bulwark=false; log(`${tag(cur)} relaxes out of BULWARK stance.`); }
   if(cur.regen>0&&cur.hp<cur.maxhp){
     cur.hp=Math.min(cur.maxhp,cur.hp+cur.regen);
@@ -1223,10 +1273,44 @@ async function nextTurn(){
   if(cur.side==='enemy'){
     bstate='enemy'; renderActions();
     await aiTurn(cur);
+  } else if(cur.side==='npc'){
+    bstate='enemy'; renderActions();
+    await npcTurn(cur);
   } else {
     moveSet=reachable(cur);
     bstate='move'; renderActions();
   }
+}
+/* — green units: hold one round, then run for the safe zone — */
+async function npcTurn(u){
+  await wait(fastMode?100:320);
+  if(round<=1){
+    log(`<span class="n">${u.name}</span> freezes where she stands.`);
+    await endTurn(); return;
+  }
+  const goal=u.fleeTo||{x:2,y:7};
+  const reach=reachable(u);
+  reach.add(bkey(u.x,u.y));
+  let bt=null;
+  for(const k of reach){
+    const x=k%BCOLS, y=(k/BCOLS)|0;
+    const d=Math.abs(goal.x-x)+Math.abs(goal.y-y);
+    const s2=-d*3+tilePenalty(u,x,y);
+    if(!bt||s2>bt.s2) bt={x,y,s2};
+  }
+  if(bt&&(bt.x!==u.x||bt.y!==u.y)){
+    log(`<span class="n">${u.name}</span> runs for the pads!`);
+    await walkUnit(u,bt.x,bt.y);
+  }
+  const sz=u.safe;
+  if(sz && u.x<=sz.x && u.y>=sz.y0 && u.y<=sz.y1){
+    u.alive=false; u.rescued=true;
+    impacts.push({type:'ring', x:u.x*BT+BT/2, y:u.y*BT+BT/2, t:0, color:'#48e060', max:BT*1.6});
+    pushBanner('▸ '+u.name+' IS SAFE ◂','#48e060');
+    if(u.safeBark) log(`<span class="n">${u.safeBark}</span>`);
+    if(mission.onNpcRescued) mission.onNpcRescued(u);
+  }
+  await endTurn();
 }
 
 /* — AI: kills first, then the wounded, then the squishy — */
@@ -1254,12 +1338,13 @@ async function aiTurn(u){
   let best=null;
   for(const k of reach){
     const x=k%BCOLS, y=(k/BCOLS)|0;
-    for(const t of aliveOf('ally')){
+    for(const t of aliveOf('ally').concat(aliveOf('npc'))){
       const d=Math.abs(t.x-x)+Math.abs(t.y-y);
       if(d<u.rng[0]||d>u.rng[1]) continue;
       if(tauntOn&&gunnarHittable&&t.id!=='gunnar') continue;
       const est=Math.max(1,u.atk-effDef(t));
       let score=(est>=t.hp?900:0);
+      if(t.side==='npc') score+=(u.hunter?40:10); /* greens are hunted — visibly, never scripted */
       score+=(34-t.hp);
       if(t.maxmp>0) score+=22;
       if(effDef(t)<=4) score+=8;
@@ -1273,10 +1358,11 @@ async function aiTurn(u){
     await walkUnit(u,best.x,best.y);
     await doAttack(u,best.t);
   } else {
-    const foes=aliveOf('ally');
+    const foes=aliveOf('ally').concat(aliveOf('npc'));
     let target=null, tscore=-1e9;
     for(const f of foes){
       let s2=-mdist(u,f)*2.2 + (f.maxmp>0?8:0) + (34-f.hp)*0.35;
+      if(f.side==='npc') s2+=(u.hunter?40:10);
       if(tauntOn&&f.id!=='gunnar') s2-=100;
       if(s2>tscore){tscore=s2; target=f;}
     }
@@ -1301,6 +1387,7 @@ function startTarget(act,spell){
   targetSet.clear();
   let list;
   if(act==='attack'||act==='riftbreak') list=targetsInRange(cur,cur.rng,'enemy');
+  else if(act==='jolt') list=targetsInRange(cur,[1,1],'enemy');
   else list=spellTargets(cur,spell);
   if(spell&&spell.kind==='aura'){
     moveSet.clear();
@@ -1416,6 +1503,15 @@ function battleTap(clientX,clientY){
           if(fastMode) pushBanner('✦ RIFTBREAK ✦','#b47ae8');
           await doAttack(cur,tgt,{ignoreDef:true,bonus:4,sure:true,fxColor:'#7ce8ff'},'rift-cuts','RIFTBREAK');
         }
+        else if(act==='jolt'){
+          cur.special.used=true;
+          tgt.stunned=true;
+          pushBanner('✦ JOLT PROD ✦','#b47ae8');
+          impacts.push({type:'ring', x:tgt.x*BT+BT/2, y:tgt.y*BT+BT/2, t:0, color:'#ffd23a', max:BT*1.2});
+          floatText(tgt.x,tgt.y,'STUN','#ffd23a',true);
+          log(`<span class="s">✦ ${tag(cur)} jams the prod home — ${tag(tgt)} locks up. That one. Not yet.</span>`);
+          if(!fastMode) await wait(500);
+        }
         else await doSpell(cur,tgt,spell);
         await endTurn();
       })();
@@ -1509,6 +1605,20 @@ function drawBattle(now,dt){
   if(!suppressBattleUnits&&mission&&mission.pois&&(bstate==='explore'||bstate==='exploreAnim')){
     for(const p of mission.pois) if(p.drawPoi) p.drawPoi(cx,p,now);
   }
+  const cg2=mission.config.cage;
+  if(cg2){
+    const cx2=cg2.at[0]*BT, cy2=cg2.at[1]*BT;
+    cx.fillStyle='#22283a'; cx.fillRect(cx2+3,cy2+3,BT-6,BT-6);
+    if(!cageSprung){
+      const cd2=CREW_DATA.find(c=>c.id===cg2.unit);
+      if(cd2) drawSprite(cx, cd2.spr, cx2+BT/2, cy2+BT-6, 2, ((now/2400)|0)%2===0, 0, .92);
+    }
+    cx.fillStyle='#98a0b4';
+    for(let bx2=cx2+5;bx2<cx2+BT-4;bx2+=8) cx.fillRect(bx2,cy2+3,2,BT-6);
+    cx.fillStyle='#b8c0d4'; cx.fillRect(cx2+3,cy2+3,BT-6,2);
+    if(cageSprung){ cx.fillStyle='rgba(255,210,58,.85)'; cx.fillRect(cx2+BT-14,cy2+BT/2,10,3); }
+    else if(((now/1200)|0)%3===0){ cx.fillStyle='#e83048'; cx.fillRect(cx2+BT-10,cy2+8,4,4); }
+  }
   const draw=suppressBattleUnits?[]:[...units].filter(u=>u.alive).sort((a,b)=>(a.walk?a.walk.y:a.y*BT)-(b.walk?b.walk.y:b.y*BT));
   for(let i=0;i<draw.length;i++){
     const u=draw[i];
@@ -1523,6 +1633,13 @@ function drawBattle(now,dt){
       cx.strokeStyle=`rgba(255,210,58,${.5+.4*pulse})`;
       cx.lineWidth=2.5;
       cx.beginPath(); cx.ellipse(px2,fy,16,6,0,0,7); cx.stroke();
+      cx.lineWidth=1;
+    }
+    if(u.side==='npc'){
+      const pulse=(Math.sin(now/300)+1)/2;
+      cx.strokeStyle=`rgba(72,224,96,${.45+.35*pulse})`;
+      cx.lineWidth=2;
+      cx.beginPath(); cx.ellipse(px2,fy,15,5.5,0,0,7); cx.stroke();
       cx.lineWidth=1;
     }
     if(u.bulwark){
@@ -1543,6 +1660,10 @@ function drawBattle(now,dt){
     cx.fillStyle=u.hp/u.maxhp>.4?'#48e060':'#ffd23a';
     if(u.hp/u.maxhp<=.2) cx.fillStyle='#ff5470';
     cx.fillRect(px2-w/2,fy+4,hpw,3);
+  }
+  if(mission.config.night){
+    cx.fillStyle='rgba(8,10,44,.30)';
+    cx.fillRect(ox,oy,cv.width,cv.height);
   }
   for(const f of impacts){
     f.t+=dt;
@@ -1593,8 +1714,10 @@ function drawBattle(now,dt){
   cx.fillStyle='#c8d4ff';
   cx.font='8px "Press Start 2P", monospace';
   cx.textAlign='left'; cx.textBaseline='middle';
-  const hudName = cur ? (cur.side==='ally'?cur.name:'ENEMY') : '—';
-  cx.fillText(`R${round} · ${hudName}`, 12, 17);
+  const hudName = cur ? (cur.side==='ally'?cur.name:cur.side==='npc'?cur.name:'ENEMY') : '—';
+  const obj2=mission.config.objective;
+  const rlabel = obj2&&obj2.type==='survive' ? `R${round}/${obj2.rounds}` : `R${round}`;
+  cx.fillText(`${rlabel} · ${hudName}`, 12, 17);
   for(const b of banners){
     b.t+=dt;
     const p=b.t/b.dur;
@@ -1668,7 +1791,7 @@ function startBattle(m){
   bfade=1; bsmoke=[];
   warnTiles=[]; impactRound=-1; stormAnnounced=false;
   reinforced=false; phase2=false; phasePending=false; kharnRushPending=false;
-  casualties=0; scene=null;
+  casualties=0; cageSprung=false; scene=null;
   rosterInit();
   document.getElementById('log').innerHTML='';
   renderCard(null); renderActions();
