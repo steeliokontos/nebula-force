@@ -65,6 +65,11 @@ const MISSION_UNDERSTACK={
   config:{
     storm:false,
     web:{links:{p1:'c1', p2:'c2', p3:'c3'}, bracketSlot:'random', onBossDeath:'freeAll'},
+    /* WOW — ONE LAST TASK: the round after Vesk's collapse eats the bridge,
+       one freed custodian rises, walks to the gap, and kneels across it —
+       mercy rebuilds the road the villain destroyed. Smash-path players
+       keep the hole. */
+    lastTask:{gap:[8,6]},
     reinforcements:{count:2, onRound:4, orWhenMinionsLeq:3,
       spawns:[[16,5],[16,7]],
       unit:{name:'DIG-WARDEN', spr:'digwarden', cls:'Warden · DIG',

@@ -70,6 +70,22 @@ const MISSION_GLASSFIELDS={
     routWins:true,
     shards:[[4,2],[8,2],[12,2],[6,5],[11,5],[8,7],[14,7],[5,10],[13,10]],
     shardRule:{ringDmg:4, ringRadius:2, ringsToCrumble:3, crumbleTile:1},
+    /* WOW — THE LOAD SLIPS: kill Culver and the sweep-crane loses its
+       operator. The day's cut singers crash down on the east edge, and his
+       manifest lies in the wreck for two rounds — opposite the direction
+       the escort is fleeing. A gift with teeth. */
+    events:[
+      {id:'loadslips', trigger:{onKill:'cv'},
+       banner:'▼ THE LOAD SLIPS ▼', color:'#ff9a2a', focus:[16,6], damage:8,
+       tiles:[[16,5,1],[16,7,1],[17,6,1]],
+       log:'The sweep-crane swings unmanned — the day\u2019s harvest comes down in a long glass avalanche. Something paper flutters into the wreck.',
+       loot:{at:[17,6], name:'CULVER\u2019S MANIFEST', credits:60, flag:'culver-manifest',
+             msg:'✦ CULVER\u2019S MANIFEST — 60 credits in dock chits, and the cutting ledger: every crate of singing glass hauled DOWN, not off-world.'},
+       then:{afterRounds:2, tiles:[[17,6,1]],
+             banner:'▼ THE CRATES SETTLE ▼',
+             log:'The spilled load grinds itself flat.',
+             lostLog:'The manifest is pulped under settling glass. Whatever it proved goes unproven.'}},
+    ],
     reinforcements:{count:2, onRound:4, orWhenMinionsLeq:2,
       spawns:[[17,5],[17,7],[17,3],[17,9]],
       unit:{name:'CUTTER RIG', spr:'cutterrig', cls:'Warden · CUTR',
