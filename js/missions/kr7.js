@@ -34,17 +34,18 @@ const MISSION_KR7={
     dax:[1,6], kharn:[2,5], gunnar:[2,7], jet:[1,4], vesper:[0,6], hale:[1,8],
   },
   enemies:[
-    {id:'s1', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:11,y:1,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
-    {id:'s2', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:12,y:8,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
-    {id:'s3', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:11,y:11, maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
-    {id:'s4', name:'SCRAPFANG SKIFF', spr:'drone', cls:'Scrapfang · FLY', x:13,y:5,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
+    {id:'s1', name:'SKIFF \u201cBACK RENT\u201d', spr:'drone', cls:'Scrapfang · FLY', x:11,y:1,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
+    {id:'s2', name:'SKIFF \u201cALIMONY\u201d', spr:'drone', cls:'Scrapfang · FLY', x:12,y:8,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
+    {id:'s3', name:'SKIFF \u201cPAYDAY\u201d', spr:'drone', cls:'Scrapfang · FLY', x:11,y:11, maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
+    {id:'s4', name:'SKIFF \u201cSEVERANCE\u201d', spr:'drone', cls:'Scrapfang · FLY', x:13,y:5,  maxhp:14, atk:9,  def:3, agi:6, mov:6, fly:true},
     /* the ridge guns and the wall of bruisers HOLD their claim — skiffs
        harass, but the line only commits when you push it (AI doctrine) */
     {id:'p1', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:2,  maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3], guard:true, group:'ridge', aggro:5},
     {id:'p2', name:'SCRAPFANG SPIKER', spr:'spiker', cls:'Scrapfang · ARTY', x:14,y:10, maxhp:16, atk:9, def:4, agi:6, mov:4, rng:[2,3], guard:true, group:'ridge', aggro:5},
     {id:'b1', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:5, maxhp:24, atk:11, def:6, agi:4, mov:4, guard:true, group:'line', aggro:4},
     {id:'b2', name:'SCRAPFANG BRUISER', spr:'rig', cls:'Scrapfang · HVY', x:12,y:7, maxhp:24, atk:11, def:6, agi:4, mov:4, guard:true, group:'line', aggro:4},
-    {id:'ov', name:'CAPT. VASH REEVE', spr:'overseer', cls:'Scrapfang · BOSS', x:16,y:6, maxhp:48, atk:12, def:6, agi:7, mov:4, rng:[1,2], boss:true},
+    {id:'ov', name:'CAPT. VASH REEVE', spr:'overseer', cls:'Scrapfang · BOSS', x:16,y:6, maxhp:48, atk:12, def:6, agi:7, mov:4, rng:[1,2], boss:true,
+     deathLine:'VASH REEVE: \u201cTwenty years of filings... and the rock outbids me on the last day.\u201d'},
   ],
   config:{
     /* asteroid storm every round: N single strikes (8 dmg) + N 2×2 heavies (10 dmg) */
