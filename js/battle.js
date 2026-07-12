@@ -550,6 +550,7 @@ function applyDeath(u,credit){
     log(`<span class="e">${u.name} is cut down.</span>`);
     if(mission.onNpcDeath) mission.onNpcDeath(u);
   } else log(`${tag(u)} is destroyed!`);
+  if(u.deathLine) log(`<span class="e">${u.deathLine}</span>`);
   if(u.side==='ally') casualties++;
   if(credit&&credit.side==='ally') giveXP(credit,10);
   /* the puppet web: a dead pylon frees (or recruits) its custodian */
@@ -1443,8 +1444,9 @@ async function endTurn(){
   if(cur && cur.alive && !cur.fly && tileHazard(cur.x,cur.y)){
     const h2=tileHazard(cur.x,cur.y);
     cur.hp=Math.max(0,cur.hp-h2);
-    floatText(cur.x,cur.y,h2+' VENT','#48e0d0');
-    log(`${tag(cur)} takes <b>${h2}</b> dmg <span class="d">(crystal vent)</span>`);
+    const hname=TERRAIN[bGrid[cur.y][cur.x]].name;
+    floatText(cur.x,cur.y,h2+' '+hname.split(' ').pop().toUpperCase(),'#48e0d0');
+    log(`${tag(cur)} takes <b>${h2}</b> dmg <span class="d">(${hname.toLowerCase()})</span>`);
     checkBossPhase(cur);
     if(cur.hp<=0&&cur.alive) await killUnit(cur,null);
     if(!fastMode) await wait(300);

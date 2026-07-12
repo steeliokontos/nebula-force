@@ -47,11 +47,18 @@ const MISSION_SHAFT9={
       unit:{name:'GNASHER VERMIN', spr:'vermin', cls:'Vermin', maxhp:13, atk:9, def:2, agi:7, mov:5},
       bark:'The tunnels SEETHE —'},
     bossPhase:false,
-    /* MAP EVENT — the cave-in: pushing into the mid-gallery brings the
-       roof down (6 dmg where it lands, fresh rubble)… and the slide tears
-       the old pit wall open. Something glints down there. Two rounds
-       before the mountain finishes its thought. */
+    /* MAP EVENT — the small voice: mid-fight, the machines hitch for half a
+       beat and everyone hears what Kharn heard. No damage, no tiles — the
+       rescue stops being a reward and becomes the thing you fight toward. */
     events:[
+      {id:'smallvoice', trigger:{round:3},
+       banner:'▼ A SMALL VOICE, STILL CALLING ▼', color:'#7ce8ff',
+       focus:[14,9], tiles:[],
+       log:'For half a beat, every machine in the shaft hitches at once \u2014 and under the grinding, everyone hears it: small, hoarse, still calling. KHARN: \u201cStill alive. Still calling. Fight FASTER.\u201d'},
+      /* the cave-in: pushing into the mid-gallery brings the roof down
+         (6 dmg where it lands, fresh rubble)… and the slide tears the old
+         pit wall open. Something glints down there. Two rounds before the
+         mountain finishes its thought. */
       {id:'cavein',
        trigger:{zone:{x0:7,y0:0,x1:8,y1:12}},
        banner:'▼ CAVE-IN ▼', color:'#ff9a2a', focus:[8,6], damage:6,
