@@ -26,6 +26,13 @@ reality. Gather the relics before it does.
   the fold home → Vantorr. One relic found, four to go.
   Recruitment doctrine: the force is FOUND, not issued — every act should
   gate at least one battle behind an under-strength roster.
+- **Act 3 (designed, not built — ACT3.md is the bible):** "The Long Quiet"
+  (working title). No new planet: the crew is pulled from the fold and
+  swallowed by the SETTLEMENT, a city-sized collection vessel whose
+  nameless owner has spent generations "buying quiet" — paying worlds to
+  silence their relics so the hunger arrives unheard. The whole act happens
+  aboard; relic three is already in the ship's vault, bought legally, and
+  the chase becomes a heist. Signal Lens payoff act (masquerade reveal).
 - **Acts 2–9 (outlined):** chase the remaining four relics across the galaxy
   (not every act finds one — some acts are the cost of the chase);
   13–15 recruitable characters total; two anchor characters: **Vesper**
@@ -82,7 +89,11 @@ when the artifact arrives in early Act 4).
    leap of faith with a real cost. Eating it silently locks the chain.
 2. Act 2: CRUSTY BREAD — earned by a secret action (TBD in the Act 2
    build). Same tension: usable for +2 DEF to one character, or hoarded.
-3. Act 3: a MYSTERIOUS TREAT — given by someone/something secret (TBD).
+3. Act 3: a MYSTERIOUS TREAT — given by someone/something secret. Two
+   proposals on file, Erik picks ONE: the hidden bilge goo pool aboard the
+   Settlement gives it (ACT3.md §4a — braids this chain into the goo
+   trail below), or a saved Nima gives it (ACT2.md Open Question #3 —
+   crueler; dies with `nimaStruck`).
 4. Early Act 4: a STARVING MAN asks if you have food. Each quest food you
    give: "thanks... I was starving." Give all three (talk 3×, holding all
    three unused) → he transforms — an alien entity testing the human race
@@ -98,6 +109,35 @@ patience in that order, which is the joke and the point.
 Engine note for the promotion build: promotion data lives per-character in
 characters.js — normal class plus optional secret variants, each with a
 condition checked at the moment of promotion (e.g. item in inventory).
+
+**THE NEIGHBOR (the goo trail) — campaign secret, spans acts 1→9. Decided
+in outline; the ending is deliberately not nailed down yet:**
+Every act's main town hides ONE goo pool, each harder to find than the
+last — Rustharbor's sits in the open with Gloop beside it; the Settlement's
+takes a three-step unmarked trail into the bilge (ACT3.md §4a); later acts
+escalate from there. Touching a pool sets a per-pool flag (`gooPools`
+object, persisted in save.js — NOT built yet). The goo is one organism —
+one *neighbor* — keeping pace with the crew across worlds; the Dormant
+Spore reactions and "something waves back" have been the tell since Act 1.
+No dialog ever confirms any of this before Act 9.
+
+**The payoff:** touch ALL pools before the end of the Act 9 opening and
+the neighbor finishes the wave it started in Rustharbor — leading to a
+**secret promotion** for one character (uses the secret-variant promotion
+system above). Recipient candidates, no ruling yet: (a) Kharn — the goo
+has never once pretended around the moon-wolf; (b) whoever the player has
+standing at the final pool; (c) Gloop himself joins, and the promotion is
+his. Erik decides by ~Act 6 so seeds can point the right way.
+
+Build status: Act 1 pool exists in the live game but sets no flag
+(retrofit the flag when the trail system is built, and give the pool-touch
+a small once-only moment worth remembering). Act 2 (Vantorr) has NO pool —
+open question: retrofit a hidden cistern under the Hymn Hall, or canonize
+that some worlds don't have one and shorten the trail (ACT3.md Open
+Question #4). Rule of thumb for the trail: pools stay touchable wherever
+the town stays revisitable; pools on places that leave the campaign (the
+Settlement) are missable forever, which is the doctrine working as
+intended.
 
 ## Balance doctrine (Erik's rules — keep these)
 1. **No health sponges.** Enemies die in 2–3 focused hits; fights end because

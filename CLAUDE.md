@@ -138,5 +138,10 @@ and rebuilding the single file (the polisher only after Erik approves items).
   damage parity, casters gain +1 max MP on even levels.
 - ~~Act 2 battles~~ ALL FIVE BUILT (tithe, glassfields, tithepit,
   understack, ringwarden) with recruits Hob, Vye (missable), Bracket.
-- Acts 3–9, more recruits, promotion at L15
+- Act 3 DESIGNED, not built: ACT3.md is the bible ("The Long Quiet" —
+  no new planet; the act happens aboard the Settlement, the buyer's
+  city-ship; Signal Lens payoff act). Campaign secret THE NEIGHBOR
+  (hidden goo pool in every act-town → all touched by Act 9 = secret
+  promotion) is specced in DESIGN.md; no flags built yet.
+- Acts 4–9, more recruits, promotion at L15
   (SF-style: new class, reset to L1, stats carry — not built yet).
