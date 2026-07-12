@@ -64,6 +64,15 @@ const MISSION_TITHE={
       banner:'▸ THE SHIELDS CYCLE ◂',
       winLog:'Ceril cycles the dock shields — the wardens can’t bill what they can’t board.'},
     cage:{at:[1,10], deployAt:[2,10], unit:'gunnar', label:'SPRING THE CAGE'},
+    /* WOW — TUCK DROPS HIS FIRST LOAD: round 5, the crane that impounded
+       Gunnar refuses the wardens instead. Crates smash the skimmer highway
+       and the wreckage becomes cover the defenders inherit. */
+    events:[
+      {id:'tuckload', trigger:{round:5},
+       banner:'▼ THE CRANE LETS GO ▼', color:'#ffd23a', focus:[13,1], damage:10,
+       tiles:[[12,1,2],[13,1,2],[13,2,2]],
+       log:'A full freight load comes down across the crane apron — TUCK (crane cab): \u201cTwenty years, zero dropped loads. This one\u2019s deliberate.\u201d'},
+    ],
     reinforcements:{count:3, onRound:4, orWhenMinionsLeq:3,
       spawns:[[17,5],[17,7],[17,3],[17,9]],
       unit:{name:'WARDEN TITHEMAN', spr:'titheman', cls:'Warden · TITH',

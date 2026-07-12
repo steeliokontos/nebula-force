@@ -49,7 +49,10 @@ const MISSION_RINGWARDEN={
   ],
   config:{
     storm:false, /* indoors — the first quiet sky since KR-7; the chamber IS the event */
-    ringCycle:{order:['cyan','magenta','lime'], randomStart:true},
+    /* WOW — THE NODE HOLDS ITS BREATH: the round after the crown answers,
+       no key turns. One bar of rest to stage the assault — but no magenta
+       means his fresh regen runs whole in the silence. */
+    ringCycle:{order:['cyan','magenta','lime'], randomStart:true, restOnPhase:true},
     reinforcements:{count:2, onRound:5, orWhenMinionsLeq:4,
       spawns:[[5,1],[5,11],[9,1],[9,11]],
       unit:{name:'OATHED WARDEN', spr:'oathed', cls:'Warden · OATH',

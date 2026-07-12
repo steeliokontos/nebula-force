@@ -1644,7 +1644,12 @@ function interact(){
       else openDialog('—',["The impound cage stands empty. Someone has scratched a serial number into the bars from the INSIDE, followed by the word: NEVER."]);
       return;
     }
-    if(ch==='n'){ openDialog('—',["Tuck's crane. The hook swings its slow patient arc over the pads. A hand-painted plate on the base reads: CAPACITY 40T. FEELINGS: 0T."]); return; }
+    if(ch==='n'){
+      openDialog('—',[storyStage>=3
+        ? "Tuck's crane. The hook swings its slow patient arc over the pads. The hand-painted plate has a new line under CAPACITY 40T: \u201cDROPPED LOADS: 1. DELIBERATE.\u201d"
+        : "Tuck's crane. The hook swings its slow patient arc over the pads. A hand-painted plate on the base reads: CAPACITY 40T. FEELINGS: 0T."]);
+      return;
+    }
     if(ch==='y'){
       if(hobJoined) openDialog('—',["The dray pens. Feed's been measured out to the gram by someone who isn't here anymore. The drays keep looking down the dock, the way she went."]);
       else openDialog('—',["The dray pens — rails chewed, straw churned, one water trough dented into a shape best described as 'argument'."]);

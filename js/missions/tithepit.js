@@ -70,6 +70,16 @@ const MISSION_TITHEPIT={
       reassignBark:'HASP: "A-unit is DOWN?? B-unit — leave the gate. The row is yours. The schedule HOLDS."',
       haltBark:'HASP: "You want me to rate a CARBINE for cage duty? No. Rated equipment only. ...Schedule\'s suspended. This goes in the log."',
     },
+    /* WOW — STEAL THE PAYROLL: the day shift works for money and the money
+       is a box on the dangerous south road. Take it before round 5 and the
+       reinforcements never muster. Loot as lever. */
+    loots:[
+      {at:[13,10], name:'THE PIT PAYROLL', credits:90,
+       msg:'✦ THE PIT PAYROLL — 90 credits in warden scrip, every chit signed for.',
+       cancelsReinforcements:true,
+       cancelBanner:'▸ PAYROLL SEIZED — THE DAY SHIFT STAYS HOME ◂',
+       cancelBark:'HASP: \u201cNobody works arrears rates for FREE. Nobody works ANY rate for free. This entire pit runs on\u2014 oh, you KNOW what it runs on.\u201d'},
+    ],
     reinforcements:{count:2, onRound:5, orWhenMinionsLeq:2,
       spawns:[[12,11],[14,11],[16,11]],
       unit:{name:'WARDEN TITHEMAN', spr:'titheman', cls:'Warden · TITH',

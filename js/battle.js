@@ -219,7 +219,8 @@ let reinforced=false, phase2=false, phasePending=false, kharnRushPending=false;
 let casualties=0, cageSprung=false;
 let mapEvents=[], battleLoots=[], eventFollowups=[];
 let shardObjs=[], purgeState=null, webState=null, ringOrder=null, ringIdx=-1;
-const ringKey=()=>ringOrder?ringOrder[ringIdx%3]:null;
+let ringRestPending=false, ringResting=false, lastTaskDone=false;
+const ringKey=()=>(ringOrder&&!ringResting)?ringOrder[ringIdx%3]:null;
 const RING_COLORS={cyan:'#48e0d0', magenta:'#ff5ad2', lime:'#b8ff4a'};
 /* healing halved on MAGENTA (CRYO exempt — a revive is not a heal) */
 const healAdj=amt=>ringKey()==='magenta'?Math.ceil(amt/2):amt;
@@ -546,6 +547,9 @@ function applyDeath(u,credit){
     return;
   }
   u.alive=false; u.bulwark=false;
+  for(const e of mapEvents){
+    if(!e.fired&&e.trigger&&e.trigger.onKill===u.id) e._due=true;
+  }
   if(u.side==='npc'){
     log(`<span class="e">${u.name} is cut down.</span>`);
     if(mission.onNpcDeath) mission.onNpcDeath(u);
@@ -1232,6 +1236,7 @@ function checkBossPhase(u){
   if(u.boss&&u.alive&&u.hp<=u.maxhp*(bp.at||0.5)&&!phase2) phasePending=true;
 }
 async function bossPhaseEvent(){
+  if(mission.config.ringCycle&&mission.config.ringCycle.restOnPhase) ringRestPending=true;
   phasePending=false; phase2=true;
   bstate='event'; renderActions();
   const bp=mission.config.bossPhase;
@@ -1359,7 +1364,9 @@ async function fireMapEvent(e){
 }
 async function checkZoneEvents(){
   for(const e of mapEvents){
-    if(e.fired||!e.trigger||!e.trigger.zone) continue;
+    if(e.fired) continue;
+    if(e._due){ await fireMapEvent(e); continue; }
+    if(!e.trigger||!e.trigger.zone) continue;
     if(e.cond&&!e.cond()){ continue; }
     const z=e.trigger.zone;
     if(aliveOf('ally').some(t=>t.x>=z.x0&&t.x<=z.x1&&t.y>=z.y0&&t.y<=z.y1)) await fireMapEvent(e);
@@ -1425,7 +1432,14 @@ function collectLoot(u){
     /* raise base too so victory harvest doesn't double-count the weapon */
     if(w){ w.atk+=L.weapon.atk; w.base.atk+=L.weapon.atk; w.weapon=equippedWeapons[L.weapon.id]; if(w===cur) renderCard(w); }
   } else if(L.item) inventory.push(L.item);
+  if(L.credits){ credits+=L.credits; }
+  if(L.flag) searched[L.flag]=true;
   if(L.msg) log(`<span class="p">${L.msg}</span>`);
+  if(L.cancelsReinforcements&&!reinforced){
+    reinforced=true; /* the day shift never musters */
+    if(L.cancelBanner) pushBanner(L.cancelBanner,'#48e060');
+    if(L.cancelBark) log(`<span class="e">${L.cancelBark}</span>`);
+  }
 }
 async function endTurn(){
   moveSet.clear(); targetSet.clear(); specialSet.clear();
@@ -1476,10 +1490,35 @@ async function nextTurn(){
   if(qi>=queue.length){
     round++;
     if(ringOrder){
-      ringIdx++;
-      const k=ringKey(), nk=ringOrder[(ringIdx+1)%3];
-      pushBanner('▼ '+k.toUpperCase()+' KEY ▼', RING_COLORS[k]);
-      log(`<span class="ev">The node turns ${k.toUpperCase()}. ${nk.toUpperCase()} follows.${k==='cyan'?' (reach +1)':k==='magenta'?' (heals halved)':' (the lit lanes bite)'}</span>`);
+      if(ringRestPending){
+        ringRestPending=false; ringResting=true;
+        pushBanner('▼ THE NODE HOLDS ITS BREATH ▼','#d8dce8');
+        log(`<span class="ev">No key this round. No reach, no seal, no sting — one bar of rest. His regen runs whole in the silence.</span>`);
+      } else {
+        ringResting=false;
+        ringIdx++;
+        const k=ringKey(), nk=ringOrder[(ringIdx+1)%3];
+        pushBanner('▼ '+k.toUpperCase()+' KEY ▼', RING_COLORS[k]);
+        log(`<span class="ev">The node turns ${k.toUpperCase()}. ${nk.toUpperCase()} follows.${k==='cyan'?' (reach +1)':k==='magenta'?' (heals halved)':' (the lit lanes bite)'}</span>`);
+      }
+    }
+    if(phase2&&!lastTaskDone&&mission.config.lastTask&&webState){
+      lastTaskDone=true;
+      const lt=mission.config.lastTask;
+      const c=units.find(u2=>u2.side==='enemy'&&u2.inert&&u2.alive&&!u2.converted&&u2.id!==webState.bracket);
+      if(c){
+        bstate='event'; renderActions();
+        camFocus(c.x*BT+BT/2, c.y*BT+BT/2);
+        pushBanner('▸ ONE LAST TASK ◂','#48e060');
+        if(!fastMode) await wait(500);
+        bGrid[lt.gap[1]][lt.gap[0]]=0; /* open the ground first so it can walk in */
+        await walkUnit(c, lt.gap[0], lt.gap[1]);
+        c.x=lt.gap[0]; c.y=lt.gap[1];
+        c.alive=false; /* slumped prop: drawn, walkable-over, permanent */
+        impacts.push({type:'ring', x:c.x*BT+BT/2, y:c.y*BT+BT/2, t:0, color:'#48e060', max:BT*1.8});
+        log(`<span class="ev">It clocks back in. It has held rubble for ten thousand years; now it holds you. The gap is a road again.</span>`);
+        if(!fastMode) await wait(600);
+      }
     }
     if(purgeState&&!purgeState.posted&&round>=(mission.config.purge.startRound||2)){
       purgeState.posted=true;
@@ -2030,7 +2069,7 @@ function drawBattle(now,dt){
       cx.fillStyle=`rgba(139,224,78,${a})`;
       cx.fillRect(x*BT,y*BT,BT,BT);
     }
-    if(type===9&&ringOrder){
+    if(type===9&&ringOrder&&ringKey()){
       const kc=RING_COLORS[ringKey()]||'#48e0d0';
       const a2=.14+.10*Math.sin(now/300+x+y);
       cx.fillStyle=kc; cx.globalAlpha=a2; cx.fillRect(x*BT,y*BT,BT,BT); cx.globalAlpha=1;
@@ -2350,6 +2389,7 @@ function startBattle(m){
   mapEvents=(m.config.events||[]).map(e=>Object.assign({fired:false},e));
   battleLoots=[]; eventFollowups=[];
   shardObjs=(m.config.shards||[]).map(([x,y])=>({x,y,rings:0}));
+  for(const L of (m.config.loots||[])) battleLoots.push(Object.assign({},L));
   purgeState=m.config.purge?{posted:false, halted:false, reassignAt:null, exIdx:0}:null;
   webState=null;
   if(m.config.web){
@@ -2359,6 +2399,7 @@ function startBattle(m){
       bracketDowned:false, bracketConverted:false, wrecked:0};
   }
   ringOrder=null; ringIdx=-1;
+  ringRestPending=false; ringResting=false; lastTaskDone=false;
   if(m.config.ringCycle){
     ringOrder=m.config.ringCycle.order.slice();
     ringIdx=m.config.ringCycle.randomStart?(Math.random()*3)|0:0;
