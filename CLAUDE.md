@@ -116,8 +116,10 @@ operating instructions.
 - **encounter-architect.md** — designs complete battles from a one-line
   premise: design memo (with threat math) for approval, then the mission file.
 - **battle-polisher.md** — the second set of eyes on FINISHED battles:
-  returns 3–5 approval-gated suggestions (flavor / theme / smile moments),
-  never edits during analysis, never touches balance or adds mechanics.
+  returns 3–5 approval-gated suggestions (flavor / theme / smile moments,
+  plus at least one WOW swing at the battle itself — its one license to
+  propose mechanics/set-pieces), never edits during analysis, never tunes
+  balance (numbers in a WOW are flagged for the architect).
 All must obey CLAUDE.md + DESIGN.md; all end by running the concat check
 and rebuilding the single file (the polisher only after Erik approves items).
 
