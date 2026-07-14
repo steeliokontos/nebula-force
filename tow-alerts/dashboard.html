@@ -1,9 +1,9 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ToWatch by Autura</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
 <style>
+@font-face { font-family: 'Nunito'; font-weight: 900;
+             src: url('nunito-black.woff2') format('woff2'); }
   :root { color-scheme: light; --blue: #2B5CF0; --green: #12A150; --ink: #101418; }
   * { box-sizing: border-box; margin: 0; }
   body { font: 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
@@ -13,13 +13,17 @@
   .wrap { max-width: 860px; margin: 0 auto; }
   header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
            margin-bottom: 4px; }
-  .logo { font: 900 38px/1.1 "Nunito", "Arial Rounded MT Bold", "Segoe UI",
-          system-ui, sans-serif; color: var(--ink); letter-spacing: -1px; }
-  .logo .tt { position: relative; display: inline-block; }
-  .logo .tt::after { content: ""; position: absolute; top: -9px; right: 1px;
-      width: 0; height: 0; border-left: 13px solid transparent;
-      border-bottom: 13px solid var(--blue); }
-  .byline { font: 700 13px/1 "Nunito", "Segoe UI", system-ui, sans-serif;
+  .logo { font: 900 40px/1.1 "Nunito", "Arial Rounded MT Bold", "Segoe UI",
+          system-ui, sans-serif; letter-spacing: -1px;
+          background: linear-gradient(90deg, #1B3FD8 0%, #2B5CF0 35%,
+                                      #7E8CA6 80%, #AEB8C6 100%);
+          -webkit-background-clip: text; background-clip: text;
+          color: transparent; }
+  .logo .tt { position: relative; -webkit-text-fill-color: #1B3FD8; }
+  .logo .tt::after { content: ""; position: absolute; top: -10px; right: 1px;
+      width: 0; height: 0; border-left: 14px solid transparent;
+      border-bottom: 14px solid var(--blue); }
+  .byline { font: 700 13px/1 "Segoe UI", system-ui, sans-serif;
             color: #7d8895; letter-spacing: .4px; }
   .byline b { color: var(--ink); font-weight: 900; }
   .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
@@ -62,7 +66,7 @@
 </style></head><body><div class="topbar"></div><div class="wrap">
 <header><h1 class="logo"><span class="tt">T</span>oWatch</h1>
 <span class="byline">by <b>autura</b> &middot; keep communities moving</span></header>
-<div class="sub">5 alerts &middot; generated Jul 14, 2026 03:26 &middot; no live scan yet</div>
+<div class="sub">5 alerts &middot; generated Jul 14, 2026 03:38 &middot; no live scan yet</div>
 <div class="demoflag">Sample data — run <b>python3 towwatch.py scan</b> to replace with live alerts.</div>
 <div class="filters" id="statechips"><span class="chip on" data-state="">All states</span><span class="chip" data-state="OH">OH</span><span class="chip" data-state="OK">OK</span><span class="chip" data-state="TN">TN</span><span class="chip" data-state="TX">TX</span>
 <input id="q" placeholder="filter: city, keyword, RFP…"></div>
