@@ -4,9 +4,9 @@ rem and opens the dashboard either way.
 cd /d "%~dp0"
 
 set PY=python
-where python >/dev/null 2>nul
+where python >nul 2>nul
 if errorlevel 1 (
-    where py >/dev/null 2>nul
+    where py >nul 2>nul
     if errorlevel 1 (
         echo Python is not installed on this computer.
         echo Install it free from the Microsoft Store: search for "Python",

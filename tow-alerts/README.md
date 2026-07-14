@@ -86,11 +86,11 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
 1. **One-time:** install Python from the Microsoft Store (open the Store,
    search "Python", install the newest version — no admin rights needed on
    most work machines).
-2. **First time only (optional but recommended):** open a Command Prompt in
-   this folder and run `python ToWatch.py doctor`. It confirms Python, file
-   access, the database, the scoring brain, and internet reach are all
-   working — so your first real scan can't trip over a silent setup problem.
-   Every line tells you plainly if something needs fixing.
+2. **First time only (recommended):** double-click **`Check-Setup.bat`**.
+   It confirms Python, file access, the database, the scoring brain, and
+   internet reach are all working — so your first real scan can't trip over
+   a silent setup problem. Every line tells you plainly if something's off.
+   It changes nothing; it only checks.
 3. **Every time:** double-click **`ToWatch.bat`**.
 
 That's it — it scans all the cities, then opens `dashboard.html` in your
