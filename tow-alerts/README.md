@@ -1,13 +1,40 @@
-# TowWatch
+# toWatch (by Autura)
 
 Your own government-meeting alert system for the towing industry. It watches
 city and county legislative records for anything mentioning **towing, impound,
-wrecker rotation, private property impound (PPI), vehicle storage, abandoned
-vehicle auctions, booting** — scores every hit, and turns them into a clean
-color-coded dashboard.
+wrecker rotation, private property impound (PPI), vehicle storage, tow
+dispatch software, consolidated dispatch, predatory towing** — scores every
+hit, and turns them into a clean color-coded dashboard in Autura's style.
 
 This is the do-it-yourself version of the alert services vendors keep
 pitching. It runs on your own computer and costs nothing to operate.
+
+## Polite-guest rule (built in)
+
+toWatch contacts the government sites **at most once every 3 days** — the
+industry moves slowly and there's no reason to knock more often. Double-click
+the launcher as often as you like: if a scan isn't due yet it just says so,
+tells you when the next one is, and opens the dashboard with what it already
+has. The lookback window automatically covers the gap since the last scan
+(plus a 2-day overlap), so nothing slips through between scans.
+`python3 towwatch.py scan --force` overrides the rule when truly needed.
+
+## Built to withstand change (the watchdog)
+
+Scrapers break when websites change — this one is built to notice and tell
+you instead of failing silently:
+
+- Every scan records per-source health in `sources.json` (last success,
+  consecutive-failure streak, last error).
+- The dashboard footer shows a **Watchdog** panel: how many sources are
+  watched, which are healthy, and which are failing — with a plain-English
+  diagnosis (a "response format changed" error means the site changed
+  platforms, not a network blip).
+- A source failing 2+ scans in a row gets flagged for re-verification —
+  paste the watchdog output to Claude and it will find where that
+  government moved its meeting data and fix the source list.
+- One broken source never stops the others; a broken `sources.json` never
+  takes the dashboard down.
 
 ## Quick start — Windows (work computer)
 

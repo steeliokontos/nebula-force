@@ -11,7 +11,10 @@ No installs needed beyond Python 3 (already on every Mac).
 Commands:
   python3 towwatch.py probe          test which sources in sources.json respond
   python3 towwatch.py scan           fetch recent legislation, find tow/impound hits
-  python3 towwatch.py scan --days 30 look further back (default 14 days)
+                                     (polite guest: max once every 3 days; the
+                                     lookback window auto-covers the gap)
+  python3 towwatch.py scan --force   scan now even if the 3 days aren't up
+  python3 towwatch.py scan --days 30 look further back (first run defaults to 14)
   python3 towwatch.py report         rebuild dashboard.html from saved hits
   python3 towwatch.py demo           fill the dashboard with sample alerts (to see the look)
 
@@ -87,6 +90,10 @@ CONTEXT = [(cat, w, re.compile(rx, re.IGNORECASE)) for cat, w, rx in CONTEXT]
 # Score thresholds for the color-coded rating.
 HIGH_AT, MEDIUM_AT = 10, 5
 
+# Polite-guest rule: never hit the government sites more than once every
+# N days. Our industry moves slowly; the sites appreciate the manners.
+MIN_SCAN_GAP_DAYS = 3
+
 CATEGORY_LIST = ["contract/RFP", "dispatch/911", "tech/software", "ordinance",
                  "fees", "enforcement", "PPI/portal", "other"]
 
@@ -144,7 +151,18 @@ def db():
             conn.execute("ALTER TABLE hits ADD COLUMN " + col)
         except sqlite3.OperationalError:
             pass
+    conn.execute("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)")
     return conn
+
+
+def get_meta(conn, key):
+    row = conn.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+    return row[0] if row else None
+
+
+def set_meta(conn, key, value):
+    conn.execute("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)", (key, value))
+    conn.commit()
 
 
 def score_text(text):
@@ -223,11 +241,32 @@ def fetch_matter_text(client, matter_id):
     return ""
 
 
-def cmd_scan(days):
+def cmd_scan(days=None, force=False):
     cfg = load_sources()
-    since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00")
     conn = db()
-    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    now = datetime.now(timezone.utc)
+    now_iso = now.strftime("%Y-%m-%d %H:%M")
+
+    # Polite-guest rule: refuse to re-scan within MIN_SCAN_GAP_DAYS.
+    last_scan = get_meta(conn, "last_scan")
+    gap_days = None
+    if last_scan:
+        gap_days = (now - datetime.fromisoformat(last_scan)).total_seconds() / 86400
+        if gap_days < MIN_SCAN_GAP_DAYS and not force:
+            due = datetime.fromisoformat(last_scan) + timedelta(days=MIN_SCAN_GAP_DAYS)
+            log("Last scan was %.1f days ago - being a polite guest, next scan is due %s."
+                % (gap_days, due.strftime("%b %d")))
+            log("(Use 'scan --force' if you really need one now.)")
+            build_dashboard(conn)
+            conn.close()
+            return
+
+    # Look back far enough to cover the gap since the last scan, plus a
+    # 2-day overlap so nothing slips through. First run: 14 days.
+    if days is None:
+        days = 14 if gap_days is None else min(30, int(gap_days) + 2)
+
+    since = (now - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00")
     new_hits = []
 
     active = [s for s in cfg["sources"] if s.get("verified") is not False]
@@ -239,9 +278,19 @@ def cmd_scan(days):
             {"$filter": flt, "$top": 1000, "$orderby": "MatterLastModifiedUtc desc"},
             quote_via=urllib.parse.quote)
         data, err = http_get_json("%s/%s/matters?%s" % (API, src["client"], qs))
+        if data is not None and not isinstance(data, list):
+            # The endpoint answered but not in the shape we expect - that
+            # usually means the platform changed, not a network blip.
+            data, err = None, "unexpected response format (site may have changed platforms)"
         if data is None:
+            # Watchdog bookkeeping: count consecutive failures per source.
+            src["fail_streak"] = src.get("fail_streak", 0) + 1
+            src["last_error"] = err
             log("  %-22s SKIPPED (%s)" % (src["client"], err))
             continue
+        src["fail_streak"] = 0
+        src["last_ok"] = now_iso[:10]
+        src.pop("last_error", None)
         count = 0
         for m in data:
             title = " ".join(filter(None, [m.get("MatterName"), m.get("MatterTitle")]))
@@ -304,6 +353,18 @@ def cmd_scan(days):
     if new_hits:
         conn.execute("DELETE FROM hits WHERE demo=1")
         conn.commit()
+    set_meta(conn, "last_scan", now.isoformat())
+    save_sources(cfg)  # persist per-source health for the watchdog panel
+
+    failing = [s for s in active if s.get("fail_streak", 0) > 0]
+    if failing:
+        log("\nWatchdog: %d source(s) had problems this scan:" % len(failing))
+        for s in failing:
+            log("  %s (%s) - %d scan(s) in a row: %s" % (
+                s["name"], s["client"], s["fail_streak"], s.get("last_error", "")))
+        log("A source failing 2+ scans in a row has probably changed platforms;")
+        log("paste this output to Claude to get it re-verified and fixed.")
+
     log("\n%d new alert(s) saved." % len(new_hits))
     build_dashboard(conn)
     conn.close()
@@ -383,22 +444,35 @@ CATEGORY_COLORS = {
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TowWatch</title>
+<title>ToWatch by Autura</title>
 <style>
-  :root { color-scheme: light; }
+  :root { color-scheme: light; --blue: #2B5CF0; --green: #12A150; --ink: #101418; }
   * { box-sizing: border-box; margin: 0; }
   body { font: 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
-         background: #f4f6f8; color: #1c2733; padding: 24px 16px 60px; }
+         background: #fafbfd; color: #1c2733; padding: 0 16px 60px; }
+  .topbar { height: 4px; margin: 0 -16px 22px;
+            background: linear-gradient(90deg, var(--blue), var(--green)); }
   .wrap { max-width: 860px; margin: 0 auto; }
-  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
-  h1 { font-size: 22px; letter-spacing: .2px; color: #16324f; }
+  header { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+  .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--ink);
+          color: #fff; font: 700 23px/32px Georgia, "Times New Roman", serif;
+          text-align: center; position: relative; flex: none; }
+  .mark::after { content: ""; position: absolute; right: 4px; bottom: 4px;
+                 width: 0; height: 0; border-left: 9px solid transparent;
+                 border-bottom: 9px solid var(--blue); }
+  h1 { font-size: 22px; letter-spacing: .2px; color: var(--ink); font-weight: 700; }
+  h1 .by { font-size: 13px; font-weight: 600; color: #8a94a0; letter-spacing: .4px; }
   .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
+  .health { background: #fff; border: 1px solid #e2e8ee; border-radius: 10px;
+            padding: 12px 16px; font-size: 13px; color: #3a4754; margin-top: 24px; }
+  .health b { color: var(--ink); }
+  .health .bad { color: #a63030; }
   .demoflag { background: #fff3cd; border: 1px solid #e6cf87; color: #6b5a12;
               border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
   .chip { border: 1px solid #c6d0da; background: #fff; border-radius: 999px;
           padding: 4px 12px; font-size: 13px; cursor: pointer; color: #3a4754; }
-  .chip.on { background: #16324f; color: #fff; border-color: #16324f; }
+  .chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
   #q { flex: 1; min-width: 160px; border: 1px solid #c6d0da; border-radius: 8px;
        padding: 6px 10px; font: inherit; font-size: 13px; }
   .card { background: #fff; border: 1px solid #e2e8ee; border-left: 4px solid var(--cat, #5a6472);
@@ -412,7 +486,7 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .rel-high .badge.rel { background: #a63030; }
   .rel-medium .badge.rel { background: #a66a00; }
   .rel-low .badge.rel { background: #8a94a0; }
-  .badge.stage-upcoming { background: #1a7f5a; }
+  .badge.stage-upcoming { background: var(--green); }
   .badge.stage-decided { background: #8a94a0; }
   .title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
   .title a { color: inherit; text-decoration: none; }
@@ -425,15 +499,17 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .tags { margin-top: 8px; font-size: 12px; color: #5a6472; }
   .empty { text-align: center; color: #5a6472; padding: 60px 0; }
   footer { text-align: center; color: #8a94a0; font-size: 12px; margin-top: 30px; }
-</style></head><body><div class="wrap">
-<header><h1>TowWatch</h1><span class="sub">__COUNT__ alerts · generated __WHEN__</span></header>
-<div class="sub">Tow &amp; impound mentions in city/county legislation across your territory.</div>
+</style></head><body><div class="topbar"></div><div class="wrap">
+<header><div class="mark">t</div>
+<h1>toWatch <span class="by">by autura</span></h1></header>
+<div class="sub">__COUNT__ alerts &middot; generated __WHEN__ &middot; __SCANMETA__</div>
 __DEMOFLAG__
 <div class="filters" id="statechips"><span class="chip on" data-state="">All states</span>__CHIPS__
 <input id="q" placeholder="filter: city, keyword, RFP…"></div>
 <div id="cards">__CARDS__</div>
 <div class="empty hide" id="empty">Nothing matches that filter.</div>
-<footer>TowWatch · data from public Legistar legislative records</footer>
+__HEALTH__
+<footer>toWatch by autura &middot; public legislative records &middot; polite-guest mode: scans at most once every 3 days</footer>
 </div>
 <script>
 var chips=document.querySelectorAll('.chip'),q=document.getElementById('q'),st='';
@@ -497,9 +573,40 @@ def build_dashboard(conn):
                 " &middot; AI graded" if h["graded_by"] == "ai" else ""))
     chips = "".join('<span class="chip" data-state="%s">%s</span>' % (esc(s), esc(s))
                     for s in sorted(states))
+
+    # Scan status for the header + watchdog panel for the footer.
+    last_scan = get_meta(conn, "last_scan")
+    if last_scan:
+        last_dt = datetime.fromisoformat(last_scan)
+        due = last_dt + timedelta(days=MIN_SCAN_GAP_DAYS)
+        scanmeta = "last scan %s, next due %s" % (last_dt.strftime("%b %d"),
+                                                  due.strftime("%b %d"))
+    else:
+        scanmeta = "no live scan yet"
+    health = ""
+    try:
+        act = [s for s in load_sources()["sources"] if s.get("verified") is not False]
+        bad = [s for s in act if s.get("fail_streak", 0) > 0]
+        if last_scan:
+            status = ("all sources healthy" if not bad else
+                      '<span class="bad">%d source(s) failing</span>' % len(bad))
+            items = "".join(
+                '<div class="bad">%s, %s (%s) &mdash; %d scan(s) in a row: %s%s</div>' % (
+                    esc(s["name"]), esc(s["state"]), esc(s["client"]),
+                    s.get("fail_streak", 0), esc(s.get("last_error", "")),
+                    " &mdash; likely changed platforms; ask Claude to re-verify this source"
+                    if s.get("fail_streak", 0) >= 2 else "")
+                for s in bad)
+            health = ('<div class="health"><b>Watchdog</b> &middot; %d sources watched '
+                      '&middot; %s%s</div>' % (len(act), status, items))
+    except Exception:
+        pass  # a broken sources.json should never take the dashboard down
+
     page = (PAGE
             .replace("__COUNT__", str(len(rows)))
             .replace("__WHEN__", datetime.now().strftime("%b %d, %Y %H:%M"))
+            .replace("__SCANMETA__", scanmeta)
+            .replace("__HEALTH__", health)
             .replace("__DEMOFLAG__", '<div class="demoflag">Sample data — run '
                      '<b>python3 towwatch.py scan</b> to replace with live alerts.</div>'
                      if has_demo else "")
@@ -599,10 +706,10 @@ def main():
     if cmd == "probe":
         cmd_probe()
     elif cmd == "scan":
-        days = 14
+        days = None
         if "--days" in args:
             days = int(args[args.index("--days") + 1])
-        cmd_scan(days)
+        cmd_scan(days, force="--force" in args)
     elif cmd == "report":
         conn = db()
         build_dashboard(conn)

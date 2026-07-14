@@ -1,29 +1,149 @@
 {
   "days_back": 14,
   "sources": [
-    { "client": "fortworthgov",      "name": "Fort Worth",                        "state": "TX", "kind": "city" },
-    { "client": "cityofdallas",      "name": "Dallas",                            "state": "TX", "kind": "city" },
-    { "client": "sanantonio",        "name": "San Antonio",                       "state": "TX", "kind": "city" },
-    { "client": "austintexas",       "name": "Austin",                            "state": "TX", "kind": "city" },
-    { "client": "elpasotexas",       "name": "El Paso",                           "state": "TX", "kind": "city" },
-    { "client": "corpuschristi",     "name": "Corpus Christi",                    "state": "TX", "kind": "city" },
-    { "client": "harriscountytx",    "name": "Harris County (Houston area)",      "state": "TX", "kind": "county" },
-    { "client": "galvestoncountytx", "name": "Galveston County",                  "state": "TX", "kind": "county" },
-    { "client": "brazoriacountytx",  "name": "Brazoria County",                   "state": "TX", "kind": "county" },
-    { "client": "boerne",            "name": "Boerne",                            "state": "TX", "kind": "city" },
-    { "client": "oklahomacounty",    "name": "Oklahoma County (OKC area)",        "state": "OK", "kind": "county" },
-    { "client": "columbus",          "name": "Columbus",                          "state": "OH", "kind": "city" },
-    { "client": "cityofcleveland",   "name": "Cleveland",                         "state": "OH", "kind": "city" },
-    { "client": "cincinnatioh",      "name": "Cincinnati",                        "state": "OH", "kind": "city" },
-    { "client": "toledo",            "name": "Toledo",                            "state": "OH", "kind": "city" },
-    { "client": "knoxcountyoh",      "name": "Knox County (Mount Vernon)",        "state": "OH", "kind": "county" },
-    { "client": "cityoffayetteville","name": "Fayetteville",                      "state": "AR", "kind": "city" },
-    { "client": "fulton",            "name": "Fulton County (Atlanta area)",      "state": "GA", "kind": "county" },
-    { "client": "dekalbcountyga",    "name": "DeKalb County (Atlanta area)",      "state": "GA", "kind": "county" },
-    { "client": "huntsvilleal",      "name": "Huntsville",                        "state": "AL", "kind": "city" },
-    { "client": "baldwincountyal",   "name": "Baldwin County (Mobile Bay area)",  "state": "AL", "kind": "county" },
-    { "client": "nashville",         "name": "Metro Nashville / Davidson County", "state": "TN", "kind": "city-county" },
-    { "client": "blounttn",          "name": "Blount County (Knoxville area)",    "state": "TN", "kind": "county" },
-    { "client": "harrisoncounty",    "name": "Harrison County (Gulfport/Biloxi)", "state": "MS", "kind": "county" }
+    {
+      "client": "fortworthgov",
+      "name": "Fort Worth",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "cityofdallas",
+      "name": "Dallas",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "sanantonio",
+      "name": "San Antonio",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "austintexas",
+      "name": "Austin",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "elpasotexas",
+      "name": "El Paso",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "corpuschristi",
+      "name": "Corpus Christi",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "harriscountytx",
+      "name": "Harris County (Houston area)",
+      "state": "TX",
+      "kind": "county"
+    },
+    {
+      "client": "galvestoncountytx",
+      "name": "Galveston County",
+      "state": "TX",
+      "kind": "county"
+    },
+    {
+      "client": "brazoriacountytx",
+      "name": "Brazoria County",
+      "state": "TX",
+      "kind": "county"
+    },
+    {
+      "client": "boerne",
+      "name": "Boerne",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "oklahomacounty",
+      "name": "Oklahoma County (OKC area)",
+      "state": "OK",
+      "kind": "county"
+    },
+    {
+      "client": "columbus",
+      "name": "Columbus",
+      "state": "OH",
+      "kind": "city"
+    },
+    {
+      "client": "cityofcleveland",
+      "name": "Cleveland",
+      "state": "OH",
+      "kind": "city"
+    },
+    {
+      "client": "cincinnatioh",
+      "name": "Cincinnati",
+      "state": "OH",
+      "kind": "city"
+    },
+    {
+      "client": "toledo",
+      "name": "Toledo",
+      "state": "OH",
+      "kind": "city"
+    },
+    {
+      "client": "knoxcountyoh",
+      "name": "Knox County (Mount Vernon)",
+      "state": "OH",
+      "kind": "county"
+    },
+    {
+      "client": "cityoffayetteville",
+      "name": "Fayetteville",
+      "state": "AR",
+      "kind": "city"
+    },
+    {
+      "client": "fulton",
+      "name": "Fulton County (Atlanta area)",
+      "state": "GA",
+      "kind": "county"
+    },
+    {
+      "client": "dekalbcountyga",
+      "name": "DeKalb County (Atlanta area)",
+      "state": "GA",
+      "kind": "county"
+    },
+    {
+      "client": "huntsvilleal",
+      "name": "Huntsville",
+      "state": "AL",
+      "kind": "city"
+    },
+    {
+      "client": "baldwincountyal",
+      "name": "Baldwin County (Mobile Bay area)",
+      "state": "AL",
+      "kind": "county"
+    },
+    {
+      "client": "nashville",
+      "name": "Metro Nashville / Davidson County",
+      "state": "TN",
+      "kind": "city-county"
+    },
+    {
+      "client": "blounttn",
+      "name": "Blount County (Knoxville area)",
+      "state": "TN",
+      "kind": "county"
+    },
+    {
+      "client": "harrisoncounty",
+      "name": "Harrison County (Gulfport/Biloxi)",
+      "state": "MS",
+      "kind": "county"
+    }
   ]
 }
