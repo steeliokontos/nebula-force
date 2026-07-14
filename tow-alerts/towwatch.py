@@ -587,6 +587,41 @@ def fetch_agendacenter(src, since, now):
     return items
 
 
+MONTH_RX = (r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*")
+
+
+def sniff_date(s):
+    """Best-effort meeting date from a link label or filename. '' if none."""
+    if not s:
+        return ""
+    m = re.search(r"(20\d{2})[-_/.](\d{1,2})[-_/.](\d{1,2})", s)          # 2026-07-21
+    if m:
+        y, mo, d = m.groups()
+    else:
+        m = re.search(r"(?<!\d)(\d{1,2})[-_/.](\d{1,2})[-_/.](20\d{2})", s)  # 7/21/2026
+        if m:
+            mo, d, y = m.groups()
+        else:
+            m = re.search(MONTH_RX + r"\.?\s+(\d{1,2}),?\s+(20\d{2})", s, re.I)  # July 21, 2026
+            if m:
+                mo = str(["jan", "feb", "mar", "apr", "may", "jun", "jul",
+                          "aug", "sep", "oct", "nov", "dec"].index(m.group(1)[:3].lower()) + 1)
+                d, y = m.group(2), m.group(3)
+            else:
+                m = re.search(r"_?(\d{2})(\d{2})(20\d{2})\b", s)          # _07212026
+                if m:
+                    mo, d, y = m.groups()
+                else:
+                    return ""
+    try:
+        mo, d = int(mo), int(d)
+        if 1 <= mo <= 12 and 1 <= d <= 31:
+            return "%s-%02d-%02d" % (y, mo, d)
+    except ValueError:
+        pass
+    return ""
+
+
 def fetch_pagewatch(src, since, now):
     """Generic fallback for governments with no platform at all.
 
@@ -630,10 +665,14 @@ def fetch_pagewatch(src, since, now):
         text = pdf_to_text(raw2) if raw2[:5] == b"%PDF-" \
             else html_to_text(raw2.decode("utf-8", "replace"))
         title = label or link.rsplit("/", 1)[-1]
+        date = sniff_date(label) or sniff_date(link.rsplit("/", 1)[-1])
+        status = ""
+        if date:
+            status = "Scheduled" if date >= now.strftime("%Y-%m-%d") else "Held"
         items.append({
             "uid": uid, "title": title[:200], "text": text,
-            "status": "", "meeting_body": "", "date": "",
-            "modified": now.strftime("%Y-%m-%d"), "file": "",
+            "status": status, "meeting_body": "", "date": date,
+            "modified": date or now.strftime("%Y-%m-%d"), "file": "",
             "url": link,
         })
     return items
