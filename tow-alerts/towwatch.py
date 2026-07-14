@@ -69,6 +69,7 @@ KEYWORDS = [(tag, w, re.compile(rx, re.IGNORECASE)) for tag, w, rx in KEYWORDS]
 CONTEXT = [
     ("contract/RFP",  6, r"\brequest for (?:proposal|qualification)s?\b|\bRFP\b|\bsolicitation\b|\binvitation to bid\b"),
     ("contract/RFP",  4, r"\bcontract|agreement\b|\bprocurement\b|\bbid(?:s|ding)?\b|\baward(?:ing|ed)?\b"),
+    ("enforcement",   3, r"\bpredator\w*\b"),  # bare "predatory" near any tow language
     ("dispatch/911",  3, r"\bPSAP\b|\b9-?1-?1\b|\bdispatch(?:ing)? center\b|\bcommunications center\b|\bcomputer[- ]aided dispatch\b|\bCAD system\b|\bsheriff|police department\b"),
     ("PPI/portal",    3, r"\bportal\b|\bonline (?:system|registry)\b|\bpermit(?:s|ting)?\b|\blicens\w+"),
     ("tech/software", 3, r"\bsoftware\b|\bplatform\b|\bautomat\w+|\bmobile app\w*|\bdigital\b|\btechnology\b"),
