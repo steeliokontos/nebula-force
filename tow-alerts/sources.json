@@ -1171,6 +1171,184 @@
       "kind": "city",
       "platform": "pagewatch",
       "url": "https://madison-al.municodemeetings.com/"
+    },
+    {
+      "client": "mckinney",
+      "name": "McKinney (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "carrolltontx",
+      "name": "Carrollton (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "denton-tx",
+      "name": "Denton (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "cityoflewisville",
+      "name": "Lewisville (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "mesquite",
+      "name": "Mesquite (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "nrhtx",
+      "name": "North Richland Hills (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "cityofkeller",
+      "name": "Keller (DFW)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "flowermoundtx",
+      "name": "Flower Mound (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "mansfieldtx",
+      "name": "Mansfield (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "rowletttx",
+      "name": "Rowlett (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "bedfordtx.gov",
+      "name": "Bedford (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cedarhilltx.com",
+      "name": "Cedar Hill (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "elliscountytx.gov",
+      "name": "Ellis County (Waxahachie)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "kaufmancounty.net",
+      "name": "Kaufman County (DFW)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "parkercountytx.gov",
+      "name": "Parker County (DFW)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "friscotx",
+      "name": "Frisco (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://agenda.friscotexas.gov/OnBaseAgendaOnline/"
+    },
+    {
+      "client": "grandprairietx",
+      "name": "Grand Prairie (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.gptx.org/Government/Mayor-and-City-Council/City-Council-Meetings"
+    },
+    {
+      "client": "richardsontx",
+      "name": "Richardson (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cor.net/government/city-council/council-meeting-documents"
+    },
+    {
+      "client": "allentx",
+      "name": "Allen (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://allen.novusagenda.com/AgendaPublic/"
+    },
+    {
+      "client": "eulesstx",
+      "name": "Euless (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.eulesstx.gov/city-hall/euless-city-council/city-council-meeting-documents"
+    },
+    {
+      "client": "desototx",
+      "name": "DeSoto (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.desototexas.gov/government/public_meeting_agendas___minutes/city_council.php"
+    },
+    {
+      "client": "grapevinetx",
+      "name": "Grapevine (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.grapevinetexas.gov/Archive.aspx?AMID=48"
+    },
+    {
+      "client": "wylietx",
+      "name": "Wylie (DFW)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://wylie-tx.municodemeetings.com/"
+    },
+    {
+      "client": "rockwallcotx",
+      "name": "Rockwall County (DFW)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.rockwallcountytexas.com/818/Upcoming-Meeting-Agendas"
+    },
+    {
+      "client": "johnsoncotx",
+      "name": "Johnson County (DFW)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.johnsoncountytx.org/commissioners-court/public-information/meeting-agendas"
     }
   ]
 }
