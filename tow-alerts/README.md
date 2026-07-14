@@ -77,16 +77,19 @@ ever.
 
 ## What it covers today
 
-16 confirmed feeds via the Legistar legislative platform (the system most big
-cities use to publish agendas and legislation):
+24 confirmed feeds via the Legistar legislative platform — cities AND county
+commissions (counties matter: sheriffs, commissioners courts, and consolidated
+dispatch centers often control tow dispatch, not the city):
 
 - **TX**: Fort Worth, Dallas, San Antonio, Austin, El Paso, Corpus Christi,
-  Harris County (Houston area), Boerne
-- **OH**: Columbus, Cleveland, Cincinnati, Toledo
+  Boerne + Harris, Galveston, and Brazoria Counties
+- **OK**: Oklahoma County (OKC area)
+- **OH**: Columbus, Cleveland, Cincinnati, Toledo + Knox County
 - **AR**: Fayetteville
-- **GA**: Fulton County (Atlanta area)
-- **AL**: Huntsville
-- **TN**: Metro Nashville / Davidson County
+- **GA**: Fulton and DeKalb Counties (Atlanta metro)
+- **AL**: Huntsville + Baldwin County
+- **TN**: Metro Nashville / Davidson County + Blount County
+- **MS**: Harrison County (Gulfport/Biloxi)
 
 Adding a city that uses Legistar = adding one line to `sources.json`. If a
 city's agenda site looks like `something.legistar.com`, the `something` part
@@ -94,15 +97,20 @@ is the "client" value.
 
 ## Known coverage gaps (the phase-2 list)
 
-These places don't use Legistar, so they need their own connectors later:
+These places don't use Legistar, so they need their own connectors later
+(platform noted — each platform connector unlocks every body using it):
 
-- **Oklahoma**: OKC uses PrimeGov (okc.primegov.com); Tulsa runs its own site
-- **Mississippi**: Jackson, Gulfport, Biloxi publish PDF agendas on city sites
-- **Puerto Rico**: San Juan's municipal legislature has its own site
-  (Spanish-language — a good fit for the AI pass later)
-- **Atlanta proper** uses Granicus iQM2 (Fulton County covers the metro for now);
-  Memphis, Chattanooga, Knoxville, Birmingham, Montgomery, Mobile, Little Rock
-  publish on their own sites
+- **CivicClerk**: Travis County TX (Austin), Cobb County GA, Tulsa County OK
+- **PrimeGov**: Oklahoma City, Tarrant County TX (Fort Worth)
+- **Granicus iQM2**: Atlanta, Butler County OH, Jefferson County AL (Birmingham)
+- **Own sites / PDFs**: Summit, Cuyahoga (Cleveland), Franklin (Columbus),
+  Hamilton, Montgomery Counties OH; Bexar (San Antonio), Dallas, El Paso,
+  Hidalgo, Fort Bend Counties TX; Shelby (Memphis), Knox, Hamilton Counties TN;
+  Gwinnett, Chatham Counties GA; Madison, Mobile Counties AL; Pulaski County AR;
+  Hinds County MS (Jackson); Memphis, Chattanooga, Knoxville, Birmingham,
+  Montgomery, Mobile, Little Rock, Tulsa cities
+- **Puerto Rico**: San Juan's municipal legislature, Spanish-language
+  (a good fit for the AI pass later)
 
 Also on the roadmap: meeting *video* transcripts (catches discussion that
 never becomes a written agenda item), email digests, Salesforce push and
