@@ -104,7 +104,7 @@ ever.
 
 ## What it covers today
 
-32 sources across **four platform connectors** — cities AND county
+89 sources across **six platform connectors** — cities AND county
 commissions (counties matter: sheriffs, commissioners courts, and consolidated
 dispatch centers often control tow dispatch, not the city):
 
@@ -113,24 +113,39 @@ dispatch centers often control tow dispatch, not the city):
   Boerne + Harris, Galveston, and Brazoria Counties
 - **OK**: Oklahoma County (OKC area)
 - **OH**: Columbus, Cleveland, Cincinnati, Toledo + Knox County
-- **AR**: Fayetteville
+- **AR**: Fayetteville, Jonesboro
 - **GA**: Fulton and DeKalb Counties (Atlanta metro)
 - **AL**: Huntsville + Baldwin County
 - **TN**: Metro Nashville / Davidson County + Blount County
-- **MS**: Harrison County (Gulfport/Biloxi)
+- **MS**: Harrison County (Gulfport/Biloxi), Vicksburg
 - **LA**: New Orleans + St. Charles Parish
 - **KY**: Louisville Metro (legislation archive) + Lexington-Fayette Urban
   County — both consolidated city-county governments
 
 **CivicClerk** (meeting agendas): Travis County TX (Austin), Cobb County GA,
 Tulsa County OK, Lake Charles LA, Ascension / West Baton Rouge / Washington
-Parishes LA
+Parishes LA, Bentonville + Rogers AR, Jackson + Gulfport + Hattiesburg +
+Rankin County MS
 
 **PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth),
 Shreveport LA, Louisville Metro Council KY
 
 **iQM2** (meeting agendas): Butler County OH, Atlanta, Jefferson County AL
 (Birmingham)
+
+**CivicPlus Agenda Center** (agenda/minutes PDFs): Bexar County TX (San
+Antonio), Hidalgo County TX, Montgomery County OH (Dayton), Baton Rouge /
+East Baton Rouge, Jefferson Parish, Kenner, Bossier City, Livingston Parish
+LA, Kenton County, Hardin County, Frankfort KY, Hot Springs AR, Southaven +
+Olive Branch + Pascagoula + DeSoto County + Jackson County MS
+
+**Page watcher** (generic — any body that posts agendas/PDFs on its own
+website): Summit County Council OH (Akron), Lafayette Consolidated Govt,
+Caddo Parish, St. Tammany Parish LA; Bowling Green, Covington KY; Little
+Rock, North Little Rock, Fort Smith, Springdale, Conway, Texarkana, Pine
+Bluff + Pulaski / Benton / Washington / Sebastian Counties AR; Biloxi,
+Meridian, Tupelo + Madison / Hinds Counties MS.
+Adding an own-site body = one line with the URL of its agenda page.
 
 Legistar sources alert per piece of legislation; the other three alert per
 meeting whose agenda contains tow language (agenda PDFs are read with a
@@ -143,28 +158,21 @@ is the "client" value.
 
 ## Known coverage gaps (the phase-2 list)
 
-These places don't use Legistar, so they need their own connectors later
-(platform noted — each platform connector unlocks every body using it):
+Remaining bodies not yet watched (the page watcher can take any of them —
+each just needs its agenda-page URL added to sources.json):
 
-- **CivicClerk**: Travis County TX (Austin), Cobb County GA, Tulsa County OK
-- **PrimeGov**: Oklahoma City, Tarrant County TX (Fort Worth)
-- **Granicus iQM2**: Atlanta, Butler County OH, Jefferson County AL (Birmingham)
-- **Own sites / PDFs**: Summit, Cuyahoga (Cleveland), Franklin (Columbus),
-  Hamilton, Montgomery Counties OH; Bexar (San Antonio), Dallas, El Paso,
-  Hidalgo, Fort Bend Counties TX; Shelby (Memphis), Knox, Hamilton Counties TN;
-  Gwinnett, Chatham Counties GA; Madison, Mobile Counties AL; Pulaski County AR;
-  Hinds County MS (Jackson); Memphis, Chattanooga, Knoxville, Birmingham,
-  Montgomery, Mobile, Little Rock, Tulsa cities
-- **Louisiana (CivicPlus Agenda Center)**: Jefferson Parish, East Baton
-  Rouge / Baton Rouge Metro Council, Kenner, Bossier City, Livingston
-  Parish — one Agenda Center connector unlocks all of these (plus Bexar
-  County TX and others)
-- **Louisiana (own sites)**: Lafayette Consolidated Government, Caddo
-  Parish, Calcasieu Parish, St. Tammany Parish
-- **Kentucky (CivicPlus Agenda Center)**: Kenton County, Hardin County,
-  Frankfort — same future connector as the Louisiana group above
-- **Kentucky (own sites)**: Bowling Green, Owensboro, Covington, Florence,
-  Boone / Campbell / Warren / Daviess Counties, Elizabethtown
+- **Platform connectors not built yet**: CivicWeb (Dallas County TX),
+  NovusAGENDA (El Paso County TX), OnBase (Hamilton County OH, Akron city),
+  Municode Meetings (Norman OK)
+- **Own-site bodies with known agenda pages, ready for pagewatch**:
+  Owensboro, Florence, Elizabethtown, Boone / Campbell / Warren / Daviess
+  Counties KY; Calcasieu Parish LA; Cuyahoga (Cleveland) and Franklin
+  (Columbus) Counties OH; Memphis, Chattanooga, Knoxville + Shelby / Knox /
+  Hamilton Counties TN; Gwinnett, Chatham Counties GA; Birmingham,
+  Montgomery, Mobile + Madison / Mobile Counties AL; Houston, Fort Bend
+  County TX; Tulsa
+- **Puerto Rico**: San Juan's municipal legislature, Spanish-language
+  (a good fit for the AI pass later)
 - **Puerto Rico**: San Juan's municipal legislature, Spanish-language
   (a good fit for the AI pass later)
 

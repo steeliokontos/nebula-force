@@ -23,6 +23,7 @@ every hit gets a plain-English "why this matters" summary + relevance grade.
 Without a key everything still works — you just get the raw matched text.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -283,6 +284,16 @@ def probe_source(src):
         ok = raw is not None and b"<html" in raw[:2000].lower()
         return ok, err or ("unexpected page (layout may have changed)"
                            if raw is not None else None)
+    if platform == "agendacenter":
+        raw, err = http_get_raw("https://%s/AgendaCenter" % c.rstrip("/"), timeout=20)
+        ok = raw is not None and b"viewfile" in raw.lower()
+        return ok, err or ("no agenda links found (layout may have changed)"
+                           if raw is not None else None)
+    if platform == "pagewatch":
+        if not src.get("url"):
+            return False, "no 'url' configured for this pagewatch source"
+        raw, err = http_get_raw(src["url"], timeout=20)
+        return raw is not None, err
     return False, "unknown platform '%s'" % platform
 
 
@@ -527,11 +538,118 @@ def fetch_iqm2(src, since, now):
     return items
 
 
+def fetch_agendacenter(src, since, now):
+    """CivicPlus Agenda Center - agenda/minutes PDFs linked from /AgendaCenter.
+
+    src["client"] is the government's web domain (e.g. "bexar.org").
+    Document links embed their date: /AgendaCenter/ViewFile/Agenda/_MMDDYYYY-NNN
+    """
+    base = "https://%s" % src["client"].rstrip("/")
+    raw, err = http_get_raw(base + "/AgendaCenter")
+    if raw is None:
+        raise ConnectorError(err)
+    page = raw.decode("utf-8", "replace")
+    if "viewfile" not in page.lower():
+        raise ConnectorError("no agenda links found (layout may have changed)")
+    items, fetched = [], 0
+    links = re.finditer(
+        r'<a[^>]*href="(/AgendaCenter/ViewFile/(Agenda|Minutes)/_(\d{2})(\d{2})(\d{4})-(\d+))"'
+        r'[^>]*>', page)
+    todays = now.strftime("%Y-%m-%d")
+    skipped = 0
+    for m in links:
+        path, typ, mm, dd, yyyy, num = m.groups()
+        tm = re.search(r'title="([^"]*)"', m.group(0))
+        title = tm.group(1) if tm else ""
+        date = "%s-%s-%s" % (yyyy, mm, dd)
+        if date < since[:10]:
+            continue
+        uid = "%s-%s" % (typ.lower(), num)
+        if "%s:%s" % (src["client"], uid) in KNOWN_IDS:
+            continue
+        if fetched >= MAX_MEETINGS_PER_SCAN:
+            skipped += 1
+            continue
+        fetched += 1
+        raw2, _ = http_get_raw(base + path)
+        text = pdf_to_text(raw2) if raw2 else ""
+        items.append({
+            "uid": uid,
+            "title": html.unescape(title).strip() if title else "%s %s/%s/%s" % (typ, mm, dd, yyyy),
+            "text": text,
+            "status": "Scheduled" if date >= todays else "Held",
+            "meeting_body": "", "date": date, "modified": date, "file": typ,
+            "url": base + path,
+        })
+    if skipped:
+        log("  %-22s note: %d newer documents deferred to next scan (politeness cap)"
+            % (src["client"], skipped))
+    return items
+
+
+def fetch_pagewatch(src, since, now):
+    """Generic fallback for governments with no platform at all.
+
+    Point src["url"] at the page where a body posts its agendas/minutes.
+    The connector collects agenda-looking document links from that page,
+    reads the new ones, and scans their text. Works on plain PDF-on-a-
+    website publishing - the long tail that no vendor platform covers.
+    """
+    url = src.get("url")
+    if not url:
+        raise ConnectorError("no 'url' configured for this pagewatch source")
+    raw, err = http_get_raw(url)
+    if raw is None:
+        raise ConnectorError(err)
+    page = raw.decode("utf-8", "replace")
+    # Collect links that look like meeting documents.
+    cands = []
+    for m in re.finditer(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', page, re.S):
+        href, label = m.group(1), html_to_text(m.group(2)).strip()
+        blob = (href + " " + label).lower()
+        if re.search(r"agenda|minutes|packet|meeting", blob) and (
+                ".pdf" in href.lower() or "agenda" in href.lower()):
+            cands.append((urllib.parse.urljoin(url, href), label))
+    if not cands and "<html" not in page.lower():
+        raise ConnectorError("unexpected page (layout may have changed)")
+    items, fetched = [], 0
+    seen_urls = set()
+    for link, label in cands:
+        if link in seen_urls:
+            continue
+        seen_urls.add(link)
+        uid = "u" + hashlib.md5(link.encode()).hexdigest()[:16]
+        if "%s:%s" % (src["client"], uid) in KNOWN_IDS:
+            continue
+        if fetched >= MAX_MEETINGS_PER_SCAN:
+            break
+        fetched += 1
+        raw2, _ = http_get_raw(link)
+        if not raw2:
+            continue
+        text = pdf_to_text(raw2) if raw2[:5] == b"%PDF-" \
+            else html_to_text(raw2.decode("utf-8", "replace"))
+        title = label or link.rsplit("/", 1)[-1]
+        items.append({
+            "uid": uid, "title": title[:200], "text": text,
+            "status": "", "meeting_body": "", "date": "",
+            "modified": now.strftime("%Y-%m-%d"), "file": "",
+            "url": link,
+        })
+    return items
+
+
+# Ids already in the database (set by cmd_scan before dispatch) so document-
+# fetching connectors never re-download something we've already read.
+KNOWN_IDS = set()
+
 CONNECTORS = {
     "legistar": fetch_legistar,
     "civicclerk": fetch_civicclerk,
     "primegov": fetch_primegov,
     "iqm2": fetch_iqm2,
+    "agendacenter": fetch_agendacenter,
+    "pagewatch": fetch_pagewatch,
 }
 
 
@@ -565,6 +683,10 @@ def cmd_scan(days=None, force=False):
 
     active = [s for s in cfg["sources"] if s.get("verified") is not False]
     log("Scanning %d sources for legislation touched since %s ...\n" % (len(active), since[:10]))
+
+    # Let document-fetching connectors skip anything already in the database.
+    KNOWN_IDS.clear()
+    KNOWN_IDS.update(r[0] for r in conn.execute("SELECT id FROM hits"))
 
     for src in active:
         platform = src.get("platform", "legistar")

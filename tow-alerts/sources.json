@@ -266,6 +266,355 @@
       "name": "Lexington-Fayette Urban County",
       "state": "KY",
       "kind": "city-county"
+    },
+    {
+      "client": "bexar.org",
+      "name": "Bexar County (San Antonio)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "hidalgocounty.us",
+      "name": "Hidalgo County",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "mcohio.org",
+      "name": "Montgomery County (Dayton)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "brla.gov",
+      "name": "Baton Rouge / East Baton Rouge",
+      "state": "LA",
+      "kind": "city-parish",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "jeffparish.gov",
+      "name": "Jefferson Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "kenner.la.us",
+      "name": "Kenner",
+      "state": "LA",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "bossiercity.org",
+      "name": "Bossier City",
+      "state": "LA",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "livingstonparishcouncil.com",
+      "name": "Livingston Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "kentoncounty.org",
+      "name": "Kenton County (Cincinnati metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "hardincountyky.gov",
+      "name": "Hardin County (Elizabethtown)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "frankfort.ky.gov",
+      "name": "Frankfort",
+      "state": "KY",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "summitoh",
+      "name": "Summit County Council (Akron)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://council.summitoh.net/"
+    },
+    {
+      "client": "lafayettela",
+      "name": "Lafayette Consolidated Govt",
+      "state": "LA",
+      "kind": "city-parish",
+      "platform": "pagewatch",
+      "url": "http://apps.lafayettela.gov/obcouncil/index.html"
+    },
+    {
+      "client": "caddoparish",
+      "name": "Caddo Parish (Shreveport)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://caddo.gov/commission-clerks-office/minutes/"
+    },
+    {
+      "client": "sttammany",
+      "name": "St. Tammany Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://www.stpgov.org/government/agenda___minutes.php"
+    },
+    {
+      "client": "bowlinggreen",
+      "name": "Bowling Green",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.bgky.org/city-commission"
+    },
+    {
+      "client": "covingtonky",
+      "name": "Covington (Cincinnati metro)",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.covingtonky.gov/government/mayor-and-commission"
+    },
+    {
+      "client": "jonesboro",
+      "name": "Jonesboro",
+      "state": "AR",
+      "kind": "city"
+    },
+    {
+      "client": "bentonvillear",
+      "name": "Bentonville",
+      "state": "AR",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "rogersar",
+      "name": "Rogers",
+      "state": "AR",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "www.hotspringsar.gov",
+      "name": "Hot Springs",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "littlerock",
+      "name": "Little Rock",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://littlerock.gov/government/board-of-directors/meeting-agendas/"
+    },
+    {
+      "client": "nlrar",
+      "name": "North Little Rock",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://nlr.ar.gov/meeting/city-council/"
+    },
+    {
+      "client": "fortsmith",
+      "name": "Fort Smith",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.fortsmithar.gov/government/meetings-agendas"
+    },
+    {
+      "client": "springdale",
+      "name": "Springdale",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.springdalear.gov/page/public-meetings"
+    },
+    {
+      "client": "conwayar",
+      "name": "Conway",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://conwayarkansas.gov/meetings/"
+    },
+    {
+      "client": "texarkanaar",
+      "name": "Texarkana",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.texarkanaar.gov/departments/city_clerk/index.php"
+    },
+    {
+      "client": "pinebluff",
+      "name": "Pine Bluff",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofpinebluff-ar.gov/city-council-meetings"
+    },
+    {
+      "client": "pulaskicounty",
+      "name": "Pulaski County (Little Rock)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.pulaskicounty.net/quorum-court"
+    },
+    {
+      "client": "bentoncountyar",
+      "name": "Benton County",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://bentoncountyar.gov/justices-peace/"
+    },
+    {
+      "client": "washingtoncountyar",
+      "name": "Washington County",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.washingtoncountyar.gov/government/elected-officials/quorum-court/event-calendar"
+    },
+    {
+      "client": "sebastiancountyar",
+      "name": "Sebastian County (Fort Smith)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.sebastiancountyar.gov/Departments/County-Judge/Quorum-Court/Agendas-Packets"
+    },
+    {
+      "client": "vicksburg-ms",
+      "name": "Vicksburg",
+      "state": "MS",
+      "kind": "city"
+    },
+    {
+      "client": "jacksonms",
+      "name": "Jackson",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "gulfportms",
+      "name": "Gulfport",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "hattiesburgms",
+      "name": "Hattiesburg",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "rankincoms",
+      "name": "Rankin County (Jackson metro)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "southaven.org",
+      "name": "Southaven (Memphis metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.obms.us",
+      "name": "Olive Branch (Memphis metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofpascagoula.com",
+      "name": "Pascagoula",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.desotocountyms.gov",
+      "name": "DeSoto County (Memphis metro)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.co.jackson.ms.us",
+      "name": "Jackson County (Pascagoula)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "biloxi",
+      "name": "Biloxi",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://biloxi.ms.us/departments/city-council/agenda/"
+    },
+    {
+      "client": "meridianms",
+      "name": "Meridian",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://meridianms.org/government/city-council/council-agenda/"
+    },
+    {
+      "client": "tupeloms",
+      "name": "Tupelo",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.tupeloms.gov/my-government/city-council/agendas-minutes"
+    },
+    {
+      "client": "madisoncoms",
+      "name": "Madison County (Jackson metro)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.madison-co.com/elected-offices/board-of-supervisors/upcoming-agenda"
+    },
+    {
+      "client": "hindscounty",
+      "name": "Hinds County (Jackson)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.hindscountyms.com/elected-offices/board-supervisors/board-meetings"
     }
   ]
 }
