@@ -1,0 +1,21 @@
+{
+  "days_back": 14,
+  "sources": [
+    { "client": "fortworthgov",      "name": "Fort Worth",                        "state": "TX", "kind": "city" },
+    { "client": "cityofdallas",      "name": "Dallas",                            "state": "TX", "kind": "city" },
+    { "client": "sanantonio",        "name": "San Antonio",                       "state": "TX", "kind": "city" },
+    { "client": "austintexas",       "name": "Austin",                            "state": "TX", "kind": "city" },
+    { "client": "elpasotexas",       "name": "El Paso",                           "state": "TX", "kind": "city" },
+    { "client": "corpuschristi",     "name": "Corpus Christi",                    "state": "TX", "kind": "city" },
+    { "client": "harriscountytx",    "name": "Harris County (Houston area)",      "state": "TX", "kind": "county" },
+    { "client": "boerne",            "name": "Boerne",                            "state": "TX", "kind": "city" },
+    { "client": "columbus",          "name": "Columbus",                          "state": "OH", "kind": "city" },
+    { "client": "cityofcleveland",   "name": "Cleveland",                         "state": "OH", "kind": "city" },
+    { "client": "cincinnatioh",      "name": "Cincinnati",                        "state": "OH", "kind": "city" },
+    { "client": "toledo",            "name": "Toledo",                            "state": "OH", "kind": "city" },
+    { "client": "cityoffayetteville","name": "Fayetteville",                      "state": "AR", "kind": "city" },
+    { "client": "fulton",            "name": "Fulton County (Atlanta area)",      "state": "GA", "kind": "county" },
+    { "client": "huntsvilleal",      "name": "Huntsville",                        "state": "AL", "kind": "city" },
+    { "client": "nashville",         "name": "Metro Nashville / Davidson County", "state": "TN", "kind": "city-county" }
+  ]
+}

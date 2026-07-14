@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TowWatch</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font: 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
+         background: #f4f6f8; color: #1c2733; padding: 24px 16px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  h1 { font-size: 22px; letter-spacing: .2px; color: #16324f; }
+  .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
+  .demoflag { background: #fff3cd; border: 1px solid #e6cf87; color: #6b5a12;
+              border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
+  .chip { border: 1px solid #c6d0da; background: #fff; border-radius: 999px;
+          padding: 4px 12px; font-size: 13px; cursor: pointer; color: #3a4754; }
+  .chip.on { background: #16324f; color: #fff; border-color: #16324f; }
+  #q { flex: 1; min-width: 160px; border: 1px solid #c6d0da; border-radius: 8px;
+       padding: 6px 10px; font: inherit; font-size: 13px; }
+  .card { background: #fff; border: 1px solid #e2e8ee; border-left: 4px solid var(--cat, #5a6472);
+          border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .hide { display: none; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+          font-size: 12.5px; color: #5a6472; margin-bottom: 6px; }
+  .loc { font-weight: 600; color: #16324f; font-size: 13.5px; }
+  .badge { border-radius: 5px; padding: 1px 7px; font-size: 11.5px; font-weight: 600;
+           color: #fff; background: var(--cat, #5a6472); }
+  .rel-high .badge.rel { background: #a63030; }
+  .rel-medium .badge.rel { background: #a66a00; }
+  .rel-low .badge.rel { background: #8a94a0; }
+  .title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .title a { color: inherit; text-decoration: none; }
+  .title a:hover { text-decoration: underline; }
+  .summary { background: #f0f5fa; border-radius: 8px; padding: 8px 11px;
+             font-size: 13.5px; margin-bottom: 8px; }
+  .snippet { color: #3a4754; font-size: 13px; border-left: 3px solid #e2e8ee;
+             padding-left: 10px; white-space: pre-wrap; }
+  mark { background: #ffe9a8; border-radius: 3px; padding: 0 2px; }
+  .tags { margin-top: 8px; font-size: 12px; color: #5a6472; }
+  .empty { text-align: center; color: #5a6472; padding: 60px 0; }
+  footer { text-align: center; color: #8a94a0; font-size: 12px; margin-top: 30px; }
+</style></head><body><div class="wrap">
+<header><h1>TowWatch</h1><span class="sub">4 alerts · generated Jul 14, 2026 02:24</span></header>
+<div class="sub">Tow &amp; impound mentions in city/county legislation across your territory.</div>
+<div class="demoflag">Sample data — run <b>python3 towwatch.py scan</b> to replace with live alerts.</div>
+<div class="filters" id="statechips"><span class="chip on" data-state="">All states</span><span class="chip" data-state="OH">OH</span><span class="chip" data-state="OK">OK</span><span class="chip" data-state="TN">TN</span><span class="chip" data-state="TX">TX</span>
+<input id="q" placeholder="filter: city, keyword, RFP…"></div>
+<div id="cards"><div class="card rel-high" data-state="TX" style="--cat:#1a7f5a"><div class="meta"><span class="loc">Fort Worth, TX</span><span class="badge">contract/RFP</span> <span class="badge rel">HIGH</span><span>2026-07-10</span><span>Agenda Ready</span></div><div class="title"><a href="#" target="_blank">M&amp;C 26-0412 Authorize execution of a Non-Consent Tow Rotation Services Agreement with qualified wrecker operators for police-initiated tows, citywide</a></div><div class="summary">Fort Worth is putting its police tow rotation contract on the agenda, with new fee caps. Operators must re-qualify to stay on the list.</div><div class="snippet">…authorize a <mark>rotation list</mark> of qualified <mark>wrecker</mark> companies to perform non-consent <mark>tows</mark> initiated by the Police Department, with annual performance reviews and updated per-<mark>tow</mark> fee caps…</div><div class="tags">matched: towing, wrecker, rotation list, non-consent</div></div><div class="card rel-high" data-state="OK" style="--cat:#6a3fa0"><div class="meta"><span class="loc">Tulsa, OK</span><span class="badge">PPI/portal</span> <span class="badge rel">HIGH</span><span>2026-07-09</span><span>First Reading</span></div><div class="title"><a href="#" target="_blank">ORD 77123 An ordinance amending Title 37, private property impound; requiring use of the city vehicle-release portal and signage updates</a></div><div class="summary">Tulsa would require PPI operators to log every release in a city portal within 2 hours. A compliance change for every operator in the city.</div><div class="snippet">…all private property <mark>impound</mark> operators shall register releases through the city&#x27;s online vehicle portal within two hours of <mark>tow</mark> completion; updated signage requirements take effect January 1…</div><div class="tags">matched: impound, PPI</div></div><div class="card rel-medium" data-state="OH" style="--cat:#a66a00"><div class="meta"><span class="loc">Columbus, OH</span><span class="badge">fees</span> <span class="badge rel">MEDIUM</span><span>2026-07-07</span><span>Referred to Committee</span></div><div class="title"><a href="#" target="_blank">0455-2026 To amend impound lot storage fee schedule and abandoned vehicle auction procedures</a></div><div class="summary">Columbus wants higher impound storage fees and monthly abandoned-vehicle auctions — signals volume pressure at the city lot.</div><div class="snippet">…increase daily storage fees at the city <mark>impound</mark> lot from $18 to $25 and authorize monthly auctions of <mark>abandoned vehicles</mark> held over 30 days…</div><div class="tags">matched: impound, veh storage, abandoned veh, veh auction</div></div><div class="card rel-low" data-state="TN" style="--cat:#2456a6"><div class="meta"><span class="loc">Nashville, TN</span><span class="badge">ordinance</span> <span class="badge rel">LOW</span><span>2026-07-01</span><span>Adopted</span></div><div class="title"><a href="#" target="_blank">RS2026-1099 A resolution accepting a report on booting and immobilization enforcement in the downtown entertainment district</a></div><div class="summary">Nashville is studying licensing for booting operators downtown — early signal of new regulation, no action yet.</div><div class="snippet">…report finds vehicle <mark>immobilization</mark> complaints doubled year-over-year; Council requests recommendations on licensing booting operators…</div><div class="tags">matched: immobilize</div></div></div>
+<div class="empty hide" id="empty">Nothing matches that filter.</div>
+<footer>TowWatch · data from public Legistar legislative records</footer>
+</div>
+<script>
+var chips=document.querySelectorAll('.chip'),q=document.getElementById('q'),st='';
+function apply(){var t=q.value.toLowerCase(),n=0;
+ document.querySelectorAll('.card').forEach(function(c){
+  var ok=(!st||c.dataset.state===st)&&(!t||c.textContent.toLowerCase().indexOf(t)>=0);
+  c.classList.toggle('hide',!ok); if(ok)n++;});
+ document.getElementById('empty').classList.toggle('hide',n>0);}
+chips.forEach(function(ch){ch.onclick=function(){st=ch.dataset.state;
+ chips.forEach(function(c){c.classList.toggle('on',c===ch)});apply();};});
+q.oninput=apply;
+</script></body></html>

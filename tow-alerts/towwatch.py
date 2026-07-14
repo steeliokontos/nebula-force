@@ -1,0 +1,508 @@
+#!/usr/bin/env python3
+"""
+TowWatch — government meeting alerts for the towing industry.
+
+Watches city/county legislative feeds (Legistar) for anything mentioning
+towing, impound, PPI, wrecker rotation, vehicle auctions, etc., and builds
+a clean dashboard.html you open in any browser.
+
+No installs needed beyond Python 3 (already on every Mac).
+
+Commands:
+  python3 towwatch.py probe          test which sources in sources.json respond
+  python3 towwatch.py scan           fetch recent legislation, find tow/impound hits
+  python3 towwatch.py scan --days 30 look further back (default 14 days)
+  python3 towwatch.py report         rebuild dashboard.html from saved hits
+  python3 towwatch.py demo           fill the dashboard with sample alerts (to see the look)
+
+Optional AI summaries: set the environment variable ANTHROPIC_API_KEY and
+every hit gets a plain-English "why this matters" summary + relevance grade.
+Without a key everything still works — you just get the raw matched text.
+"""
+
+import json
+import os
+import re
+import sqlite3
+import sys
+import html
+import urllib.request
+import urllib.parse
+import urllib.error
+from datetime import datetime, timedelta, timezone
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+SOURCES_FILE = os.path.join(ROOT, "sources.json")
+DB_FILE = os.path.join(ROOT, "towwatch.db")
+DASH_FILE = os.path.join(ROOT, "dashboard.html")
+API = "https://webapi.legistar.com/v1"
+USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
+
+# ---------------------------------------------------------------- keywords --
+# Each entry: (tag shown on the card, regex). Word boundaries keep "tow" from
+# matching "town" or "toward".
+KEYWORDS = [
+    ("towing",        r"\btow(?:ing|ed|s)?\b"),
+    ("tow truck",     r"\btow[- ]?trucks?\b"),
+    ("wrecker",       r"\bwreckers?\b"),
+    ("impound",       r"\bimpound(?:ment|ed|ing|s)?\b"),
+    ("abandoned veh", r"\babandoned (?:vehicle|auto|car)s?\b"),
+    ("junk vehicle",  r"\bjunk(?:ed)? (?:vehicle|motor vehicle|car)s?\b"),
+    ("veh storage",   r"\bvehicle storage\b|\bstorage lot\b|\bvehicle storage facilit"),
+    ("non-consent",   r"\bnon[- ]?consent(?:ual)? tow"),
+    ("PPI",           r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
+    ("rotation list", r"\brotation (?:list|tow|wrecker)"),
+    ("veh auction",   r"\bvehicle auctions?\b|\bauction of (?:abandoned|impounded) vehicles\b"),
+    ("immobilize",    r"\bimmobiliz\w+\b|\bvehicle boot(?:ing)?\b"),
+]
+KEYWORDS = [(tag, re.compile(rx, re.IGNORECASE)) for tag, rx in KEYWORDS]
+
+CATEGORY_LIST = ["contract/RFP", "ordinance", "fees", "enforcement", "PPI/portal", "other"]
+
+
+# ------------------------------------------------------------------- utils --
+def log(msg):
+    print(msg, flush=True)
+
+
+def http_get_json(url, timeout=30):
+    """GET a URL, return (parsed_json, None) or (None, 'error string')."""
+    req = urllib.request.Request(url, headers={
+        "Accept": "application/json",
+        "User-Agent": USER_AGENT,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8", "replace")), None
+    except urllib.error.HTTPError as e:
+        return None, "HTTP %d" % e.code
+    except Exception as e:  # timeouts, DNS, bad JSON, etc.
+        return None, str(e)[:120]
+
+
+def load_sources():
+    with open(SOURCES_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_sources(cfg):
+    with open(SOURCES_FILE, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+        f.write("\n")
+
+
+def db():
+    conn = sqlite3.connect(DB_FILE)
+    conn.execute("""CREATE TABLE IF NOT EXISTS hits (
+        id TEXT PRIMARY KEY,        -- client:matterId
+        client TEXT, city TEXT, state TEXT,
+        matter_file TEXT, title TEXT, url TEXT,
+        keywords TEXT,              -- comma-separated tags
+        snippet TEXT,               -- matched text with context
+        status TEXT, body TEXT,
+        intro_date TEXT, last_modified TEXT,
+        first_seen TEXT,
+        summary TEXT, category TEXT, relevance TEXT,
+        demo INTEGER DEFAULT 0
+    )""")
+    return conn
+
+
+def find_matches(text):
+    """Return (tags, snippets) for keyword hits in text."""
+    if not text:
+        return [], []
+    tags, snippets = [], []
+    for tag, rx in KEYWORDS:
+        m = rx.search(text)
+        if m:
+            tags.append(tag)
+            start = max(0, m.start() - 130)
+            end = min(len(text), m.end() + 130)
+            snip = re.sub(r"\s+", " ", text[start:end]).strip()
+            if len(snippets) < 3:
+                snippets.append(("…" if start > 0 else "") + snip + ("…" if end < len(text) else ""))
+    return tags, snippets
+
+
+# ------------------------------------------------------------------- probe --
+def cmd_probe():
+    cfg = load_sources()
+    ok = blocked = 0
+    for src in cfg["sources"]:
+        url = "%s/%s/bodies?%s" % (API, src["client"],
+                                   urllib.parse.urlencode({"$top": 1}, quote_via=urllib.parse.quote))
+        data, err = http_get_json(url, timeout=20)
+        if data is not None:
+            src["verified"] = True
+            src.pop("error", None)
+            ok += 1
+            log("  OK      %-22s (%s, %s)" % (src["client"], src["name"], src["state"]))
+        else:
+            src["verified"] = False
+            src["error"] = err
+            blocked += 1
+            log("  FAILED  %-22s (%s, %s) — %s" % (src["client"], src["name"], src["state"], err))
+    save_sources(cfg)
+    log("\n%d working, %d failed. Results saved to sources.json." % (ok, blocked))
+    log("Failed sources are skipped by 'scan'. A 403 usually means that city")
+    log("requires an API token or blocks bots — remove it or find its platform.")
+
+
+# -------------------------------------------------------------------- scan --
+def fetch_matter_text(client, matter_id):
+    """Best-effort full text of a matter. Returns '' on any failure."""
+    url = "%s/%s/matters/%s/versions" % (API, client, matter_id)
+    versions, err = http_get_json(url, timeout=20)
+    if not versions or not isinstance(versions, list):
+        return ""
+    key = versions[-1].get("Key") if isinstance(versions[-1], dict) else None
+    if key is None:
+        return ""
+    url = "%s/%s/matters/%s/texts/%s" % (API, client, matter_id, key)
+    text, err = http_get_json(url, timeout=20)
+    if isinstance(text, dict):
+        return text.get("MatterTextPlain") or ""
+    return ""
+
+
+def cmd_scan(days):
+    cfg = load_sources()
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00")
+    conn = db()
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    new_hits = []
+
+    active = [s for s in cfg["sources"] if s.get("verified") is not False]
+    log("Scanning %d sources for legislation touched since %s ...\n" % (len(active), since[:10]))
+
+    for src in active:
+        flt = "MatterLastModifiedUtc ge datetime'%s' and MatterRestrictViewViaWeb eq false" % since
+        qs = urllib.parse.urlencode(
+            {"$filter": flt, "$top": 1000, "$orderby": "MatterLastModifiedUtc desc"},
+            quote_via=urllib.parse.quote)
+        data, err = http_get_json("%s/%s/matters?%s" % (API, src["client"], qs))
+        if data is None:
+            log("  %-22s SKIPPED (%s)" % (src["client"], err))
+            continue
+        count = 0
+        for m in data:
+            title = " ".join(filter(None, [m.get("MatterName"), m.get("MatterTitle")]))
+            tags, snippets = find_matches(title)
+            matter_id = m.get("MatterId")
+            hit_id = "%s:%s" % (src["client"], matter_id)
+            already = conn.execute("SELECT 1 FROM hits WHERE id=?", (hit_id,)).fetchone()
+            if already:
+                continue
+            body_text = ""
+            if not tags:
+                continue  # MVP: title/name match only; full-text pass is a later upgrade
+            body_text = fetch_matter_text(src["client"], matter_id)
+            if body_text:
+                more_tags, more_snips = find_matches(body_text)
+                tags = list(dict.fromkeys(tags + more_tags))
+                snippets = (snippets + more_snips)[:3]
+            guid = m.get("MatterGuid") or ""
+            url = "https://%s.legistar.com/LegislationDetail.aspx?ID=%s&GUID=%s" % (
+                src["client"], matter_id, guid)
+            row = {
+                "id": hit_id, "client": src["client"], "city": src["name"],
+                "state": src["state"], "matter_file": m.get("MatterFile") or "",
+                "title": (m.get("MatterTitle") or m.get("MatterName") or "")[:600],
+                "url": url, "keywords": ", ".join(tags),
+                "snippet": "\n---\n".join(snippets),
+                "status": m.get("MatterStatusName") or "",
+                "body": m.get("MatterBodyName") or "",
+                "intro_date": (m.get("MatterIntroDate") or "")[:10],
+                "last_modified": (m.get("MatterLastModifiedUtc") or "")[:10],
+                "first_seen": now_iso,
+            }
+            new_hits.append(row)
+            count += 1
+        log("  %-22s %d matters checked, %d new hit%s" % (
+            src["client"], len(data), count, "" if count == 1 else "s"))
+
+    if new_hits and os.environ.get("ANTHROPIC_API_KEY"):
+        log("\nAsking Claude to grade %d new hit(s)..." % len(new_hits))
+        for row in new_hits:
+            grade = ai_grade(row)
+            row.update(grade)
+    elif new_hits:
+        log("\n(No ANTHROPIC_API_KEY set — skipping AI summaries; raw matches saved.)")
+
+    for row in new_hits:
+        conn.execute("""INSERT OR IGNORE INTO hits
+            (id, client, city, state, matter_file, title, url, keywords, snippet,
+             status, body, intro_date, last_modified, first_seen, summary, category, relevance, demo)
+            VALUES (:id,:client,:city,:state,:matter_file,:title,:url,:keywords,:snippet,
+             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,:relevance,0)""",
+            {**{"summary": "", "category": "", "relevance": ""}, **row})
+    conn.commit()
+    # a real scan replaces any demo data
+    if new_hits:
+        conn.execute("DELETE FROM hits WHERE demo=1")
+        conn.commit()
+    log("\n%d new alert(s) saved." % len(new_hits))
+    build_dashboard(conn)
+    conn.close()
+
+
+# ------------------------------------------------------------------ AI pass --
+AI_PROMPT = """You grade local-government legislation for a towing & impound company's
+business-development team. Given an agenda/legislation item, reply with ONLY a JSON
+object, no other text:
+{"relevance": "high|medium|low",
+ "category": "contract/RFP|ordinance|fees|enforcement|PPI/portal|other",
+ "summary": "<max 2 sentences, plain English: what is happening and why a towing
+ company should care (new business, rule change, risk). No fluff.>"}
+
+high = money or rules on the table (contracts, RFPs, rotation lists, fee changes,
+new PPI/permit requirements). medium = relevant discussion, no action yet.
+low = mentions towing only incidentally."""
+
+
+def ai_grade(row):
+    body = {
+        "model": "claude-haiku-4-5-20251001",
+        "max_tokens": 300,
+        "system": AI_PROMPT,
+        "messages": [{"role": "user", "content":
+            "City: %s, %s\nItem: %s\nStatus: %s\nMatched text:\n%s" % (
+                row["city"], row["state"], row["title"], row["status"], row["snippet"][:2000])}],
+    }
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=json.dumps(body).encode(),
+        headers={"content-type": "application/json",
+                 "x-api-key": os.environ["ANTHROPIC_API_KEY"],
+                 "anthropic-version": "2023-06-01"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            out = json.loads(resp.read())
+        text = "".join(b.get("text", "") for b in out.get("content", []))
+        m = re.search(r"\{.*\}", text, re.S)
+        g = json.loads(m.group(0)) if m else {}
+        return {"relevance": g.get("relevance", ""),
+                "category": g.get("category", ""),
+                "summary": g.get("summary", "")}
+    except Exception as e:
+        log("    (AI grading failed for %s: %s)" % (row["id"], str(e)[:80]))
+        return {"relevance": "", "category": "", "summary": ""}
+
+
+# ------------------------------------------------------------------- report --
+CATEGORY_COLORS = {
+    "contract/RFP": "#1a7f5a", "ordinance": "#2456a6", "fees": "#a66a00",
+    "enforcement": "#a63030", "PPI/portal": "#6a3fa0", "other": "#5a6472", "": "#5a6472",
+}
+
+PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TowWatch</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font: 15px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif;
+         background: #f4f6f8; color: #1c2733; padding: 24px 16px 60px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  h1 { font-size: 22px; letter-spacing: .2px; color: #16324f; }
+  .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
+  .demoflag { background: #fff3cd; border: 1px solid #e6cf87; color: #6b5a12;
+              border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
+  .chip { border: 1px solid #c6d0da; background: #fff; border-radius: 999px;
+          padding: 4px 12px; font-size: 13px; cursor: pointer; color: #3a4754; }
+  .chip.on { background: #16324f; color: #fff; border-color: #16324f; }
+  #q { flex: 1; min-width: 160px; border: 1px solid #c6d0da; border-radius: 8px;
+       padding: 6px 10px; font: inherit; font-size: 13px; }
+  .card { background: #fff; border: 1px solid #e2e8ee; border-left: 4px solid var(--cat, #5a6472);
+          border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .hide { display: none; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+          font-size: 12.5px; color: #5a6472; margin-bottom: 6px; }
+  .loc { font-weight: 600; color: #16324f; font-size: 13.5px; }
+  .badge { border-radius: 5px; padding: 1px 7px; font-size: 11.5px; font-weight: 600;
+           color: #fff; background: var(--cat, #5a6472); }
+  .rel-high .badge.rel { background: #a63030; }
+  .rel-medium .badge.rel { background: #a66a00; }
+  .rel-low .badge.rel { background: #8a94a0; }
+  .title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .title a { color: inherit; text-decoration: none; }
+  .title a:hover { text-decoration: underline; }
+  .summary { background: #f0f5fa; border-radius: 8px; padding: 8px 11px;
+             font-size: 13.5px; margin-bottom: 8px; }
+  .snippet { color: #3a4754; font-size: 13px; border-left: 3px solid #e2e8ee;
+             padding-left: 10px; white-space: pre-wrap; }
+  mark { background: #ffe9a8; border-radius: 3px; padding: 0 2px; }
+  .tags { margin-top: 8px; font-size: 12px; color: #5a6472; }
+  .empty { text-align: center; color: #5a6472; padding: 60px 0; }
+  footer { text-align: center; color: #8a94a0; font-size: 12px; margin-top: 30px; }
+</style></head><body><div class="wrap">
+<header><h1>TowWatch</h1><span class="sub">__COUNT__ alerts · generated __WHEN__</span></header>
+<div class="sub">Tow &amp; impound mentions in city/county legislation across your territory.</div>
+__DEMOFLAG__
+<div class="filters" id="statechips"><span class="chip on" data-state="">All states</span>__CHIPS__
+<input id="q" placeholder="filter: city, keyword, RFP…"></div>
+<div id="cards">__CARDS__</div>
+<div class="empty hide" id="empty">Nothing matches that filter.</div>
+<footer>TowWatch · data from public Legistar legislative records</footer>
+</div>
+<script>
+var chips=document.querySelectorAll('.chip'),q=document.getElementById('q'),st='';
+function apply(){var t=q.value.toLowerCase(),n=0;
+ document.querySelectorAll('.card').forEach(function(c){
+  var ok=(!st||c.dataset.state===st)&&(!t||c.textContent.toLowerCase().indexOf(t)>=0);
+  c.classList.toggle('hide',!ok); if(ok)n++;});
+ document.getElementById('empty').classList.toggle('hide',n>0);}
+chips.forEach(function(ch){ch.onclick=function(){st=ch.dataset.state;
+ chips.forEach(function(c){c.classList.toggle('on',c===ch)});apply();};});
+q.oninput=apply;
+</script></body></html>
+"""
+
+
+def esc(s):
+    return html.escape(s or "", quote=True)
+
+
+def highlight(text_escaped):
+    for tag, rx in KEYWORDS:
+        text_escaped = re.sub("(" + rx.pattern + ")", r"<mark>\1</mark>",
+                              text_escaped, flags=re.IGNORECASE)
+    return text_escaped
+
+
+def build_dashboard(conn):
+    rows = conn.execute("""SELECT * FROM hits ORDER BY
+        CASE relevance WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+        last_modified DESC, first_seen DESC""").fetchall()
+    cols = [d[0] for d in conn.execute("SELECT * FROM hits LIMIT 0").description]
+    cards, states, has_demo = [], [], False
+    for r in rows:
+        h = dict(zip(cols, r))
+        if h["demo"]:
+            has_demo = True
+        if h["state"] not in states:
+            states.append(h["state"])
+        color = CATEGORY_COLORS.get(h["category"] or "", "#5a6472")
+        badges = ""
+        if h["category"]:
+            badges += '<span class="badge">%s</span>' % esc(h["category"])
+        if h["relevance"]:
+            badges += ' <span class="badge rel">%s</span>' % esc(h["relevance"].upper())
+        summary = ('<div class="summary">%s</div>' % esc(h["summary"])) if h["summary"] else ""
+        snippet = ('<div class="snippet">%s</div>' % highlight(esc(h["snippet"]))) if h["snippet"] else ""
+        cards.append(
+            '<div class="card rel-%s" data-state="%s" style="--cat:%s">'
+            '<div class="meta"><span class="loc">%s, %s</span>%s'
+            '<span>%s</span><span>%s</span></div>'
+            '<div class="title"><a href="%s" target="_blank">%s %s</a></div>%s%s'
+            '<div class="tags">matched: %s</div></div>' % (
+                esc(h["relevance"] or "none"), esc(h["state"]), color,
+                esc(h["city"]), esc(h["state"]), badges,
+                esc(h["last_modified"] or h["intro_date"]), esc(h["status"]),
+                esc(h["url"]), esc(h["matter_file"]), esc(h["title"]),
+                summary, snippet, esc(h["keywords"])))
+    chips = "".join('<span class="chip" data-state="%s">%s</span>' % (esc(s), esc(s))
+                    for s in sorted(states))
+    page = (PAGE
+            .replace("__COUNT__", str(len(rows)))
+            .replace("__WHEN__", datetime.now().strftime("%b %d, %Y %H:%M"))
+            .replace("__DEMOFLAG__", '<div class="demoflag">Sample data — run '
+                     '<b>python3 towwatch.py scan</b> to replace with live alerts.</div>'
+                     if has_demo else "")
+            .replace("__CHIPS__", chips)
+            .replace("__CARDS__", "".join(cards) if cards else
+                     '<div class="empty">No alerts yet. Run a scan.</div>'))
+    with open(DASH_FILE, "w", encoding="utf-8") as f:
+        f.write(page)
+    log("Dashboard written to %s — open it in a browser." % DASH_FILE)
+
+
+# -------------------------------------------------------------------- demo --
+DEMO_HITS = [
+    dict(id="demo:1", client="demo", city="Fort Worth", state="TX", matter_file="M&C 26-0412",
+         title="Authorize execution of a Non-Consent Tow Rotation Services Agreement with "
+               "qualified wrecker operators for police-initiated tows, citywide",
+         url="#", keywords="towing, wrecker, rotation list, non-consent",
+         snippet="…authorize a rotation list of qualified wrecker companies to perform "
+                 "non-consent tows initiated by the Police Department, with annual "
+                 "performance reviews and updated per-tow fee caps…",
+         status="Agenda Ready", body="City Council", intro_date="2026-07-08",
+         last_modified="2026-07-10", first_seen="2026-07-14 09:00",
+         summary="Fort Worth is putting its police tow rotation contract on the agenda, "
+                 "with new fee caps. Operators must re-qualify to stay on the list.",
+         category="contract/RFP", relevance="high", demo=1),
+    dict(id="demo:2", client="demo", city="Tulsa", state="OK", matter_file="ORD 77123",
+         title="An ordinance amending Title 37, private property impound; requiring use of "
+               "the city vehicle-release portal and signage updates",
+         url="#", keywords="impound, PPI",
+         snippet="…all private property impound operators shall register releases through "
+                 "the city's online vehicle portal within two hours of tow completion; "
+                 "updated signage requirements take effect January 1…",
+         status="First Reading", body="City Council", intro_date="2026-07-02",
+         last_modified="2026-07-09", first_seen="2026-07-14 09:00",
+         summary="Tulsa would require PPI operators to log every release in a city portal "
+                 "within 2 hours. A compliance change for every operator in the city.",
+         category="PPI/portal", relevance="high", demo=1),
+    dict(id="demo:3", client="demo", city="Columbus", state="OH", matter_file="0455-2026",
+         title="To amend impound lot storage fee schedule and abandoned vehicle auction procedures",
+         url="#", keywords="impound, veh storage, abandoned veh, veh auction",
+         snippet="…increase daily storage fees at the city impound lot from $18 to $25 and "
+                 "authorize monthly auctions of abandoned vehicles held over 30 days…",
+         status="Referred to Committee", body="Public Service Committee", intro_date="2026-06-28",
+         last_modified="2026-07-07", first_seen="2026-07-14 09:00",
+         summary="Columbus wants higher impound storage fees and monthly abandoned-vehicle "
+                 "auctions — signals volume pressure at the city lot.",
+         category="fees", relevance="medium", demo=1),
+    dict(id="demo:4", client="demo", city="Nashville", state="TN", matter_file="RS2026-1099",
+         title="A resolution accepting a report on booting and immobilization enforcement in "
+               "the downtown entertainment district",
+         url="#", keywords="immobilize",
+         snippet="…report finds vehicle immobilization complaints doubled year-over-year; "
+                 "Council requests recommendations on licensing booting operators…",
+         status="Adopted", body="Metro Council", intro_date="2026-06-20",
+         last_modified="2026-07-01", first_seen="2026-07-14 09:00",
+         summary="Nashville is studying licensing for booting operators downtown — early "
+                 "signal of new regulation, no action yet.",
+         category="ordinance", relevance="low", demo=1),
+]
+
+
+def cmd_demo():
+    conn = db()
+    for h in DEMO_HITS:
+        conn.execute("""INSERT OR REPLACE INTO hits
+            (id, client, city, state, matter_file, title, url, keywords, snippet,
+             status, body, intro_date, last_modified, first_seen, summary, category, relevance, demo)
+            VALUES (:id,:client,:city,:state,:matter_file,:title,:url,:keywords,:snippet,
+             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,:relevance,:demo)""", h)
+    conn.commit()
+    build_dashboard(conn)
+    conn.close()
+
+
+# -------------------------------------------------------------------- main --
+def main():
+    args = sys.argv[1:]
+    cmd = args[0] if args else "report"
+    if cmd == "probe":
+        cmd_probe()
+    elif cmd == "scan":
+        days = 14
+        if "--days" in args:
+            days = int(args[args.index("--days") + 1])
+        cmd_scan(days)
+    elif cmd == "report":
+        conn = db()
+        build_dashboard(conn)
+        conn.close()
+    elif cmd == "demo":
+        cmd_demo()
+    else:
+        print(__doc__)
+
+
+if __name__ == "__main__":
+    main()
