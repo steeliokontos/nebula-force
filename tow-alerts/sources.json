@@ -615,6 +615,102 @@
       "kind": "county",
       "platform": "pagewatch",
       "url": "https://www.hindscountyms.com/elected-offices/board-supervisors/board-meetings"
+    },
+    {
+      "client": "maconbibbcoga",
+      "name": "Macon-Bibb County (consolidated)",
+      "state": "GA",
+      "kind": "city-county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "sandyspringsga",
+      "name": "Sandy Springs (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "henrycoga",
+      "name": "Henry County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "forsythcoga",
+      "name": "Forsyth County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "chathamcountyga",
+      "name": "Chatham County (Savannah)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "iqm2"
+    },
+    {
+      "client": "claytoncountyga",
+      "name": "Clayton County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "iqm2"
+    },
+    {
+      "client": "roswellcityga",
+      "name": "Roswell (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "iqm2"
+    },
+    {
+      "client": "accgov.com",
+      "name": "Athens-Clarke County (consolidated)",
+      "state": "GA",
+      "kind": "city-county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "savannahga",
+      "name": "Savannah",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://agenda.savannahga.gov/publishing/ap-agendas.html"
+    },
+    {
+      "client": "gwinnettga",
+      "name": "Gwinnett County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.gwinnettcounty.com/government/departments/board-of-commissioners/public-meetings/-/bacs/meetings/52"
+    },
+    {
+      "client": "augustaga",
+      "name": "Augusta-Richmond County (consolidated)",
+      "state": "GA",
+      "kind": "city-county",
+      "platform": "pagewatch",
+      "url": "https://augustarichmond-ga.municodemeetings.com/"
+    },
+    {
+      "client": "columbusga",
+      "name": "Columbus-Muscogee (consolidated)",
+      "state": "GA",
+      "kind": "city-county",
+      "platform": "pagewatch",
+      "url": "https://publicagenda.apps.columbusga.gov/"
+    },
+    {
+      "client": "cherokeega",
+      "name": "Cherokee County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://cherokeega.granicus.com/ViewPublisher.php?view_id=1"
     }
   ]
 }
