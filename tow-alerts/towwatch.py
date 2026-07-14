@@ -43,9 +43,12 @@ USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
 # to a towing company. Word boundaries keep "tow" from matching "town".
 # A keyword's weight counts once per mention, up to 3 mentions.
 KEYWORDS = [
+    ("tow software",  7, r"\btow(?:ing)? (?:dispatch|management) (?:software|system|platform|solution)s?|\btow(?:ing)? dispatch(?:ing)?\b|\bvehicle release (?:portal|system)s?\b"),
     ("predatory",     7, r"\bpredator(?:y|s)?[- ]tow\w*|\bpredatory (?:tow(?:ing)?|booting|practices)"),
+    ("vendor watch",  6, r"\bAutura\b|\bAutoReturn\b"),  # add competitor names here as you learn them
     ("rotation list", 5, r"\brotation (?:list|tow|wrecker)"),
     ("non-consent",   5, r"\bnon[- ]?consent(?:ual)? tow"),
+    ("police tow",    4, r"\bpolice[- ]initiated tow\w*|\blaw[- ]enforcement(?:[- ]initiated)? tow\w*|\bpolice tow\w*"),
     ("PPI",           4, r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
     ("wrecker",       3, r"\bwreckers?\b"),
     ("impound",       3, r"\bimpound(?:ment|ed|ing|s)?\b"),
@@ -55,6 +58,8 @@ KEYWORDS = [
     ("towing",        2, r"\btow(?:ing|ed|s)?\b"),
     ("abandoned veh", 2, r"\babandoned (?:vehicle|auto|car)s?\b"),
     ("immobilize",    2, r"\bimmobiliz\w+\b|\bvehicle boot(?:ing)?\b"),
+    ("clearance",     3, r"\b(?:quick|incident|scene) clearance\b|\bsecondary (?:crash|collision|accident)e?s?\b"),
+    ("TIM",           3, r"\btraffic incident management\b"),
     ("junk vehicle",  1, r"\bjunk(?:ed)? (?:vehicle|motor vehicle|car)s?\b"),
 ]
 KEYWORDS = [(tag, w, re.compile(rx, re.IGNORECASE)) for tag, w, rx in KEYWORDS]
@@ -62,19 +67,22 @@ KEYWORDS = [(tag, w, re.compile(rx, re.IGNORECASE)) for tag, w, rx in KEYWORDS]
 # Context boosters: only counted when a keyword above already matched.
 # Each adds its weight once and suggests the category badge.
 CONTEXT = [
-    ("contract/RFP", 6, r"\brequest for (?:proposal|qualification)s?\b|\bRFP\b|\bsolicitation\b|\binvitation to bid\b"),
-    ("contract/RFP", 4, r"\bcontract|agreement\b|\bprocurement\b|\bbid(?:s|ding)?\b|\baward(?:ing|ed)?\b"),
-    ("PPI/portal",   3, r"\bportal\b|\bonline (?:system|registry)\b|\bpermit(?:s|ting)?\b|\blicens\w+"),
-    ("fees",         2, r"\bfees?\b|\brate schedule\b|\bcharges\b|\bsurcharge"),
-    ("enforcement",  1, r"\benforcement\b|\bviolations?\b|\bcitations?\b|\bpenalt\w+"),
-    ("ordinance",    1, r"\bordinance\b|\bamend\w*\b|\bmunicipal code\b|\bregulations?\b"),
+    ("contract/RFP",  6, r"\brequest for (?:proposal|qualification)s?\b|\bRFP\b|\bsolicitation\b|\binvitation to bid\b"),
+    ("contract/RFP",  4, r"\bcontract|agreement\b|\bprocurement\b|\bbid(?:s|ding)?\b|\baward(?:ing|ed)?\b"),
+    ("dispatch/911",  3, r"\bPSAP\b|\b9-?1-?1\b|\bdispatch(?:ing)? center\b|\bcommunications center\b|\bcomputer[- ]aided dispatch\b|\bCAD system\b|\bsheriff|police department\b"),
+    ("PPI/portal",    3, r"\bportal\b|\bonline (?:system|registry)\b|\bpermit(?:s|ting)?\b|\blicens\w+"),
+    ("tech/software", 3, r"\bsoftware\b|\bplatform\b|\bautomat\w+|\bmobile app\w*|\bdigital\b|\btechnology\b"),
+    ("fees",          2, r"\bfees?\b|\brate schedule\b|\bcharges\b|\bsurcharge"),
+    ("enforcement",   1, r"\benforcement\b|\bviolations?\b|\bcitations?\b|\bpenalt\w+"),
+    ("ordinance",     1, r"\bordinance\b|\bamend\w*\b|\bmunicipal code\b|\bregulations?\b"),
 ]
 CONTEXT = [(cat, w, re.compile(rx, re.IGNORECASE)) for cat, w, rx in CONTEXT]
 
 # Score thresholds for the color-coded rating.
 HIGH_AT, MEDIUM_AT = 10, 5
 
-CATEGORY_LIST = ["contract/RFP", "ordinance", "fees", "enforcement", "PPI/portal", "other"]
+CATEGORY_LIST = ["contract/RFP", "dispatch/911", "tech/software", "ordinance",
+                 "fees", "enforcement", "PPI/portal", "other"]
 
 
 # ------------------------------------------------------------------- utils --
@@ -299,7 +307,7 @@ AI_PROMPT = """You grade local-government legislation for a towing & impound com
 business-development team. Given an agenda/legislation item, reply with ONLY a JSON
 object, no other text:
 {"relevance": "high|medium|low",
- "category": "contract/RFP|ordinance|fees|enforcement|PPI/portal|other",
+ "category": "contract/RFP|dispatch/911|tech/software|ordinance|fees|enforcement|PPI/portal|other",
  "summary": "<max 2 sentences, plain English: what is happening and why a towing
  company should care (new business, rule change, risk). No fluff.>"}
 
@@ -340,7 +348,9 @@ def ai_grade(row):
 # ------------------------------------------------------------------- report --
 CATEGORY_COLORS = {
     "contract/RFP": "#1a7f5a", "ordinance": "#2456a6", "fees": "#a66a00",
-    "enforcement": "#a63030", "PPI/portal": "#6a3fa0", "other": "#5a6472", "": "#5a6472",
+    "enforcement": "#a63030", "PPI/portal": "#6a3fa0",
+    "dispatch/911": "#8a1f5f", "tech/software": "#0f766e",
+    "other": "#5a6472", "": "#5a6472",
 }
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -470,6 +480,18 @@ def build_dashboard(conn):
 
 # -------------------------------------------------------------------- demo --
 DEMO_HITS = [
+    dict(id="demo:0", client="demo", city="Harris County", state="TX", matter_file="RFP 26-0331",
+         title="Request for Proposals: towing dispatch and management software for "
+               "law-enforcement initiated tows, Sheriff's Office",
+         url="#", keywords="tow software, police tow, towing, rotation list",
+         snippet="…solicit proposals for a digital towing dispatch platform integrated "
+                 "with the Sheriff's Office computer-aided dispatch (CAD) system, "
+                 "replacing the manual rotation list call-out process and providing "
+                 "real-time tow truck status to deputies on scene…",
+         status="Solicitation Open", body="Commissioners Court", intro_date="2026-07-06",
+         last_modified="2026-07-11", first_seen="2026-07-14 09:00",
+         summary="", category="contract/RFP", relevance="high",
+         score=27, graded_by="keywords", demo=1),
     dict(id="demo:1", client="demo", city="Fort Worth", state="TX", matter_file="M&C 26-0412",
          title="Authorize execution of a Non-Consent Tow Rotation Services Agreement with "
                "qualified wrecker operators for police-initiated tows, citywide",

@@ -38,12 +38,15 @@ Keywords are weighted by business value, repeat mentions count extra
 
 | Signal | Weight |
 |---|---|
+| tow dispatch/management software, vehicle release system | 7 |
 | predatory towing / predator towing / predatory booting | 7 |
+| vendor watch (Autura, AutoReturn — add competitors in towwatch.py) | 6 |
 | rotation list, non-consent tow | 5 each |
-| private property impound / PPI | 4 |
+| private property impound / PPI, police-initiated tow | 4 each |
 | wrecker, impound, vehicle auction, vehicle storage | 3 each |
+| scene/quick clearance, secondary crashes, traffic incident mgmt | 3 each |
 | towing, tow truck, abandoned vehicle, immobilization/booting | 2 each |
-| **Boosts:** RFP/solicitation +6, contract/award +4, portal/permit +3, fees +2 | |
+| **Boosts:** RFP/solicitation +6, contract/award +4, PSAP/911/CAD/sheriff +3, software/platform/automation +3, portal/permit +3, fees +2 | |
 
 **Score 10+ = HIGH (red), 5–9 = MEDIUM (amber), under 5 = LOW (gray).**
 The boost words also pick the category badge (contract/RFP, fees, PPI/portal,
