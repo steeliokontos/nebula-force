@@ -34,16 +34,18 @@ respond), `demo` (fill the dashboard with sample alerts to see the look),
 
 Every agenda item that mentions tow language gets a **relevance score**.
 Keywords are weighted by business value, repeat mentions count extra
-(up to 3×), and contract/fee/portal language adds boosts:
+(up to 5× per keyword, total score capped at 100), and contract/fee/portal
+language adds boosts:
 
 | Signal | Weight |
 |---|---|
-| tow dispatch/management software, vehicle release system | 7 |
+| tow/impound dispatch or management software, vehicle release system | 7 |
 | predatory towing / predator towing / predatory booting | 7 |
 | vendor watch (Autura, AutoReturn — add competitors in towwatch.py) | 6 |
 | rotation list, non-consent tow | 5 each |
 | private property impound / PPI, police-initiated tow | 4 each |
 | wrecker, impound, vehicle auction, vehicle storage | 3 each |
+| computer-aided dispatch / CAD system, replacement, integration | 3 |
 | scene/quick clearance, secondary crashes, traffic incident mgmt | 3 each |
 | towing, tow truck, abandoned vehicle, immobilization/booting | 2 each |
 | **Boosts:** RFP/solicitation +6, contract/award +4, PSAP/911/CAD/sheriff +3, software/platform/automation +3, portal/permit +3, fees +2 | |

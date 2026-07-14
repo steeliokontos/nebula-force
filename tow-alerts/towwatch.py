@@ -41,14 +41,18 @@ USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
 # ---------------------------------------------------------------- keywords --
 # Each entry: (tag shown on the card, weight, regex). Weight = business value
 # to a towing company. Word boundaries keep "tow" from matching "town".
-# A keyword's weight counts once per mention, up to 3 mentions.
+# A keyword's weight counts once per mention, up to MAX_MENTIONS mentions;
+# the overall score is capped at MAX_SCORE.
+MAX_MENTIONS, MAX_SCORE = 5, 100
+
 KEYWORDS = [
-    ("tow software",  7, r"\btow(?:ing)? (?:dispatch|management) (?:software|system|platform|solution)s?|\btow(?:ing)? dispatch(?:ing)?\b|\bvehicle release (?:portal|system)s?\b"),
+    ("tow software",  7, r"\b(?:tow(?:ing)?|impound(?:ment)?) (?:dispatch|management) (?:software|system|platform|solution)s?|\btow(?:ing)? dispatch(?:ing)?\b|\bvehicle release (?:portal|system)s?\b"),
     ("predatory",     7, r"\bpredator(?:y|s)?[- ]tow\w*|\bpredatory (?:tow(?:ing)?|booting|practices)"),
     ("vendor watch",  6, r"\bAutura\b|\bAutoReturn\b"),  # add competitor names here as you learn them
     ("rotation list", 5, r"\brotation (?:list|tow|wrecker)"),
     ("non-consent",   5, r"\bnon[- ]?consent(?:ual)? tow"),
     ("police tow",    4, r"\bpolice[- ]initiated tow\w*|\blaw[- ]enforcement(?:[- ]initiated)? tow\w*|\bpolice tow\w*"),
+    ("CAD",           3, r"\bcomputer[- ]aided dispatch\b|\bCAD (?:system|replacement|upgrade|integration|platform|vendor)s?\b"),
     ("PPI",           4, r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
     ("wrecker",       3, r"\bwreckers?\b"),
     ("impound",       3, r"\bimpound(?:ment|ed|ing|s)?\b"),
@@ -70,7 +74,7 @@ CONTEXT = [
     ("contract/RFP",  6, r"\brequest for (?:proposal|qualification)s?\b|\bRFP\b|\bsolicitation\b|\binvitation to bid\b"),
     ("contract/RFP",  4, r"\bcontract|agreement\b|\bprocurement\b|\bbid(?:s|ding)?\b|\baward(?:ing|ed)?\b"),
     ("enforcement",   3, r"\bpredator\w*\b"),  # bare "predatory" near any tow language
-    ("dispatch/911",  3, r"\bPSAP\b|\b9-?1-?1\b|\bdispatch(?:ing)? center\b|\bcommunications center\b|\bcomputer[- ]aided dispatch\b|\bCAD system\b|\bsheriff|police department\b"),
+    ("dispatch/911",  3, r"\bPSAP\b|\b9-?1-?1\b|\bdispatch(?:ing)? center\b|\bcommunications center\b|\bsheriff|police department\b"),
     ("PPI/portal",    3, r"\bportal\b|\bonline (?:system|registry)\b|\bpermit(?:s|ting)?\b|\blicens\w+"),
     ("tech/software", 3, r"\bsoftware\b|\bplatform\b|\bautomat\w+|\bmobile app\w*|\bdigital\b|\btechnology\b"),
     ("fees",          2, r"\bfees?\b|\brate schedule\b|\bcharges\b|\bsurcharge"),
@@ -154,7 +158,7 @@ def score_text(text):
     for tag, weight, rx in KEYWORDS:
         found = rx.findall(text)
         if found:
-            score += weight * min(len(found), 3)
+            score += weight * min(len(found), MAX_MENTIONS)
             tags.append(tag)
             if len(snippets) < 3:
                 m = rx.search(text)
@@ -172,6 +176,7 @@ def score_text(text):
             if weight > best:
                 category, best = cat, weight
     category = category or "other"
+    score = min(score, MAX_SCORE)
     relevance = "high" if score >= HIGH_AT else "medium" if score >= MEDIUM_AT else "low"
     return score, tags, snippets, category, relevance
 
