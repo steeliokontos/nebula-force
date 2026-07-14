@@ -86,7 +86,12 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
 1. **One-time:** install Python from the Microsoft Store (open the Store,
    search "Python", install the newest version — no admin rights needed on
    most work machines).
-2. **Every time:** double-click **`TowWatch.bat`**.
+2. **First time only (optional but recommended):** open a Command Prompt in
+   this folder and run `python towwatch.py doctor`. It confirms Python, file
+   access, the database, the scoring brain, and internet reach are all
+   working — so your first real scan can't trip over a silent setup problem.
+   Every line tells you plainly if something needs fixing.
+3. **Every time:** double-click **`TowWatch.bat`**.
 
 That's it — it scans all the cities, then opens `dashboard.html` in your
 browser with anything new. Run it with your morning coffee.
@@ -105,9 +110,10 @@ cd tow-alerts
 python3 towwatch.py scan
 ```
 
-Then open `dashboard.html`. Other commands: `probe` (test which city feeds
-respond), `demo` (fill the dashboard with sample alerts to see the look),
-`scan --days 30` (look further back on a first run).
+Then open `dashboard.html`. Other commands: `doctor` (pre-flight check that
+everything's ready before a scan), `probe` (test which city feeds respond),
+`demo` (fill the dashboard with sample alerts to see the look), `scan --days
+30` (look further back on a first run).
 
 ## How the rating system works (free, built in)
 

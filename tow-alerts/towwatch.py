@@ -9,6 +9,7 @@ a clean dashboard.html you open in any browser.
 No installs needed beyond Python 3 (already on every Mac).
 
 Commands:
+  python3 towwatch.py doctor         pre-flight check: is everything ready to scan?
   python3 towwatch.py probe          test which sources in sources.json respond
   python3 towwatch.py scan           fetch recent legislation, find tow/impound hits
                                      (polite guest: max once every 3 days; the
@@ -1360,6 +1361,116 @@ DEMO_HITS = [
 ]
 
 
+def cmd_doctor():
+    """Pre-flight check: confirm everything works BEFORE the first real scan.
+
+    Safe to run anytime - it writes no permanent files and reads no
+    government data. Every line says plainly whether it passed and, if not,
+    exactly what to do about it. The only check that can't pass inside a
+    locked-down sandbox is the internet one; on a normal machine it will.
+    """
+    import platform as _plat
+    import tempfile
+
+    results = []
+
+    def check(label, passed, detail=""):
+        mark = "OK  " if passed else "FAIL"
+        log("  [%s] %-38s %s" % (mark, label, detail))
+        results.append(passed)
+        return passed
+
+    log("TowWatch doctor - checking everything before your first scan.\n")
+    log("  App %s | Python %s | %s\n" % (
+        __version__, sys.version.split()[0], _plat.platform(terse=True)))
+
+    # 1. Python new enough for the features the app uses.
+    pyok = sys.version_info >= (3, 6)
+    check("Python 3.6 or newer", pyok,
+          "found %s" % sys.version.split()[0] if pyok
+          else "found %s - please install a newer Python" % sys.version.split()[0])
+
+    # 2. The source list is present and internally valid.
+    try:
+        cfg = load_sources()
+        srcs = cfg.get("sources", [])
+        bad = [s for s in srcs if s.get("platform", "legistar") not in CONNECTORS]
+        nourl = [s for s in srcs
+                 if s.get("platform") == "pagewatch" and not s.get("url")]
+        detail = "%d sources" % len(srcs)
+        if bad:
+            detail += ", %d unknown-platform" % len(bad)
+        if nourl:
+            detail += ", %d missing url" % len(nourl)
+        check("Source list readable & valid", bool(srcs) and not bad and not nourl,
+              detail)
+    except Exception as e:
+        check("Source list readable & valid", False, "cannot read sources.json: %s" % e)
+
+    # 3. The app can write next to itself (dashboard + database land here).
+    try:
+        probe = os.path.join(ROOT, ".towwatch_write_test")
+        with open(probe, "w") as f:
+            f.write("ok")
+        os.remove(probe)
+        check("Can save files here", True, "folder is writable")
+    except Exception as e:
+        check("Can save files here", False, "cannot write in %s: %s" % (ROOT, e))
+
+    # 4. SQLite (ships inside Python) actually works on this machine.
+    try:
+        tf = os.path.join(tempfile.gettempdir(), "towwatch_doctor.db")
+        c = sqlite3.connect(tf)
+        c.execute("CREATE TABLE t(x)")
+        c.execute("INSERT INTO t VALUES (1)")
+        c.commit()
+        c.close()
+        os.remove(tf)
+        check("Database engine (SQLite)", True, "built in, working")
+    except Exception as e:
+        check("Database engine (SQLite)", False, str(e))
+
+    # 5. Scoring sanity - prove the rating brain gives sensible answers.
+    try:
+        hi = score_text("Non-Consent Tow Rotation Services Agreement - RFP for "
+                        "wrecker impound vendor")[0]
+        lo = score_text("Parks report: one abandoned vehicle was towed from the lot")[0]
+        zero = score_text("The town council approved new downtown street lighting")[0]
+        span = score_text("Ordenanza sobre servicios de grua y deposito de "
+                          "vehiculos; licitacion de contrato")[0]
+        good = hi >= HIGH_AT and 0 < lo < HIGH_AT and zero == 0 and span > 0
+        check("Relevance scoring", good,
+              "RFP=%d(red) one-tow=%d 'town'=%d Spanish=%d" % (hi, lo, zero, span))
+    except Exception as e:
+        check("Relevance scoring", False, str(e))
+
+    # 6. Internet - the only check that can't pass in a locked-down sandbox.
+    #    We touch the Legistar API root (any HTTP reply, even an error code,
+    #    proves outbound HTTPS works) rather than scraping any city's data.
+    log("")
+    data, err = http_get_raw(API + "/", timeout=15)
+    reachable = data is not None or (err or "").startswith("HTTP")
+    if reachable:
+        check("Internet / gov sites reachable", True, "outbound HTTPS works")
+    else:
+        check("Internet / gov sites reachable", False,
+              "no response (%s)" % (err or "unknown"))
+        log("       ^ On a work network this is usually a proxy or firewall.")
+        log("         The scan needs plain outbound HTTPS on port 443.")
+
+    core_ok = all(results[:5])  # the internet check can fail if simply offline
+    log("")
+    if core_ok and reachable:
+        log("All checks passed - you're ready. Double-click TowWatch.bat, or run:")
+        log("    python3 towwatch.py scan")
+    elif core_ok:
+        log("Everything on THIS machine is fine; only the internet check failed.")
+        log("Re-run 'doctor' once you're online / off a blocking network.")
+    else:
+        log("Fix the FAIL line(s) above before the first scan (each says how).")
+    return core_ok
+
+
 def cmd_demo():
     conn = db()
     for h in DEMO_HITS:
@@ -1386,7 +1497,9 @@ def main():
     args = sys.argv[1:]
     cmd = args[0] if args else "report"
     try:
-        if cmd == "probe":
+        if cmd == "doctor":
+            cmd_doctor()
+        elif cmd == "probe":
             cmd_probe()
         elif cmd == "scan":
             days = None
