@@ -43,6 +43,7 @@ USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
 # to a towing company. Word boundaries keep "tow" from matching "town".
 # A keyword's weight counts once per mention, up to 3 mentions.
 KEYWORDS = [
+    ("predatory",     7, r"\bpredator(?:y|s)?[- ]tow\w*|\bpredatory (?:tow(?:ing)?|booting|practices)"),
     ("rotation list", 5, r"\brotation (?:list|tow|wrecker)"),
     ("non-consent",   5, r"\bnon[- ]?consent(?:ual)? tow"),
     ("PPI",           4, r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),

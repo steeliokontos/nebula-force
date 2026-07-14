@@ -38,6 +38,7 @@ Keywords are weighted by business value, repeat mentions count extra
 
 | Signal | Weight |
 |---|---|
+| predatory towing / predator towing / predatory booting | 7 |
 | rotation list, non-consent tow | 5 each |
 | private property impound / PPI | 4 |
 | wrecker, impound, vehicle auction, vehicle storage | 3 each |
