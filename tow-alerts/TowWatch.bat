@@ -1,5 +1,5 @@
 @echo off
-rem toWatch by Autura - double-click me anytime; it scans at most once every 3 days
+rem ToWatch by Autura - double-click me anytime; it scans at most once every 3 days
 rem and opens the dashboard either way.
 cd /d "%~dp0"
 
@@ -17,7 +17,7 @@ if errorlevel 1 (
     set PY=py
 )
 
-echo toWatch by Autura - checking for new tow/impound alerts...
+echo ToWatch by Autura - checking for new tow/impound alerts...
 echo.
 %PY% towwatch.py scan
 

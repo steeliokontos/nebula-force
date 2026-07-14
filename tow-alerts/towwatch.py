@@ -445,6 +445,8 @@ CATEGORY_COLORS = {
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ToWatch by Autura</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: light; --blue: #2B5CF0; --green: #12A150; --ink: #101418; }
   * { box-sizing: border-box; margin: 0; }
@@ -453,15 +455,17 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .topbar { height: 4px; margin: 0 -16px 22px;
             background: linear-gradient(90deg, var(--blue), var(--green)); }
   .wrap { max-width: 860px; margin: 0 auto; }
-  header { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
-  .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--ink);
-          color: #fff; font: 700 23px/32px Georgia, "Times New Roman", serif;
-          text-align: center; position: relative; flex: none; }
-  .mark::after { content: ""; position: absolute; right: 4px; bottom: 4px;
-                 width: 0; height: 0; border-left: 9px solid transparent;
-                 border-bottom: 9px solid var(--blue); }
-  h1 { font-size: 22px; letter-spacing: .2px; color: var(--ink); font-weight: 700; }
-  h1 .by { font-size: 13px; font-weight: 600; color: #8a94a0; letter-spacing: .4px; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+           margin-bottom: 4px; }
+  .logo { font: 900 38px/1.1 "Nunito", "Arial Rounded MT Bold", "Segoe UI",
+          system-ui, sans-serif; color: var(--ink); letter-spacing: -1px; }
+  .logo .tt { position: relative; display: inline-block; }
+  .logo .tt::after { content: ""; position: absolute; top: -9px; right: 1px;
+      width: 0; height: 0; border-left: 13px solid transparent;
+      border-bottom: 13px solid var(--blue); }
+  .byline { font: 700 13px/1 "Nunito", "Segoe UI", system-ui, sans-serif;
+            color: #7d8895; letter-spacing: .4px; }
+  .byline b { color: var(--ink); font-weight: 900; }
   .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
   .health { background: #fff; border: 1px solid #e2e8ee; border-radius: 10px;
             padding: 12px 16px; font-size: 13px; color: #3a4754; margin-top: 24px; }
@@ -500,8 +504,8 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .empty { text-align: center; color: #5a6472; padding: 60px 0; }
   footer { text-align: center; color: #8a94a0; font-size: 12px; margin-top: 30px; }
 </style></head><body><div class="topbar"></div><div class="wrap">
-<header><div class="mark">t</div>
-<h1>toWatch <span class="by">by autura</span></h1></header>
+<header><h1 class="logo"><span class="tt">T</span>oWatch</h1>
+<span class="byline">by <b>autura</b> &middot; keep communities moving</span></header>
 <div class="sub">__COUNT__ alerts &middot; generated __WHEN__ &middot; __SCANMETA__</div>
 __DEMOFLAG__
 <div class="filters" id="statechips"><span class="chip on" data-state="">All states</span>__CHIPS__
@@ -509,7 +513,7 @@ __DEMOFLAG__
 <div id="cards">__CARDS__</div>
 <div class="empty hide" id="empty">Nothing matches that filter.</div>
 __HEALTH__
-<footer>toWatch by autura &middot; public legislative records &middot; polite-guest mode: scans at most once every 3 days</footer>
+<footer>ToWatch by Autura &middot; public legislative records &middot; polite-guest mode: scans at most once every 3 days</footer>
 </div>
 <script>
 var chips=document.querySelectorAll('.chip'),q=document.getElementById('q'),st='';
