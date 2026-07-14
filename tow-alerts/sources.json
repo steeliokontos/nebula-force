@@ -144,6 +144,62 @@
       "name": "Harrison County (Gulfport/Biloxi)",
       "state": "MS",
       "kind": "county"
+    },
+    {
+      "client": "traviscotx",
+      "name": "Travis County (Austin area)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "tarrantcounty",
+      "name": "Tarrant County (Fort Worth area)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "primegov"
+    },
+    {
+      "client": "okc",
+      "name": "Oklahoma City",
+      "state": "OK",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "tulsacook",
+      "name": "Tulsa County",
+      "state": "OK",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "butlercountyoh",
+      "name": "Butler County",
+      "state": "OH",
+      "kind": "county",
+      "platform": "iqm2"
+    },
+    {
+      "client": "atlantacityga",
+      "name": "Atlanta",
+      "state": "GA",
+      "kind": "city",
+      "platform": "iqm2"
+    },
+    {
+      "client": "cobbcoga",
+      "name": "Cobb County (Atlanta area)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "jeffersoncountyal",
+      "name": "Jefferson County (Birmingham)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "iqm2"
     }
   ]
 }

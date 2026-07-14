@@ -28,7 +28,9 @@ import os
 import re
 import sqlite3
 import sys
+import time
 import html
+import zlib
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -103,19 +105,76 @@ def log(msg):
     print(msg, flush=True)
 
 
-def http_get_json(url, timeout=30):
-    """GET a URL, return (parsed_json, None) or (None, 'error string')."""
+# Pause between every outbound request - part of being a polite guest.
+REQUEST_PAUSE = 0.4
+
+
+class ConnectorError(Exception):
+    """A connector failed in a way the watchdog should record."""
+
+
+def http_get_raw(url, timeout=30, accept="*/*"):
+    """GET a URL, return (bytes, None) or (None, 'error string'). Paced."""
+    time.sleep(REQUEST_PAUSE)
     req = urllib.request.Request(url, headers={
-        "Accept": "application/json",
+        "Accept": accept,
         "User-Agent": USER_AGENT,
     })
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return json.loads(resp.read().decode("utf-8", "replace")), None
+            return resp.read(), None
     except urllib.error.HTTPError as e:
         return None, "HTTP %d" % e.code
-    except Exception as e:  # timeouts, DNS, bad JSON, etc.
+    except Exception as e:  # timeouts, DNS, etc.
         return None, str(e)[:120]
+
+
+def http_get_json(url, timeout=30):
+    """GET a URL, return (parsed_json, None) or (None, 'error string')."""
+    raw, err = http_get_raw(url, timeout, accept="application/json")
+    if raw is None:
+        return None, err
+    try:
+        return json.loads(raw.decode("utf-8", "replace")), None
+    except Exception:
+        return None, "response was not JSON (site may have changed)"
+
+
+def html_to_text(page):
+    """Best-effort plain text from an HTML page."""
+    page = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", page)
+    page = re.sub(r"(?i)<br\s*/?>|</p>|</div>|</tr>|</li>|</h[1-6]>", "\n", page)
+    text = re.sub(r"<[^>]+>", " ", page)
+    text = html.unescape(text)
+    return re.sub(r"[ \t\r]+", " ", text)
+
+
+def pdf_to_text(data):
+    """Best-effort plain text from a PDF, no libraries.
+
+    Decompresses the PDF's content streams and pulls out the text-drawing
+    strings. Imperfect by design - good enough for keyword scanning, and
+    returns "" rather than garbage when a PDF resists.
+    """
+    try:
+        if not data.startswith(b"%PDF"):
+            return ""
+        out = []
+        for m in re.finditer(rb"stream\r?\n(.*?)endstream", data, re.S):
+            chunk = m.group(1)
+            try:
+                chunk = zlib.decompress(chunk)
+            except Exception:
+                pass
+            for t in re.findall(rb"\((?:[^()\\]|\\.)*\)", chunk):
+                s = t[1:-1].decode("latin-1", "replace")
+                s = s.replace("\\(", "(").replace("\\)", ")").replace("\\\\", "\\")
+                if s.strip():
+                    out.append(s)
+        text = " ".join(out)
+        return text if len(text) > 200 else ""
+    except Exception:
+        return ""
 
 
 def load_sources():
@@ -201,23 +260,50 @@ def score_text(text):
 
 
 # ------------------------------------------------------------------- probe --
+def probe_source(src):
+    """Cheapest possible request per platform. Returns (ok, err)."""
+    c = src["client"]
+    platform = src.get("platform", "legistar")
+    top1 = urllib.parse.urlencode({"$top": 1}, quote_via=urllib.parse.quote)
+    if platform == "legistar":
+        data, err = http_get_json("%s/%s/bodies?%s" % (API, c, top1), timeout=20)
+        return data is not None, err
+    if platform == "civicclerk":
+        data, err = http_get_json(
+            "https://%s.api.civicclerk.com/v1/Events?%s" % (c, top1), timeout=20)
+        return data is not None, err
+    if platform == "primegov":
+        data, err = http_get_json(
+            "https://%s.primegov.com/api/v2/PublicPortal/ListUpcomingMeetings" % c,
+            timeout=20)
+        return isinstance(data, list), err or "unexpected response format"
+    if platform == "iqm2":
+        raw, err = http_get_raw(
+            "https://%s.iqm2.com/Citizens/Calendar.aspx" % c, timeout=20)
+        ok = raw is not None and b"<html" in raw[:2000].lower()
+        return ok, err or ("unexpected page (layout may have changed)"
+                           if raw is not None else None)
+    return False, "unknown platform '%s'" % platform
+
+
 def cmd_probe():
     cfg = load_sources()
     ok = blocked = 0
     for src in cfg["sources"]:
-        url = "%s/%s/bodies?%s" % (API, src["client"],
-                                   urllib.parse.urlencode({"$top": 1}, quote_via=urllib.parse.quote))
-        data, err = http_get_json(url, timeout=20)
-        if data is not None:
+        good, err = probe_source(src)
+        if good:
             src["verified"] = True
             src.pop("error", None)
             ok += 1
-            log("  OK      %-22s (%s, %s)" % (src["client"], src["name"], src["state"]))
+            log("  OK      %-22s %-10s (%s, %s)" % (
+                src["client"], src.get("platform", "legistar"), src["name"], src["state"]))
         else:
             src["verified"] = False
             src["error"] = err
             blocked += 1
-            log("  FAILED  %-22s (%s, %s) — %s" % (src["client"], src["name"], src["state"], err))
+            log("  FAILED  %-22s %-10s (%s, %s) - %s" % (
+                src["client"], src.get("platform", "legistar"), src["name"],
+                src["state"], err))
     save_sources(cfg)
     log("\n%d working, %d failed. Results saved to sources.json." % (ok, blocked))
     log("Failed sources are skipped by 'scan'. A 403 usually means that city")
@@ -239,6 +325,214 @@ def fetch_matter_text(client, matter_id):
     if isinstance(text, dict):
         return text.get("MatterTextPlain") or ""
     return ""
+
+
+# --------------------------------------------------------------- connectors --
+# One connector per publishing platform. Each takes (src, since, now) and
+# returns a list of items:
+#   {"uid": unique-id, "title": str, "text": str-or-"" (agenda text),
+#    "fetch_text": optional lazy callable for the full body,
+#    "status": str, "meeting_body": str, "date": "YYYY-MM-DD",
+#    "modified": "YYYY-MM-DD", "file": str, "url": str}
+# On failure a connector raises ConnectorError("plain-english reason") so
+# the watchdog can record exactly what went wrong for that source.
+# Adding a platform = adding one function + one CONNECTORS entry.
+
+MAX_MEETINGS_PER_SCAN = 12  # politeness cap for meeting-based platforms
+
+
+def fetch_legistar(src, since, now):
+    """Legistar (Granicus) - free public API, item = piece of legislation."""
+    flt = ("MatterLastModifiedUtc ge datetime'%s' and MatterRestrictViewViaWeb eq false"
+           % since)
+    qs = urllib.parse.urlencode(
+        {"$filter": flt, "$top": 1000, "$orderby": "MatterLastModifiedUtc desc"},
+        quote_via=urllib.parse.quote)
+    data, err = http_get_json("%s/%s/matters?%s" % (API, src["client"], qs))
+    if data is None:
+        raise ConnectorError(err)
+    if not isinstance(data, list):
+        raise ConnectorError("unexpected response format (site may have changed platforms)")
+    items = []
+    for m in data:
+        mid = m.get("MatterId")
+        items.append({
+            "uid": mid,
+            "title": " ".join(filter(None, [m.get("MatterName"), m.get("MatterTitle")])),
+            "text": "",
+            "fetch_text": (lambda _mid=mid: fetch_matter_text(src["client"], _mid)),
+            "status": m.get("MatterStatusName") or "",
+            "meeting_body": m.get("MatterBodyName") or "",
+            "date": (m.get("MatterIntroDate") or "")[:10],
+            "modified": (m.get("MatterLastModifiedUtc") or "")[:10],
+            "file": m.get("MatterFile") or "",
+            "url": "https://%s.legistar.com/LegislationDetail.aspx?ID=%s&GUID=%s" % (
+                src["client"], mid, m.get("MatterGuid") or ""),
+        })
+    return items
+
+
+def fetch_civicclerk(src, since, now):
+    """CivicClerk (CivicPlus) - public JSON API, item = a meeting.
+
+    The agenda text lives in published files (usually PDFs) streamed from
+    the API; we extract text from the agenda file for keyword scanning.
+    """
+    base = "https://%s.api.civicclerk.com" % src["client"]
+    qs = urllib.parse.urlencode(
+        {"$filter": "startDateTime ge %sZ" % since,
+         "$orderby": "startDateTime asc", "$top": 100},
+        quote_via=urllib.parse.quote)
+    data, err = http_get_json("%s/v1/Events?%s" % (base, qs))
+    if data is None:
+        raise ConnectorError(err)
+    events = data.get("value") if isinstance(data, dict) else data
+    if not isinstance(events, list):
+        raise ConnectorError("unexpected response format (API may have changed)")
+    items, fetched = [], 0
+    for ev in events:
+        if not isinstance(ev, dict):
+            continue
+        eid = ev.get("id") or ev.get("eventId")
+        title = (ev.get("eventName") or ev.get("name") or ev.get("title")
+                 or "Meeting").strip()
+        date = str(ev.get("startDateTime") or ev.get("eventDate") or "")[:10]
+        text = ""
+        files = ev.get("publishedFiles") or ev.get("files") or []
+        # Prefer the agenda file; fall back to the first file with text.
+        files = sorted(files, key=lambda f: 0 if "agenda" in
+                       str(f.get("type", "") or f.get("name", "")).lower() else 1)
+        for f in files:
+            if fetched >= MAX_MEETINGS_PER_SCAN:
+                break
+            fid = f.get("fileId") or f.get("id")
+            if not fid:
+                continue
+            raw, _ = http_get_raw(
+                "%s/v1/Meetings/GetMeetingFileStream(fileId=%s,plainText=false)"
+                % (base, fid))
+            fetched += 1
+            if raw:
+                text = pdf_to_text(raw) if raw[:5] == b"%PDF-" \
+                    else html_to_text(raw.decode("utf-8", "replace"))
+                if len(text.strip()) >= 80:
+                    break
+                text = ""
+        items.append({
+            "uid": eid, "title": title, "text": text,
+            "status": "Scheduled" if date >= now.strftime("%Y-%m-%d") else "Held",
+            "meeting_body": ev.get("categoryName") or "", "date": date,
+            "modified": date, "file": "",
+            "url": "https://%s.portal.civicclerk.com/event/%s/overview"
+                   % (src["client"], eid),
+        })
+    return items
+
+
+def fetch_primegov(src, since, now):
+    """PrimeGov - public JSON API, item = a meeting with agenda documents."""
+    base = "https://%s.primegov.com" % src["client"]
+    meetings, err = http_get_json(base + "/api/v2/PublicPortal/ListUpcomingMeetings")
+    if meetings is None:
+        raise ConnectorError(err)
+    if not isinstance(meetings, list):
+        raise ConnectorError("unexpected response format (API may have changed)")
+    for year in {now.year, int(since[:4])}:
+        arch, _ = http_get_json(
+            base + "/api/v2/PublicPortal/ListArchivedMeetings?year=%d" % year)
+        if isinstance(arch, list):
+            meetings = meetings + arch
+    items, fetched = [], 0
+    for m in meetings:
+        if not isinstance(m, dict):
+            continue
+        raw_date = str(m.get("dateTime") or m.get("date") or "")
+        date = raw_date[:10] if re.match(r"\d{4}-\d{2}-\d{2}", raw_date) else ""
+        if date and date < since[:10]:
+            continue
+        mid = m.get("id") or m.get("meetingId")
+        title = (m.get("title") or m.get("templateName") or "Meeting").strip()
+        text = ""
+        docs = sorted(m.get("documentList") or [],
+                      key=lambda d: 0 if "agenda" in
+                      str(d.get("templateName", "")).lower() else 1)
+        for d in docs:
+            if fetched >= MAX_MEETINGS_PER_SCAN:
+                break
+            fid = d.get("compiledMeetingDocumentFileId") or d.get("id")
+            if not fid:
+                continue
+            # Try the HTML preview first (clean text), then the PDF.
+            for url in ("%s/Portal/MeetingPreview?compiledMeetingDocumentFileId=%s" % (base, fid),
+                        "%s/Public/CompiledDocument/%s?compileOutputType=1" % (base, fid)):
+                raw, _ = http_get_raw(url)
+                fetched += 1
+                if raw:
+                    text = pdf_to_text(raw) if raw[:5] == b"%PDF-" \
+                        else html_to_text(raw.decode("utf-8", "replace"))
+                    if len(text.strip()) >= 80:
+                        break
+                    text = ""
+            if text:
+                break
+        items.append({
+            "uid": mid, "title": title, "text": text,
+            "status": "Scheduled" if (date and date >= now.strftime("%Y-%m-%d")) else "Held",
+            "meeting_body": "", "date": date, "modified": date, "file": "",
+            "url": base + "/Portal/Meeting?meetingTemplateId=%s" % (
+                m.get("templateId") or mid or ""),
+        })
+    return items
+
+
+def fetch_iqm2(src, since, now):
+    """Granicus iQM2 - HTML calendar + meeting detail pages, item = a meeting."""
+    base = "https://%s.iqm2.com" % src["client"]
+    since_dt = datetime.fromisoformat(since[:10])
+    frm = "%d/%d/%d" % (since_dt.month, since_dt.day, since_dt.year)
+    to_dt = now + timedelta(days=30)
+    to = "%d/%d/%d" % (to_dt.month, to_dt.day, to_dt.year)
+    raw, err = http_get_raw("%s/Citizens/Calendar.aspx?From=%s&To=%s" % (
+        base, urllib.parse.quote(frm, safe=""), urllib.parse.quote(to, safe="")))
+    if raw is None:
+        raise ConnectorError(err)
+    page = raw.decode("utf-8", "replace")
+    if "<html" not in page.lower():
+        raise ConnectorError("unexpected page (layout may have changed)")
+    ids = list(dict.fromkeys(re.findall(r"Detail_Meeting\.aspx\?ID=(\d+)", page)))
+    if len(ids) > MAX_MEETINGS_PER_SCAN:
+        log("  %-22s note: %d meetings in window, reading first %d (politeness cap)"
+            % (src["client"], len(ids), MAX_MEETINGS_PER_SCAN))
+        ids = ids[:MAX_MEETINGS_PER_SCAN]
+    items = []
+    for mid in ids:
+        url = "%s/Citizens/Detail_Meeting.aspx?ID=%s" % (base, mid)
+        praw, _ = http_get_raw(url)
+        if not praw:
+            continue
+        detail = praw.decode("utf-8", "replace")
+        t = re.search(r"<title>(.*?)</title>", detail, re.I | re.S)
+        title = html.unescape(t.group(1)).strip() if t else "Meeting %s" % mid
+        d = re.search(r"(\d{1,2}/\d{1,2}/\d{4})", title + " " + detail[:3000])
+        date = ""
+        if d:
+            mo, dy, yr = d.group(1).split("/")
+            date = "%s-%02d-%02d" % (yr, int(mo), int(dy))
+        items.append({
+            "uid": mid, "title": title[:200], "text": html_to_text(detail),
+            "status": "Scheduled" if (date and date >= now.strftime("%Y-%m-%d")) else "Held",
+            "meeting_body": "", "date": date, "modified": date, "file": "",
+            "url": url,
+        })
+    return items
+
+
+CONNECTORS = {
+    "legistar": fetch_legistar,
+    "civicclerk": fetch_civicclerk,
+    "primegov": fetch_primegov,
+    "iqm2": fetch_iqm2,
+}
 
 
 def cmd_scan(days=None, force=False):
@@ -273,62 +567,60 @@ def cmd_scan(days=None, force=False):
     log("Scanning %d sources for legislation touched since %s ...\n" % (len(active), since[:10]))
 
     for src in active:
-        flt = "MatterLastModifiedUtc ge datetime'%s' and MatterRestrictViewViaWeb eq false" % since
-        qs = urllib.parse.urlencode(
-            {"$filter": flt, "$top": 1000, "$orderby": "MatterLastModifiedUtc desc"},
-            quote_via=urllib.parse.quote)
-        data, err = http_get_json("%s/%s/matters?%s" % (API, src["client"], qs))
-        if data is not None and not isinstance(data, list):
-            # The endpoint answered but not in the shape we expect - that
-            # usually means the platform changed, not a network blip.
-            data, err = None, "unexpected response format (site may have changed platforms)"
-        if data is None:
+        platform = src.get("platform", "legistar")
+        if platform not in CONNECTORS:
+            log("  %-22s SKIPPED (unknown platform '%s')" % (src["client"], platform))
+            continue
+        try:
+            items = CONNECTORS[platform](src, since, now)
+        except ConnectorError as e:
             # Watchdog bookkeeping: count consecutive failures per source.
             src["fail_streak"] = src.get("fail_streak", 0) + 1
-            src["last_error"] = err
-            log("  %-22s SKIPPED (%s)" % (src["client"], err))
+            src["last_error"] = str(e)
+            log("  %-22s SKIPPED (%s)" % (src["client"], e))
+            continue
+        except Exception as e:  # a bug in a connector must not stop the scan
+            src["fail_streak"] = src.get("fail_streak", 0) + 1
+            src["last_error"] = "connector crashed: %s" % str(e)[:90]
+            log("  %-22s SKIPPED (connector crashed: %s)" % (src["client"], e))
             continue
         src["fail_streak"] = 0
         src["last_ok"] = now_iso[:10]
         src.pop("last_error", None)
         count = 0
-        for m in data:
-            title = " ".join(filter(None, [m.get("MatterName"), m.get("MatterTitle")]))
-            score, tags, snippets, category, relevance = score_text(title)
-            matter_id = m.get("MatterId")
-            hit_id = "%s:%s" % (src["client"], matter_id)
-            already = conn.execute("SELECT 1 FROM hits WHERE id=?", (hit_id,)).fetchone()
-            if already:
+        for it in items:
+            hit_id = "%s:%s" % (src["client"], it["uid"])
+            if conn.execute("SELECT 1 FROM hits WHERE id=?", (hit_id,)).fetchone():
                 continue
+            base_text = it["title"] + ("\n" + it["text"] if it.get("text") else "")
+            score, tags, snippets, category, relevance = score_text(base_text)
             if not score:
-                continue  # no tow/impound language in the title/name
-            # Pull the full legislation text and re-score title + body together,
-            # so repeat mentions and contract/fee language raise the rating.
-            body_text = fetch_matter_text(src["client"], matter_id)
-            if body_text:
-                score, tags, snippets, category, relevance = score_text(
-                    title + "\n" + body_text)
-            guid = m.get("MatterGuid") or ""
-            url = "https://%s.legistar.com/LegislationDetail.aspx?ID=%s&GUID=%s" % (
-                src["client"], matter_id, guid)
+                continue  # no tow/impound language
+            # Legistar items carry a lazy full-text fetcher; pull it only for
+            # hits, then re-score so repeat mentions raise the rating.
+            if it.get("fetch_text"):
+                body_text = it["fetch_text"]() or ""
+                if body_text:
+                    score, tags, snippets, category, relevance = score_text(
+                        it["title"] + "\n" + body_text)
             row = {
                 "id": hit_id, "client": src["client"], "city": src["name"],
-                "state": src["state"], "matter_file": m.get("MatterFile") or "",
-                "title": (m.get("MatterTitle") or m.get("MatterName") or "")[:600],
-                "url": url, "keywords": ", ".join(tags),
+                "state": src["state"], "matter_file": it.get("file", ""),
+                "title": it["title"][:600],
+                "url": it["url"], "keywords": ", ".join(tags),
                 "snippet": "\n---\n".join(snippets),
-                "status": m.get("MatterStatusName") or "",
-                "body": m.get("MatterBodyName") or "",
-                "intro_date": (m.get("MatterIntroDate") or "")[:10],
-                "last_modified": (m.get("MatterLastModifiedUtc") or "")[:10],
+                "status": it.get("status", ""),
+                "body": it.get("meeting_body", ""),
+                "intro_date": it.get("date", ""),
+                "last_modified": it.get("modified") or it.get("date", ""),
                 "first_seen": now_iso,
                 "score": score, "category": category, "relevance": relevance,
                 "graded_by": "keywords", "summary": "",
             }
             new_hits.append(row)
             count += 1
-        log("  %-22s %d matters checked, %d new hit%s" % (
-            src["client"], len(data), count, "" if count == 1 else "s"))
+        log("  %-22s %-10s %d item(s) checked, %d new hit%s" % (
+            src["client"], platform, len(items), count, "" if count == 1 else "s"))
 
     # Optional AI upgrade: if a key is present, Claude refines the keyword
     # grade and writes a summary. Without a key the keyword score stands.
@@ -417,7 +709,7 @@ def ai_grade(row):
 # Stage detection: is this item still actionable ("forward looking") or
 # already decided ("in the moment" intel)? Derived from the status field.
 DECIDED_RX = re.compile(
-    r"adopt|passed|approv|award|enact|final|complet|denied|failed|withdrawn|executed",
+    r"adopt|passed|approv|award|enact|final|complet|denied|failed|withdrawn|executed|\bheld\b",
     re.IGNORECASE)
 UPCOMING_RX = re.compile(
     r"first reading|second reading|introduc|referred|agenda ready|scheduled|"

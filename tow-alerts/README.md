@@ -104,10 +104,11 @@ ever.
 
 ## What it covers today
 
-24 confirmed feeds via the Legistar legislative platform — cities AND county
+32 sources across **four platform connectors** — cities AND county
 commissions (counties matter: sheriffs, commissioners courts, and consolidated
 dispatch centers often control tow dispatch, not the city):
 
+**Legistar** (legislation-level detail):
 - **TX**: Fort Worth, Dallas, San Antonio, Austin, El Paso, Corpus Christi,
   Boerne + Harris, Galveston, and Brazoria Counties
 - **OK**: Oklahoma County (OKC area)
@@ -117,6 +118,19 @@ dispatch centers often control tow dispatch, not the city):
 - **AL**: Huntsville + Baldwin County
 - **TN**: Metro Nashville / Davidson County + Blount County
 - **MS**: Harrison County (Gulfport/Biloxi)
+
+**CivicClerk** (meeting agendas): Travis County TX (Austin), Cobb County GA,
+Tulsa County OK
+
+**PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth)
+
+**iQM2** (meeting agendas): Butler County OH, Atlanta, Jefferson County AL
+(Birmingham)
+
+Legistar sources alert per piece of legislation; the other three alert per
+meeting whose agenda contains tow language (agenda PDFs are read with a
+built-in extractor — no extra installs). Each source declares its platform
+in `sources.json`; adding a body on any of the four platforms is one line.
 
 Adding a city that uses Legistar = adding one line to `sources.json`. If a
 city's agenda site looks like `something.legistar.com`, the `something` part
