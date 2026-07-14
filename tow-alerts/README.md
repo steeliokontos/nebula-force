@@ -25,6 +25,26 @@ pitching. It runs on your own computer and costs nothing to operate.
    sites don't wait on each other — pausing between Houston and Tulsa
    protects nobody — which keeps the overall scan quick.
 
+## The browser fail-safe (automatic)
+
+Some government sites (CivicPlus-hosted ones especially) turn away
+anything that doesn't announce itself as a web browser — even for fully
+public agenda pages. ToWatch handles that wall by itself:
+
+- Every site is first contacted with the honest ToWatch identity.
+- If a site rejects it (HTTP 403/406), the app **immediately retries the
+  same request presenting as a normal Chrome browser**, at the same
+  gentle pacing — it never knocks faster, it just dresses differently.
+- If browser mode works, the site is remembered in `sources.json`
+  (`browser_hosts`), so every future scan starts there directly — no
+  wasted rejected knock.
+- If a site blocks *both* identities, the watchdog records the honest
+  diagnosis ("browser mode was tried too") so you know it's a real wall,
+  not a costume problem — that's the one to paste to Claude.
+
+You'll see any tactic switches in the scan output as they happen, plus a
+summary at the end listing which sites now run in browser mode.
+
 ## Built to withstand change (the watchdog)
 
 Scrapers break when websites change — this one is built to notice and tell
@@ -174,12 +194,9 @@ These bodies simply don't publish agendas anywhere a scraper can watch:
 - **Carolina + Caguas PR** — legislature info pages are watched, but their
   document archives aren't online (flagged in their source names)
 
-Watch-list notes: CivicPlus-hosted sites (Pelham, Alabaster, St. Clair,
-Athens, Gadsden AL; Craighead County AR) rejected non-browser fetchers
-during research — if they show up failing in the watchdog after the first
-real scan, paste the output to Claude for a browser-style header tweak.
-A few Texas bodies are mid-migration between platforms (Odessa, San
-Angelo, McLennan County, Midland) — both ends are noted in their names.
+Watch-list note: a few Texas bodies are mid-migration between platforms
+(Odessa, San Angelo, McLennan County, Midland) — both ends are noted in
+their source names.
 
 Also on the roadmap: meeting *video* transcripts (catches discussion that
 never becomes a written agenda item), email digests, Salesforce push and

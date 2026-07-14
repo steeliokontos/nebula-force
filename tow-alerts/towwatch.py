@@ -178,13 +178,33 @@ class ConnectorError(Exception):
     """A connector failed in a way the watchdog should record."""
 
 
-def http_get_raw(url, timeout=30, accept="*/*"):
-    """GET a URL, return (bytes, None) or (None, 'error string'). Paced."""
+# Some government sites (CivicPlus-hosted ones especially) turn away
+# anything that doesn't look like a web browser, even for fully public
+# agenda pages. The fail-safe below detects that wall (HTTP 403/406 on the
+# honest ToWatch identity), retries the same request presenting as a
+# normal browser, and - if the browser identity gets through - remembers
+# the choice for that site so future scans start there. The per-site
+# pacing applies to every attempt either way; we never knock faster,
+# we just dress differently.
+BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+              "AppleWebKit/537.36 (KHTML, like Gecko) "
+              "Chrome/126.0.0.0 Safari/537.36")
+_browser_hosts = set()   # sites that need browser mode (kept in sources.json)
+_new_browser_hosts = []  # sites that switched during this run (for the log)
+
+# HTTP codes that mean "you don't look like a browser" rather than a
+# real error. 429 is NOT here - that means slow down, and the answer to
+# that is patience, not a costume change.
+_UA_WALL_CODES = ("HTTP 403", "HTTP 406")
+
+
+def _attempt(url, timeout, accept, as_browser):
     _pace(url)
-    req = urllib.request.Request(url, headers={
-        "Accept": accept,
-        "User-Agent": USER_AGENT,
-    })
+    headers = {"Accept": accept,
+               "User-Agent": BROWSER_UA if as_browser else USER_AGENT}
+    if as_browser:
+        headers["Accept-Language"] = "en-US,en;q=0.9"
+    req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read(), None
@@ -192,6 +212,29 @@ def http_get_raw(url, timeout=30, accept="*/*"):
         return None, "HTTP %d" % e.code
     except Exception as e:  # timeouts, DNS, etc.
         return None, str(e)[:120]
+
+
+def http_get_raw(url, timeout=30, accept="*/*"):
+    """GET a URL, return (bytes, None) or (None, 'error string'). Paced.
+
+    Tries the honest ToWatch identity first; on a UA wall it changes
+    tactics and presents as a browser, remembering per site.
+    """
+    host = urllib.parse.urlparse(url).netloc.lower()
+    as_browser = host in _browser_hosts
+    data, err = _attempt(url, timeout, accept, as_browser)
+    if err in _UA_WALL_CODES and not as_browser:
+        data2, err2 = _attempt(url, timeout, accept, True)
+        if data2 is not None:
+            _browser_hosts.add(host)
+            _new_browser_hosts.append(host)
+            log("    (%s rejected the scanner identity - switched to "
+                "browser mode for this site, and it worked)" % host)
+            return data2, None
+        # Browser mode didn't help either; report the original wall so
+        # the watchdog diagnosis stays accurate.
+        return None, err + " (browser mode was tried too)"
+    return data, err
 
 
 def http_get_json(url, timeout=30):
@@ -363,6 +406,7 @@ def probe_source(src):
 
 def cmd_probe():
     cfg = load_sources()
+    _browser_hosts.update(cfg.get("browser_hosts", []))
     ok = blocked = 0
     for src in cfg["sources"]:
         good, err = probe_source(src)
@@ -379,10 +423,13 @@ def cmd_probe():
             log("  FAILED  %-22s %-10s (%s, %s) - %s" % (
                 src["client"], src.get("platform", "legistar"), src["name"],
                 src["state"], err))
+    if _browser_hosts:
+        cfg["browser_hosts"] = sorted(_browser_hosts)
     save_sources(cfg)
     log("\n%d working, %d failed. Results saved to sources.json." % (ok, blocked))
-    log("Failed sources are skipped by 'scan'. A 403 usually means that city")
-    log("requires an API token or blocks bots — remove it or find its platform.")
+    log("Failed sources are skipped by 'scan'. A lingering 403 means the site")
+    log("blocked BOTH the scanner and browser identities - paste this output")
+    log("to Claude to get that source re-verified or replaced.")
 
 
 # -------------------------------------------------------------------- scan --
@@ -758,6 +805,8 @@ CONNECTORS = {
 
 def cmd_scan(days=None, force=False):
     cfg = load_sources()
+    # Sites that previously needed browser mode start there directly.
+    _browser_hosts.update(cfg.get("browser_hosts", []))
     conn = db()
     now = datetime.now(timezone.utc)
     now_iso = now.strftime("%Y-%m-%d %H:%M")
@@ -872,7 +921,14 @@ def cmd_scan(days=None, force=False):
         conn.execute("DELETE FROM hits WHERE demo=1")
         conn.commit()
     set_meta(conn, "last_scan", now.isoformat())
-    save_sources(cfg)  # persist per-source health for the watchdog panel
+    if _browser_hosts:
+        cfg["browser_hosts"] = sorted(_browser_hosts)
+    save_sources(cfg)  # persist per-source health + browser-mode sites
+    if _new_browser_hosts:
+        log("\nTactic switch: %d site(s) rejected the scanner identity, so "
+            "ToWatch now presents as a browser there (remembered for next "
+            "time): %s" % (len(_new_browser_hosts),
+                           ", ".join(sorted(set(_new_browser_hosts)))))
 
     failing = [s for s in active if s.get("fail_streak", 0) > 0]
     if failing:
