@@ -36,6 +36,25 @@ you instead of failing silently:
 - One broken source never stops the others; a broken `sources.json` never
   takes the dashboard down.
 
+## When something breaks (built-in bug tickets)
+
+ToWatch treats every user as a power user: errors never just print a
+cryptic message and vanish. Whenever something goes wrong you get, on the
+spot: **what happened, the likely reason, the next steps Claude will take,
+and the one step you need to take.** Two flavors:
+
+- **A source going dark** (a government redesigns its site): the watchdog
+  flags it each scan, and on the 3rd consecutive failure it files a ticket
+  automatically. Other sources keep scanning; nothing else is affected.
+- **A genuine crash** (a real bug): the app catches it, explains it in
+  plain English, and files a ticket with the full technical traceback,
+  app version, Python version, OS, and the recent activity log.
+
+Tickets accumulate in **`tickets.md`** next to the app. The fix procedure
+is always the same: paste the ticket (or the whole file) into a Claude
+chat — or send it to the app's creator — and delete tickets once fixed.
+The dashboard's Watchdog panel shows a count whenever tickets are waiting.
+
 ## Quick start — Windows (work computer)
 
 1. **One-time:** install Python from the Microsoft Store (open the Store,
@@ -150,3 +169,4 @@ ZoomInfo contact lookup, and more cities per state.
 - `sources.json` — which cities to watch; edit this to add/remove
 - `towwatch.db` — memory of everything already seen (auto-created)
 - `dashboard.html` — the output; open in a browser (auto-generated)
+- `tickets.md` — auto-filed bug reports; paste to Claude for fixes (auto-created)

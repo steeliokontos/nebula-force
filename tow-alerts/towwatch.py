@@ -37,10 +37,13 @@ import urllib.parse
 import urllib.error
 from datetime import datetime, timedelta, timezone
 
+__version__ = "1.0.0"
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SOURCES_FILE = os.path.join(ROOT, "sources.json")
 DB_FILE = os.path.join(ROOT, "towwatch.db")
 DASH_FILE = os.path.join(ROOT, "dashboard.html")
+TICKETS_FILE = os.path.join(ROOT, "tickets.md")
 API = "https://webapi.legistar.com/v1"
 USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
 
@@ -102,8 +105,44 @@ CATEGORY_LIST = ["contract/RFP", "dispatch/911", "tech/software", "ordinance",
 
 
 # ------------------------------------------------------------------- utils --
+LOG_LINES = []  # rolling activity log, included in bug tickets
+
+
 def log(msg):
+    LOG_LINES.append(str(msg))
     print(msg, flush=True)
+
+
+def file_ticket(summary, likely, claude_steps, operator_steps, details=""):
+    """File a bug ticket the operator can hand straight to Claude or Erik.
+
+    Every ticket answers four questions: what happened, why (probably),
+    what Claude will do about it, and what the operator needs to do.
+    """
+    import platform
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    entry = [
+        "\n## Ticket - %s\n\n" % stamp,
+        "**App:** ToWatch v%s | Python %s | %s\n\n" % (
+            __version__, sys.version.split()[0], platform.platform(terse=True)),
+        "**What happened:** %s\n\n" % summary,
+        "**Likely reason:** %s\n\n" % likely,
+        "**Next steps Claude will take:** %s\n\n" % claude_steps,
+        "**What you (the operator) should do:** %s\n\n" % operator_steps,
+    ]
+    if details:
+        entry.append("**Technical details:**\n```\n%s\n```\n\n" % details.strip()[:4000])
+    tail = LOG_LINES[-15:]
+    if tail:
+        entry.append("**Recent activity log:**\n```\n%s\n```\n" % "\n".join(tail))
+    header = ""
+    if not os.path.exists(TICKETS_FILE):
+        header = ("# ToWatch bug tickets\n\n"
+                  "Paste this file (or one ticket) into a Claude chat, or send it\n"
+                  "to the app's creator, to get a fix. Delete tickets once fixed.\n")
+    with open(TICKETS_FILE, "a", encoding="utf-8") as f:
+        f.write(header + "".join(entry))
+    log("TICKET FILED -> %s (paste it to Claude for a fix)" % TICKETS_FILE)
 
 
 # Pause between every outbound request - part of being a polite guest.
@@ -817,6 +856,32 @@ def cmd_scan(days=None, force=False):
                 s["name"], s["client"], s["fail_streak"], s.get("last_error", "")))
         log("A source failing 2+ scans in a row has probably changed platforms;")
         log("paste this output to Claude to get it re-verified and fixed.")
+        # Third consecutive failure = chronic. File one ticket per source,
+        # exactly once, at the moment it crosses the line.
+        for s in failing:
+            if s.get("fail_streak") == 3:
+                err = s.get("last_error", "")
+                if "changed" in err or "format" in err:
+                    likely = ("%s redesigned or moved its meeting website - "
+                              "the connector is reading a page that no longer "
+                              "looks the way it did." % s["name"])
+                else:
+                    likely = ("%s's site is unreachable or refusing this "
+                              "network - could be an outage on their side, a "
+                              "block, or a changed address." % s["name"])
+                file_ticket(
+                    summary="Source '%s' (%s, %s / %s connector) has failed 3 "
+                            "scans in a row: %s" % (
+                                s["name"], s["client"], s["state"],
+                                s.get("platform", "legistar"), err),
+                    likely=likely,
+                    claude_steps="Re-research where this government now "
+                                 "publishes meetings, confirm the new platform "
+                                 "or URL, and update its one line in "
+                                 "sources.json.",
+                    operator_steps="Paste this ticket into a Claude chat - "
+                                   "nothing else needed. All other sources are "
+                                   "unaffected and keep scanning normally.")
 
     log("\n%d new alert(s) saved." % len(new_hits))
     build_dashboard(conn)
@@ -1048,9 +1113,18 @@ def build_dashboard(conn):
     try:
         act = [s for s in load_sources()["sources"] if s.get("verified") is not False]
         bad = [s for s in act if s.get("fail_streak", 0) > 0]
+        tickets = 0
+        try:
+            with open(TICKETS_FILE, encoding="utf-8") as f:
+                tickets = f.read().count("## Ticket")
+        except OSError:
+            pass
         if last_scan:
             status = ("all sources healthy" if not bad else
                       '<span class="bad">%d source(s) failing</span>' % len(bad))
+            if tickets:
+                status += (' &middot; <span class="bad">%d ticket(s) filed - '
+                           'paste tickets.md to Claude</span>' % tickets)
             items = "".join(
                 '<div class="bad">%s, %s (%s) &mdash; %d scan(s) in a row: %s%s</div>' % (
                     esc(s["name"]), esc(s["state"]), esc(s["client"]),
@@ -1164,21 +1238,47 @@ def main():
             pass
     args = sys.argv[1:]
     cmd = args[0] if args else "report"
-    if cmd == "probe":
-        cmd_probe()
-    elif cmd == "scan":
-        days = None
-        if "--days" in args:
-            days = int(args[args.index("--days") + 1])
-        cmd_scan(days, force="--force" in args)
-    elif cmd == "report":
-        conn = db()
-        build_dashboard(conn)
-        conn.close()
-    elif cmd == "demo":
-        cmd_demo()
-    else:
-        print(__doc__)
+    try:
+        if cmd == "probe":
+            cmd_probe()
+        elif cmd == "scan":
+            days = None
+            if "--days" in args:
+                days = int(args[args.index("--days") + 1])
+            cmd_scan(days, force="--force" in args)
+        elif cmd == "report":
+            conn = db()
+            build_dashboard(conn)
+            conn.close()
+        elif cmd == "demo":
+            cmd_demo()
+        else:
+            print(__doc__)
+    except KeyboardInterrupt:
+        log("\nStopped by you. Nothing was harmed; run the command again anytime.")
+    except Exception:
+        import traceback
+        tb = traceback.format_exc()
+        file_ticket(
+            summary="The '%s' command crashed before finishing." % cmd,
+            likely="An update or an unusual website response broke an "
+                   "assumption in the code - a genuine bug, not operator error.",
+            claude_steps="Read the traceback below, reproduce the crash, and "
+                         "ship a fix to towwatch.py.",
+            operator_steps="Paste this ticket (or all of tickets.md) into a "
+                           "Claude chat, or send it to the app's creator. Your "
+                           "saved alerts and dashboard are safe - this crash "
+                           "did not lose data.",
+            details=tb)
+        log("=" * 62)
+        log("ToWatch hit an unexpected error - that's a bug, not your fault.")
+        log("What happened:   the '%s' command crashed before finishing." % cmd)
+        log("Likely reason:   a code assumption broke (details in the ticket).")
+        log("Claude's next    read the ticket, reproduce the crash, ship the")
+        log("steps:           fix - usually a small one.")
+        log("Your next step:  paste tickets.md into a Claude chat. Done.")
+        log("=" * 62)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
