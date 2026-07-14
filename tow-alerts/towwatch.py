@@ -1136,7 +1136,12 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .byline { font: 700 13px/1 "Segoe UI", system-ui, sans-serif;
             color: #7d8895; letter-spacing: .4px; }
   .byline b { color: var(--ink); font-weight: 900; }
-  .sub { color: #5a6472; font-size: 13px; margin-bottom: 18px; }
+  .sub { color: #5a6472; font-size: 13px; margin-bottom: 10px; }
+  .coverage { display: inline-block; background: #eef3fb;
+              border: 1px solid #dbe4f3; border-radius: 999px;
+              padding: 6px 14px; font-size: 13px; color: #2b3a52;
+              font-weight: 600; margin-bottom: 18px; }
+  .coverage b { color: var(--blue); font-weight: 900; }
   .health { background: #fff; border: 1px solid #e2e8ee; border-radius: 10px;
             padding: 12px 16px; font-size: 13px; color: #3a4754; margin-top: 24px; }
   .health b { color: var(--ink); }
@@ -1177,6 +1182,7 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <header><h1 class="logo"><span class="tt">T</span>oWatch</h1>
 <span class="byline">by <b>autura</b> &middot; keep communities moving</span></header>
 <div class="sub">__COUNT__ alerts &middot; generated __WHEN__ &middot; __SCANMETA__</div>
+<div class="coverage">__COVERAGE__</div>
 __DEMOFLAG__
 <div class="filters" id="statechips"><span class="chip on" data-state="">All states</span>__CHIPS__
 <input id="q" placeholder="filter: city, keyword, RFP…"></div>
@@ -1248,6 +1254,17 @@ def build_dashboard(conn):
     chips = "".join('<span class="chip" data-state="%s">%s</span>' % (esc(s), esc(s))
                     for s in sorted(states))
 
+    # Coverage strip: the scale headline ("455 governments across 11 states").
+    coverage = ""
+    try:
+        allsrc = load_sources()["sources"]
+        n_gov = len(allsrc)
+        n_terr = len({s["state"] for s in allsrc})
+        coverage = ('<b>%d</b> governments watched across <b>%d</b> states &amp; '
+                    'territories' % (n_gov, n_terr))
+    except Exception:
+        pass  # never let a bad sources.json blank the whole dashboard
+
     # Scan status for the header + watchdog panel for the footer.
     last_scan = get_meta(conn, "last_scan")
     if last_scan:
@@ -1289,6 +1306,7 @@ def build_dashboard(conn):
             .replace("__COUNT__", str(len(rows)))
             .replace("__WHEN__", datetime.now().strftime("%b %d, %Y %H:%M"))
             .replace("__SCANMETA__", scanmeta)
+            .replace("__COVERAGE__", coverage)
             .replace("__HEALTH__", health)
             .replace("__DEMOFLAG__", '<div class="demoflag">Sample data — run '
                      '<b>python3 towwatch.py scan</b> to replace with live alerts.</div>'
