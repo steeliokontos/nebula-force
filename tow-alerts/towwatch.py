@@ -52,6 +52,7 @@ KEYWORDS = [
     ("rotation list", 5, r"\brotation (?:list|tow|wrecker)"),
     ("non-consent",   5, r"\bnon[- ]?consent(?:ual)? tow"),
     ("police tow",    4, r"\bpolice[- ]initiated tow\w*|\blaw[- ]enforcement(?:[- ]initiated)? tow\w*|\bpolice tow\w*"),
+    ("consolidated",  7, r"\bconsolidat\w+ (?:dispatch|communications?|9-?1-?1)|\bregional (?:dispatch|communications?|9-?1-?1) (?:center|district|authority|board)|\bdispatch consolidation\b"),
     ("CAD",           3, r"\bcomputer[- ]aided dispatch\b|\bCAD (?:system|replacement|upgrade|integration|platform|vendor)s?\b"),
     ("PPI",           4, r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
     ("wrecker",       3, r"\bwreckers?\b"),
@@ -352,6 +353,27 @@ def ai_grade(row):
 
 
 # ------------------------------------------------------------------- report --
+# Stage detection: is this item still actionable ("forward looking") or
+# already decided ("in the moment" intel)? Derived from the status field.
+DECIDED_RX = re.compile(
+    r"adopt|passed|approv|award|enact|final|complet|denied|failed|withdrawn|executed",
+    re.IGNORECASE)
+UPCOMING_RX = re.compile(
+    r"first reading|second reading|introduc|referred|agenda ready|scheduled|"
+    r"solicitation|open|pending|hearing|posted|committee|filed|active",
+    re.IGNORECASE)
+
+
+def stage_of(status):
+    if not status:
+        return ""
+    if DECIDED_RX.search(status):
+        return "decided"
+    if UPCOMING_RX.search(status):
+        return "upcoming"
+    return ""
+
+
 CATEGORY_COLORS = {
     "contract/RFP": "#1a7f5a", "ordinance": "#2456a6", "fees": "#a66a00",
     "enforcement": "#a63030", "PPI/portal": "#6a3fa0",
@@ -390,6 +412,8 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .rel-high .badge.rel { background: #a63030; }
   .rel-medium .badge.rel { background: #a66a00; }
   .rel-low .badge.rel { background: #8a94a0; }
+  .badge.stage-upcoming { background: #1a7f5a; }
+  .badge.stage-decided { background: #8a94a0; }
   .title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
   .title a { color: inherit; text-decoration: none; }
   .title a:hover { text-decoration: underline; }
@@ -454,6 +478,9 @@ def build_dashboard(conn):
             badges += '<span class="badge">%s</span>' % esc(h["category"])
         if h["relevance"]:
             badges += ' <span class="badge rel">%s</span>' % esc(h["relevance"].upper())
+        stage = stage_of(h["status"])
+        if stage:
+            badges += ' <span class="badge stage-%s">%s</span>' % (stage, stage.upper())
         summary = ('<div class="summary">%s</div>' % esc(h["summary"])) if h["summary"] else ""
         snippet = ('<div class="snippet">%s</div>' % highlight(esc(h["snippet"]))) if h["snippet"] else ""
         cards.append(
