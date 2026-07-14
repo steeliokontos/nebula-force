@@ -1154,28 +1154,34 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
   #q { flex: 1; min-width: 160px; border: 1px solid #c6d0da; border-radius: 8px;
        padding: 6px 10px; font: inherit; font-size: 13px; }
-  .card { background: #fff; border: 1px solid #e2e8ee; border-left: 4px solid var(--cat, #5a6472);
-          border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .card { background: #fff; border: 1px solid #e6ebf2; border-left: 4px solid var(--cat, #5a6472);
+          border-radius: 12px; padding: 22px 24px; margin-bottom: 18px; }
   .hide { display: none; }
-  .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-          font-size: 12.5px; color: #5a6472; margin-bottom: 6px; }
-  .loc { font-weight: 600; color: #16324f; font-size: 13.5px; }
-  .badge { border-radius: 5px; padding: 1px 7px; font-size: 11.5px; font-weight: 600;
+  .title { font-size: 17.5px; font-weight: 700; line-height: 1.45; color: #141b24;
+           margin-bottom: 9px; }
+  .title a { color: inherit; text-decoration: none; }
+  .title a:hover { text-decoration: underline; }
+  .metaline { display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+              font-size: 13px; color: #7d8895; margin-bottom: 13px; }
+  .metaline .loc { font-weight: 700; color: #26364a; }
+  .metaline .pin { display: inline-flex; }
+  .badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .badge { border-radius: 5px; padding: 2px 8px; font-size: 11.5px; font-weight: 600;
            color: #fff; background: var(--cat, #5a6472); }
   .rel-high .badge.rel { background: #a63030; }
   .rel-medium .badge.rel { background: #a66a00; }
   .rel-low .badge.rel { background: #8a94a0; }
   .badge.stage-upcoming { background: var(--green); }
   .badge.stage-decided { background: #8a94a0; }
-  .title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-  .title a { color: inherit; text-decoration: none; }
-  .title a:hover { text-decoration: underline; }
-  .summary { background: #f0f5fa; border-radius: 8px; padding: 8px 11px;
-             font-size: 13.5px; margin-bottom: 8px; }
-  .snippet { color: #3a4754; font-size: 13px; border-left: 3px solid #e2e8ee;
-             padding-left: 10px; white-space: pre-wrap; }
+  .summary { background: #eef4fb; border-radius: 9px; padding: 11px 15px;
+             font-size: 13.5px; line-height: 1.55; margin-bottom: 12px; color: #24405c; }
+  .summary b.lbl { display: block; font-size: 10.5px; letter-spacing: 1px;
+                   text-transform: uppercase; color: #6a86a8; margin-bottom: 3px; }
+  .snippet { color: #3a4754; font-size: 13.5px; line-height: 1.6; background: #f5f8fc;
+             border-radius: 9px; padding: 12px 15px; margin-bottom: 14px; white-space: pre-wrap; }
   mark { background: #ffe9a8; border-radius: 3px; padding: 0 2px; }
-  .tags { margin-top: 8px; font-size: 12px; color: #5a6472; }
+  .foot { font-size: 12px; color: #7d8895; }
+  .foot b { color: #16324f; }
   .empty { text-align: center; color: #5a6472; padding: 60px 0; }
   footer { text-align: center; color: #8a94a0; font-size: 12px; margin-top: 30px; }
 </style></head><body><div class="topbar"></div><div class="wrap">
@@ -1205,8 +1211,28 @@ q.oninput=apply;
 """
 
 
+# Small location pin drawn inline (no image files) for the card meta line.
+PIN_SVG = ('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" '
+           'stroke="#26364a" stroke-width="2"><path d="M12 21s7-6.3 7-11a7 7 0 '
+           '1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>')
+
+
 def esc(s):
     return html.escape(s or "", quote=True)
+
+
+def pretty_date(s):
+    """'2026-07-11' -> 'Jul 11, 2026'; anything unrecognized passes through."""
+    if not s:
+        return ""
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        try:
+            return datetime(int(m.group(1)), int(m.group(2)),
+                            int(m.group(3))).strftime("%b %d, %Y")
+        except ValueError:
+            pass
+    return s
 
 
 def highlight(text_escaped):
@@ -1229,27 +1255,43 @@ def build_dashboard(conn):
         if h["state"] not in states:
             states.append(h["state"])
         color = CATEGORY_COLORS.get(h["category"] or "", "#5a6472")
+        # Color-coded tag row (category / relevance / stage).
         badges = ""
         if h["category"]:
             badges += '<span class="badge">%s</span>' % esc(h["category"])
         if h["relevance"]:
-            badges += ' <span class="badge rel">%s</span>' % esc(h["relevance"].upper())
+            badges += '<span class="badge rel">%s</span>' % esc(h["relevance"].upper())
         stage = stage_of(h["status"])
         if stage:
-            badges += ' <span class="badge stage-%s">%s</span>' % (stage, stage.upper())
-        summary = ('<div class="summary">%s</div>' % esc(h["summary"])) if h["summary"] else ""
-        snippet = ('<div class="snippet">%s</div>' % highlight(esc(h["snippet"]))) if h["snippet"] else ""
+            badges += '<span class="badge stage-%s">%s</span>' % (stage, stage.upper())
+        badges_html = ('<div class="badges">%s</div>' % badges) if badges else ""
+
+        # Quiet metadata line under the title: government, date, stage, and
+        # the demoted document reference (RFP/ORD number) - kept, not leading.
+        meta = ['<span class="loc">%s, %s</span>' % (esc(h["city"]), esc(h["state"]))]
+        pd = pretty_date(h["last_modified"] or h["intro_date"])
+        if pd:
+            meta.append("<span>%s</span>" % esc(pd))
+        if h["status"]:
+            meta.append("<span>%s</span>" % esc(h["status"]))
+        if h["matter_file"]:
+            meta.append("<span>%s</span>" % esc(h["matter_file"]))
+        metaline = ('<div class="metaline"><span class="pin">%s</span>%s</div>'
+                    % (PIN_SVG, "<span>&middot;</span>".join(meta)))
+
+        summary = ('<div class="summary"><b class="lbl">Why this matters</b>%s</div>'
+                   % esc(h["summary"])) if h["summary"] else ""
+        snippet = ('<div class="snippet">%s</div>' % highlight(esc(h["snippet"]))) \
+            if h["snippet"] else ""
         cards.append(
             '<div class="card rel-%s" data-state="%s" style="--cat:%s">'
-            '<div class="meta"><span class="loc">%s, %s</span>%s'
-            '<span>%s</span><span>%s</span></div>'
-            '<div class="title"><a href="%s" target="_blank">%s %s</a></div>%s%s'
-            '<div class="tags">matched: %s &middot; score %s%s</div></div>' % (
+            '<div class="title"><a href="%s" target="_blank">%s</a></div>'
+            '%s%s%s%s'
+            '<div class="foot">matched: %s &middot; score <b>%s</b>%s</div></div>' % (
                 esc(h["relevance"] or "none"), esc(h["state"]), color,
-                esc(h["city"]), esc(h["state"]), badges,
-                esc(h["last_modified"] or h["intro_date"]), esc(h["status"]),
-                esc(h["url"]), esc(h["matter_file"]), esc(h["title"]),
-                summary, snippet, esc(h["keywords"]), h["score"] or 0,
+                esc(h["url"]), esc(h["title"]),
+                metaline, badges_html, summary, snippet,
+                esc(h["keywords"]), h["score"] or 0,
                 " &middot; AI graded" if h["graded_by"] == "ai" else ""))
     chips = "".join('<span class="chip" data-state="%s">%s</span>' % (esc(s), esc(s))
                     for s in sorted(states))
