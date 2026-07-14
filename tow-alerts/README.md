@@ -91,12 +91,12 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
 That's it — it scans all the cities, then opens `dashboard.html` in your
 browser with anything new. Run it with your morning coffee.
 
-Heads-up: with 455 governments watched, expect the first scan to take
-roughly 10–20 minutes (it works through them one at a time, and pauses
-politely between requests to the same site). The console shows a running
-`[ 37/455]` counter so you can see it's alive. Start it, top off your
-coffee, come back to a full dashboard. (And remember it only actually
-scans once every 3 days.)
+Heads-up: it checks many governments at once (12 at a time) while still
+pausing politely between requests to any *single* site, so even with
+hundreds of sources a full scan is usually just a few minutes. The
+console shows a running `[ 37/455]` counter so you can see it working.
+Start it, top off your coffee, come back to a full dashboard. (And
+remember it only actually scans once every 3 days.)
 
 ## Quick start — Mac
 

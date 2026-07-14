@@ -29,9 +29,11 @@ import os
 import re
 import sqlite3
 import sys
+import threading
 import time
 import html
 import zlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -117,11 +119,14 @@ CATEGORY_LIST = ["contract/RFP", "dispatch/911", "tech/software", "ordinance",
 
 # ------------------------------------------------------------------- utils --
 LOG_LINES = []  # rolling activity log, included in bug tickets
+_log_lock = threading.Lock()
 
 
 def log(msg):
-    LOG_LINES.append(str(msg))
-    print(msg, flush=True)
+    # Locked so parallel workers never interleave half-lines.
+    with _log_lock:
+        LOG_LINES.append(str(msg))
+        print(msg, flush=True)
 
 
 def file_ticket(summary, likely, claude_steps, operator_steps, details=""):
@@ -159,19 +164,37 @@ def file_ticket(summary, likely, claude_steps, operator_steps, details=""):
 # Per-site pacing - part of being a polite guest. Back-to-back requests to
 # the SAME government's website stay at least HOST_PAUSE seconds apart;
 # requests to different sites never wait on each other. Each site sees
-# slow, gentle traffic while the scan as a whole stays quick.
+# slow, gentle traffic even though the scan runs many sites at once.
 # (The other polite-guest rule - scanning at most once every
 # MIN_SCAN_GAP_DAYS - lives in cmd_scan.)
 HOST_PAUSE = 1.0
-_last_hit_per_host = {}
+_next_slot_per_host = {}   # host -> earliest UTC epoch its next request may fire
+_pace_lock = threading.Lock()
+
+# How many sources to work on at once. The scan is almost entirely spent
+# waiting on the network, so overlapping many sources shrinks the wall-clock
+# time enormously - while per-host pacing (above) still guarantees no single
+# government's site is ever hit faster than once per HOST_PAUSE seconds.
+# Sources that happen to share a host (e.g. every Legistar site sits on
+# webapi.legistar.com) simply queue on that host and pace themselves.
+SCAN_WORKERS = 12
 
 
 def _pace(url):
+    """Block until this host's polite slot opens.
+
+    Reserves the slot atomically under the lock, then sleeps OUTSIDE it, so
+    workers hitting different sites never wait on each other - only requests
+    to the *same* host queue up, always >= HOST_PAUSE apart.
+    """
     host = urllib.parse.urlparse(url).netloc.lower()
-    wait = _last_hit_per_host.get(host, 0.0) + HOST_PAUSE - time.time()
+    with _pace_lock:
+        now = time.time()
+        fire_at = max(now, _next_slot_per_host.get(host, 0.0))
+        _next_slot_per_host[host] = fire_at + HOST_PAUSE
+    wait = fire_at - time.time()
     if wait > 0:
         time.sleep(wait)
-    _last_hit_per_host[host] = time.time()
 
 
 class ConnectorError(Exception):
@@ -191,6 +214,7 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
               "Chrome/126.0.0.0 Safari/537.36")
 _browser_hosts = set()   # sites that need browser mode (kept in sources.json)
 _new_browser_hosts = []  # sites that switched during this run (for the log)
+_browser_lock = threading.Lock()  # guards the two collections above
 
 # HTTP codes that mean "you don't look like a browser" rather than a
 # real error. 429 is NOT here - that means slow down, and the answer to
@@ -221,15 +245,20 @@ def http_get_raw(url, timeout=30, accept="*/*"):
     tactics and presents as a browser, remembering per site.
     """
     host = urllib.parse.urlparse(url).netloc.lower()
-    as_browser = host in _browser_hosts
+    with _browser_lock:
+        as_browser = host in _browser_hosts
     data, err = _attempt(url, timeout, accept, as_browser)
     if err in _UA_WALL_CODES and not as_browser:
         data2, err2 = _attempt(url, timeout, accept, True)
         if data2 is not None:
-            _browser_hosts.add(host)
-            _new_browser_hosts.append(host)
-            log("    (%s rejected the scanner identity - switched to "
-                "browser mode for this site, and it worked)" % host)
+            with _browser_lock:
+                is_new = host not in _browser_hosts
+                _browser_hosts.add(host)
+                if is_new:
+                    _new_browser_hosts.append(host)
+            if is_new:
+                log("    (%s rejected the scanner identity - switched to "
+                    "browser mode for this site, and it worked)" % host)
             return data2, None
         # Browser mode didn't help either; report the original wall so
         # the watchdog diagnosis stays accurate.
@@ -803,6 +832,68 @@ CONNECTORS = {
 }
 
 
+def _scan_source(src, since, now, now_iso):
+    """Fetch + score one source. Pure worker: no database, no shared-state
+    writes except the locked pacing/browser helpers. Returns a result dict
+    the main thread turns into log lines and database rows. Watchdog fields
+    are written onto `src` here, which is safe because each source is
+    handled by exactly one worker.
+    """
+    platform = src.get("platform", "legistar")
+    if platform not in CONNECTORS:
+        return {"src": src, "platform": platform, "status": "skip",
+                "msg": "SKIPPED (unknown platform '%s')" % platform,
+                "rows": [], "n_items": 0}
+    try:
+        items = CONNECTORS[platform](src, since, now)
+    except ConnectorError as e:
+        src["fail_streak"] = src.get("fail_streak", 0) + 1
+        src["last_error"] = str(e)
+        return {"src": src, "platform": platform, "status": "fail",
+                "msg": "SKIPPED (%s)" % e, "rows": [], "n_items": 0}
+    except Exception as e:  # a bug in a connector must not stop the scan
+        src["fail_streak"] = src.get("fail_streak", 0) + 1
+        src["last_error"] = "connector crashed: %s" % str(e)[:90]
+        return {"src": src, "platform": platform, "status": "fail",
+                "msg": "SKIPPED (connector crashed: %s)" % e,
+                "rows": [], "n_items": 0}
+    src["fail_streak"] = 0
+    src["last_ok"] = now_iso[:10]
+    src.pop("last_error", None)
+    rows = []
+    for it in items:
+        hit_id = "%s:%s" % (src["client"], it["uid"])
+        if hit_id in KNOWN_IDS:  # already in the DB from a previous scan
+            continue
+        base_text = it["title"] + ("\n" + it["text"] if it.get("text") else "")
+        score, tags, snippets, category, relevance = score_text(base_text)
+        if not score:
+            continue  # no tow/impound language
+        # Legistar items carry a lazy full-text fetcher; pull it only for
+        # hits, then re-score so repeat mentions raise the rating.
+        if it.get("fetch_text"):
+            body_text = it["fetch_text"]() or ""
+            if body_text:
+                score, tags, snippets, category, relevance = score_text(
+                    it["title"] + "\n" + body_text)
+        rows.append({
+            "id": hit_id, "client": src["client"], "city": src["name"],
+            "state": src["state"], "matter_file": it.get("file", ""),
+            "title": it["title"][:600],
+            "url": it["url"], "keywords": ", ".join(tags),
+            "snippet": "\n---\n".join(snippets),
+            "status": it.get("status", ""),
+            "body": it.get("meeting_body", ""),
+            "intro_date": it.get("date", ""),
+            "last_modified": it.get("modified") or it.get("date", ""),
+            "first_seen": now_iso,
+            "score": score, "category": category, "relevance": relevance,
+            "graded_by": "keywords", "summary": "",
+        })
+    return {"src": src, "platform": platform, "status": "ok",
+            "msg": None, "rows": rows, "n_items": len(items)}
+
+
 def cmd_scan(days=None, force=False):
     cfg = load_sources()
     # Sites that previously needed browser mode start there directly.
@@ -834,68 +925,42 @@ def cmd_scan(days=None, force=False):
     new_hits = []
 
     active = [s for s in cfg["sources"] if s.get("verified") is not False]
-    log("Scanning %d sources for legislation touched since %s ...\n" % (len(active), since[:10]))
+    log("Scanning %d sources (%d at a time) for legislation touched since %s ...\n"
+        % (len(active), SCAN_WORKERS, since[:10]))
 
     # Let document-fetching connectors skip anything already in the database.
+    # Loaded once here, then only read (never written) by the workers.
     KNOWN_IDS.clear()
     KNOWN_IDS.update(r[0] for r in conn.execute("SELECT id FROM hits"))
 
-    for idx, src in enumerate(active, 1):
-        tick = "[%3d/%d]" % (idx, len(active))
-        platform = src.get("platform", "legistar")
-        if platform not in CONNECTORS:
-            log("%s %-22s SKIPPED (unknown platform '%s')" % (tick, src["client"], platform))
-            continue
-        try:
-            items = CONNECTORS[platform](src, since, now)
-        except ConnectorError as e:
-            # Watchdog bookkeeping: count consecutive failures per source.
-            src["fail_streak"] = src.get("fail_streak", 0) + 1
-            src["last_error"] = str(e)
-            log("%s %-22s SKIPPED (%s)" % (tick, src["client"], e))
-            continue
-        except Exception as e:  # a bug in a connector must not stop the scan
-            src["fail_streak"] = src.get("fail_streak", 0) + 1
-            src["last_error"] = "connector crashed: %s" % str(e)[:90]
-            log("%s %-22s SKIPPED (connector crashed: %s)" % (tick, src["client"], e))
-            continue
-        src["fail_streak"] = 0
-        src["last_ok"] = now_iso[:10]
-        src.pop("last_error", None)
-        count = 0
-        for it in items:
-            hit_id = "%s:%s" % (src["client"], it["uid"])
-            if conn.execute("SELECT 1 FROM hits WHERE id=?", (hit_id,)).fetchone():
+    # Work many sources at once. Each worker only does network + scoring;
+    # all database writes happen back on this thread once results return, so
+    # SQLite is only ever touched from one thread. Per-host pacing inside the
+    # workers keeps every individual site's traffic gentle.
+    total = len(active)
+    done = 0
+    with ThreadPoolExecutor(max_workers=SCAN_WORKERS) as ex:
+        futures = {ex.submit(_scan_source, s, since, now, now_iso): s
+                   for s in active}
+        for fut in as_completed(futures):
+            done += 1
+            tick = "[%3d/%d]" % (done, total)
+            src = futures[fut]
+            try:
+                r = fut.result()
+            except Exception as e:  # last-ditch guard - never lose the scan
+                src["fail_streak"] = src.get("fail_streak", 0) + 1
+                src["last_error"] = "worker crashed: %s" % str(e)[:90]
+                log("%s %-22s SKIPPED (worker crashed: %s)" % (
+                    tick, src["client"], e))
                 continue
-            base_text = it["title"] + ("\n" + it["text"] if it.get("text") else "")
-            score, tags, snippets, category, relevance = score_text(base_text)
-            if not score:
-                continue  # no tow/impound language
-            # Legistar items carry a lazy full-text fetcher; pull it only for
-            # hits, then re-score so repeat mentions raise the rating.
-            if it.get("fetch_text"):
-                body_text = it["fetch_text"]() or ""
-                if body_text:
-                    score, tags, snippets, category, relevance = score_text(
-                        it["title"] + "\n" + body_text)
-            row = {
-                "id": hit_id, "client": src["client"], "city": src["name"],
-                "state": src["state"], "matter_file": it.get("file", ""),
-                "title": it["title"][:600],
-                "url": it["url"], "keywords": ", ".join(tags),
-                "snippet": "\n---\n".join(snippets),
-                "status": it.get("status", ""),
-                "body": it.get("meeting_body", ""),
-                "intro_date": it.get("date", ""),
-                "last_modified": it.get("modified") or it.get("date", ""),
-                "first_seen": now_iso,
-                "score": score, "category": category, "relevance": relevance,
-                "graded_by": "keywords", "summary": "",
-            }
-            new_hits.append(row)
-            count += 1
-        log("%s %-22s %-10s %d item(s) checked, %d new hit%s" % (
-            tick, src["client"], platform, len(items), count, "" if count == 1 else "s"))
+            if r["status"] != "ok":
+                log("%s %-22s %s" % (tick, src["client"], r["msg"]))
+                continue
+            new_hits.extend(r["rows"])
+            log("%s %-22s %-10s %d item(s) checked, %d new hit%s" % (
+                tick, src["client"], r["platform"], r["n_items"], len(r["rows"]),
+                "" if len(r["rows"]) == 1 else "s"))
 
     # Optional AI upgrade: if a key is present, Claude refines the keyword
     # grade and writes a summary. Without a key the keyword score stands.
