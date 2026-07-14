@@ -75,6 +75,12 @@ KEYWORDS = [
     ("clearance",     3, r"\b(?:quick|incident|scene) clearance\b|\bsecondary (?:crash|collision|accident)e?s?\b"),
     ("TIM",           3, r"\btraffic incident management\b"),
     ("junk vehicle",  1, r"\bjunk(?:ed)? (?:vehicle|motor vehicle|car)s?\b"),
+    # Spanish (Puerto Rico municipal legislatures publish in Spanish)
+    ("grua",          3, r"\bgr[uú]as?\b"),
+    ("remolque",      2, r"\bremolqu\w+\b|\bremolcad\w+\b"),
+    ("deposito veh",  3, r"\bdep[oó]sito de veh[ií]culos\b"),
+    ("veh abandonado",2, r"\bveh[ií]culos? abandonados?\b|\bcarros? abandonados?\b"),
+    ("subasta veh",   3, r"\bsubasta de veh[ií]culos\b"),
 ]
 KEYWORDS = [(tag, w, re.compile(rx, re.IGNORECASE)) for tag, w, rx in KEYWORDS]
 
@@ -90,6 +96,11 @@ CONTEXT = [
     ("fees",          2, r"\bfees?\b|\brate schedule\b|\bcharges\b|\bsurcharge"),
     ("enforcement",   1, r"\benforcement\b|\bviolations?\b|\bcitations?\b|\bpenalt\w+"),
     ("ordinance",     1, r"\bordinance\b|\bamend\w*\b|\bmunicipal code\b|\bregulations?\b"),
+    # Spanish boosters
+    ("contract/RFP",  6, r"\blicitaci[oó]n\w*\b|\bsubasta p[uú]blica\b"),
+    ("contract/RFP",  4, r"\bcontrato\w*\b|\bpropuestas?\b"),
+    ("fees",          2, r"\btarifas?\b"),
+    ("ordinance",     1, r"\bordenanza\w*\b|\bresoluci[oó]n\w*\b"),
 ]
 CONTEXT = [(cat, w, re.compile(rx, re.IGNORECASE)) for cat, w, rx in CONTEXT]
 
