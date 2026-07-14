@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TowWatch — government meeting alerts for the towing industry.
+ToWatch — government meeting alerts for the towing industry.
 
 Watches city/county legislative feeds (Legistar) for anything mentioning
 towing, impound, PPI, wrecker rotation, vehicle auctions, etc., and builds
@@ -9,15 +9,15 @@ a clean dashboard.html you open in any browser.
 No installs needed beyond Python 3 (already on every Mac).
 
 Commands:
-  python3 towwatch.py doctor         pre-flight check: is everything ready to scan?
-  python3 towwatch.py probe          test which sources in sources.json respond
-  python3 towwatch.py scan           fetch recent legislation, find tow/impound hits
+  python3 ToWatch.py doctor         pre-flight check: is everything ready to scan?
+  python3 ToWatch.py probe          test which sources in sources.json respond
+  python3 ToWatch.py scan           fetch recent legislation, find tow/impound hits
                                      (polite guest: max once every 3 days; the
                                      lookback window auto-covers the gap)
-  python3 towwatch.py scan --force   scan now even if the 3 days aren't up
-  python3 towwatch.py scan --days 30 look further back (first run defaults to 14)
-  python3 towwatch.py report         rebuild dashboard.html from saved hits
-  python3 towwatch.py demo           fill the dashboard with sample alerts (to see the look)
+  python3 ToWatch.py scan --force   scan now even if the 3 days aren't up
+  python3 ToWatch.py scan --days 30 look further back (first run defaults to 14)
+  python3 ToWatch.py report         rebuild dashboard.html from saved hits
+  python3 ToWatch.py demo           fill the dashboard with sample alerts (to see the look)
 
 Optional AI summaries: set the environment variable ANTHROPIC_API_KEY and
 every hit gets a plain-English "why this matters" summary + relevance grade.
@@ -44,11 +44,11 @@ __version__ = "1.0.0"
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SOURCES_FILE = os.path.join(ROOT, "sources.json")
-DB_FILE = os.path.join(ROOT, "towwatch.db")
+DB_FILE = os.path.join(ROOT, "ToWatch.db")
 DASH_FILE = os.path.join(ROOT, "dashboard.html")
 TICKETS_FILE = os.path.join(ROOT, "tickets.md")
 API = "https://webapi.legistar.com/v1"
-USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
+USER_AGENT = "ToWatch/1.0 (personal research tool; public legislative data)"
 
 # ---------------------------------------------------------------- keywords --
 # Each entry: (tag shown on the card, weight, regex). Weight = business value
@@ -1309,7 +1309,7 @@ def build_dashboard(conn):
             .replace("__COVERAGE__", coverage)
             .replace("__HEALTH__", health)
             .replace("__DEMOFLAG__", '<div class="demoflag">Sample data — run '
-                     '<b>python3 towwatch.py scan</b> to replace with live alerts.</div>'
+                     '<b>python3 ToWatch.py scan</b> to replace with live alerts.</div>'
                      if has_demo else "")
             .replace("__CHIPS__", chips)
             .replace("__CARDS__", "".join(cards) if cards else
@@ -1398,7 +1398,7 @@ def cmd_doctor():
         results.append(passed)
         return passed
 
-    log("TowWatch doctor - checking everything before your first scan.\n")
+    log("ToWatch doctor - checking everything before your first scan.\n")
     log("  App %s | Python %s | %s\n" % (
         __version__, sys.version.split()[0], _plat.platform(terse=True)))
 
@@ -1427,7 +1427,7 @@ def cmd_doctor():
 
     # 3. The app can write next to itself (dashboard + database land here).
     try:
-        probe = os.path.join(ROOT, ".towwatch_write_test")
+        probe = os.path.join(ROOT, ".ToWatch_write_test")
         with open(probe, "w") as f:
             f.write("ok")
         os.remove(probe)
@@ -1437,7 +1437,7 @@ def cmd_doctor():
 
     # 4. SQLite (ships inside Python) actually works on this machine.
     try:
-        tf = os.path.join(tempfile.gettempdir(), "towwatch_doctor.db")
+        tf = os.path.join(tempfile.gettempdir(), "ToWatch_doctor.db")
         c = sqlite3.connect(tf)
         c.execute("CREATE TABLE t(x)")
         c.execute("INSERT INTO t VALUES (1)")
@@ -1479,8 +1479,8 @@ def cmd_doctor():
     core_ok = all(results[:5])  # the internet check can fail if simply offline
     log("")
     if core_ok and reachable:
-        log("All checks passed - you're ready. Double-click TowWatch.bat, or run:")
-        log("    python3 towwatch.py scan")
+        log("All checks passed - you're ready. Double-click ToWatch.bat, or run:")
+        log("    python3 ToWatch.py scan")
     elif core_ok:
         log("Everything on THIS machine is fine; only the internet check failed.")
         log("Re-run 'doctor' once you're online / off a blocking network.")
@@ -1542,7 +1542,7 @@ def main():
             likely="An update or an unusual website response broke an "
                    "assumption in the code - a genuine bug, not operator error.",
             claude_steps="Read the traceback below, reproduce the crash, and "
-                         "ship a fix to towwatch.py.",
+                         "ship a fix to ToWatch.py.",
             operator_steps="Paste this ticket (or all of tickets.md) into a "
                            "Claude chat, or send it to the app's creator. Your "
                            "saved alerts and dashboard are safe - this crash "

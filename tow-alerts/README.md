@@ -1,4 +1,4 @@
-# toWatch (by Autura)
+# ToWatch (by Autura)
 
 Your own government-meeting alert system for the towing industry. It watches
 city and county legislative records for anything mentioning **towing, impound,
@@ -17,7 +17,7 @@ pitching. It runs on your own computer and costs nothing to operate.
    it just says so, tells you when the next one is, and opens the dashboard
    with what it already has. The lookback window automatically covers the
    gap since the last scan (plus a 2-day overlap), so nothing slips through
-   between scans. `python3 towwatch.py scan --force` overrides it when
+   between scans. `python3 ToWatch.py scan --force` overrides it when
    truly needed.
 2. **The per-site pause:** during a scan, back-to-back requests to the
    *same* government's website stay at least 1 second apart, so no
@@ -87,11 +87,11 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
    search "Python", install the newest version — no admin rights needed on
    most work machines).
 2. **First time only (optional but recommended):** open a Command Prompt in
-   this folder and run `python towwatch.py doctor`. It confirms Python, file
+   this folder and run `python ToWatch.py doctor`. It confirms Python, file
    access, the database, the scoring brain, and internet reach are all
    working — so your first real scan can't trip over a silent setup problem.
    Every line tells you plainly if something needs fixing.
-3. **Every time:** double-click **`TowWatch.bat`**.
+3. **Every time:** double-click **`ToWatch.bat`**.
 
 That's it — it scans all the cities, then opens `dashboard.html` in your
 browser with anything new. Run it with your morning coffee.
@@ -107,7 +107,7 @@ remember it only actually scans once every 3 days.)
 
 ```
 cd tow-alerts
-python3 towwatch.py scan
+python3 ToWatch.py scan
 ```
 
 Then open `dashboard.html`. Other commands: `doctor` (pre-flight check that
@@ -126,7 +126,7 @@ language adds boosts:
 |---|---|
 | tow/impound dispatch or management software, vehicle release system | 7 |
 | predatory towing / predator towing / predatory booting | 7 |
-| vendor watch (Autura, AutoReturn — add competitors in towwatch.py) | 6 |
+| vendor watch (Autura, AutoReturn — add competitors in ToWatch.py) | 6 |
 | rotation list, non-consent tow | 5 each |
 | private property impound / PPI, police-initiated tow | 4 each |
 | wrecker, impound, vehicle auction, vehicle storage | 3 each |
@@ -143,7 +143,7 @@ So "Non-Consent Tow Rotation Services Agreement" rates HIGH, while a parks
 report that mentions towing one vehicle rates LOW. A passing mention of
 "town" scores zero — word boundaries prevent false matches.
 
-Tuning is easy: the weights live at the top of `towwatch.py` in plain lists
+Tuning is easy: the weights live at the top of `ToWatch.py` in plain lists
 (`KEYWORDS`, `CONTEXT`, and the `HIGH_AT` / `MEDIUM_AT` thresholds).
 
 ## Optional AI upgrade (off by default, seamless to enable)
@@ -210,9 +210,9 @@ ZoomInfo contact lookup, and coworker territories once these 11 are proven.
 
 ## Files
 
-- `towwatch.py` — the whole program (no installs needed, plain Python 3)
-- `TowWatch.bat` — Windows double-click launcher (scan + open dashboard)
+- `ToWatch.py` — the whole program (no installs needed, plain Python 3)
+- `ToWatch.bat` — Windows double-click launcher (scan + open dashboard)
 - `sources.json` — which cities to watch; edit this to add/remove
-- `towwatch.db` — memory of everything already seen (auto-created)
+- `ToWatch.db` — memory of everything already seen (auto-created)
 - `dashboard.html` — the output; open in a browser (auto-generated)
 - `tickets.md` — auto-filed bug reports; paste to Claude for fixes (auto-created)

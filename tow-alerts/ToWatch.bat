@@ -19,7 +19,7 @@ if errorlevel 1 (
 
 echo ToWatch by Autura - checking for new tow/impound alerts...
 echo.
-%PY% towwatch.py scan
+%PY% ToWatch.py scan
 
 start "" dashboard.html
 echo.
