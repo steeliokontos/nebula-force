@@ -118,11 +118,14 @@ dispatch centers often control tow dispatch, not the city):
 - **AL**: Huntsville + Baldwin County
 - **TN**: Metro Nashville / Davidson County + Blount County
 - **MS**: Harrison County (Gulfport/Biloxi)
+- **LA**: New Orleans + St. Charles Parish
 
 **CivicClerk** (meeting agendas): Travis County TX (Austin), Cobb County GA,
-Tulsa County OK
+Tulsa County OK, Lake Charles LA, Ascension / West Baton Rouge / Washington
+Parishes LA
 
-**PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth)
+**PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth),
+Shreveport LA
 
 **iQM2** (meeting agendas): Butler County OH, Atlanta, Jefferson County AL
 (Birmingham)
@@ -150,6 +153,12 @@ These places don't use Legistar, so they need their own connectors later
   Gwinnett, Chatham Counties GA; Madison, Mobile Counties AL; Pulaski County AR;
   Hinds County MS (Jackson); Memphis, Chattanooga, Knoxville, Birmingham,
   Montgomery, Mobile, Little Rock, Tulsa cities
+- **Louisiana (CivicPlus Agenda Center)**: Jefferson Parish, East Baton
+  Rouge / Baton Rouge Metro Council, Kenner, Bossier City, Livingston
+  Parish — one Agenda Center connector unlocks all of these (plus Bexar
+  County TX and others)
+- **Louisiana (own sites)**: Lafayette Consolidated Government, Caddo
+  Parish, Calcasieu Parish, St. Tammany Parish
 - **Puerto Rico**: San Juan's municipal legislature, Spanish-language
   (a good fit for the AI pass later)
 

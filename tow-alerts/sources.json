@@ -200,6 +200,53 @@
       "state": "AL",
       "kind": "county",
       "platform": "iqm2"
+    },
+    {
+      "client": "cityofno",
+      "name": "New Orleans",
+      "state": "LA",
+      "kind": "city"
+    },
+    {
+      "client": "stcharlesgov",
+      "name": "St. Charles Parish",
+      "state": "LA",
+      "kind": "parish"
+    },
+    {
+      "client": "shreveportla",
+      "name": "Shreveport",
+      "state": "LA",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "lakecharlesla",
+      "name": "Lake Charles",
+      "state": "LA",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "ascensionparishla",
+      "name": "Ascension Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "wbrla",
+      "name": "West Baton Rouge Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "washingtonparishla",
+      "name": "Washington Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "civicclerk"
     }
   ]
 }
