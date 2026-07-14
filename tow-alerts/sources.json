@@ -247,6 +247,25 @@
       "state": "LA",
       "kind": "parish",
       "platform": "civicclerk"
+    },
+    {
+      "client": "louisville",
+      "name": "Louisville Metro (legislation archive)",
+      "state": "KY",
+      "kind": "city-county"
+    },
+    {
+      "client": "louisvilleky",
+      "name": "Louisville Metro Council",
+      "state": "KY",
+      "kind": "city-county",
+      "platform": "primegov"
+    },
+    {
+      "client": "lexington",
+      "name": "Lexington-Fayette Urban County",
+      "state": "KY",
+      "kind": "city-county"
     }
   ]
 }

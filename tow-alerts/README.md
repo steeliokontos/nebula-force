@@ -119,13 +119,15 @@ dispatch centers often control tow dispatch, not the city):
 - **TN**: Metro Nashville / Davidson County + Blount County
 - **MS**: Harrison County (Gulfport/Biloxi)
 - **LA**: New Orleans + St. Charles Parish
+- **KY**: Louisville Metro (legislation archive) + Lexington-Fayette Urban
+  County — both consolidated city-county governments
 
 **CivicClerk** (meeting agendas): Travis County TX (Austin), Cobb County GA,
 Tulsa County OK, Lake Charles LA, Ascension / West Baton Rouge / Washington
 Parishes LA
 
 **PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth),
-Shreveport LA
+Shreveport LA, Louisville Metro Council KY
 
 **iQM2** (meeting agendas): Butler County OH, Atlanta, Jefferson County AL
 (Birmingham)
@@ -159,6 +161,10 @@ These places don't use Legistar, so they need their own connectors later
   County TX and others)
 - **Louisiana (own sites)**: Lafayette Consolidated Government, Caddo
   Parish, Calcasieu Parish, St. Tammany Parish
+- **Kentucky (CivicPlus Agenda Center)**: Kenton County, Hardin County,
+  Frankfort — same future connector as the Louisiana group above
+- **Kentucky (own sites)**: Bowling Green, Owensboro, Covington, Florence,
+  Boone / Campbell / Warren / Daviess Counties, Elizabethtown
 - **Puerto Rico**: San Juan's municipal legislature, Spanish-language
   (a good fit for the AI pass later)
 
