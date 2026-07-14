@@ -39,23 +39,39 @@ API = "https://webapi.legistar.com/v1"
 USER_AGENT = "TowWatch/0.1 (personal research tool; public legislative data)"
 
 # ---------------------------------------------------------------- keywords --
-# Each entry: (tag shown on the card, regex). Word boundaries keep "tow" from
-# matching "town" or "toward".
+# Each entry: (tag shown on the card, weight, regex). Weight = business value
+# to a towing company. Word boundaries keep "tow" from matching "town".
+# A keyword's weight counts once per mention, up to 3 mentions.
 KEYWORDS = [
-    ("towing",        r"\btow(?:ing|ed|s)?\b"),
-    ("tow truck",     r"\btow[- ]?trucks?\b"),
-    ("wrecker",       r"\bwreckers?\b"),
-    ("impound",       r"\bimpound(?:ment|ed|ing|s)?\b"),
-    ("abandoned veh", r"\babandoned (?:vehicle|auto|car)s?\b"),
-    ("junk vehicle",  r"\bjunk(?:ed)? (?:vehicle|motor vehicle|car)s?\b"),
-    ("veh storage",   r"\bvehicle storage\b|\bstorage lot\b|\bvehicle storage facilit"),
-    ("non-consent",   r"\bnon[- ]?consent(?:ual)? tow"),
-    ("PPI",           r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
-    ("rotation list", r"\brotation (?:list|tow|wrecker)"),
-    ("veh auction",   r"\bvehicle auctions?\b|\bauction of (?:abandoned|impounded) vehicles\b"),
-    ("immobilize",    r"\bimmobiliz\w+\b|\bvehicle boot(?:ing)?\b"),
+    ("rotation list", 5, r"\brotation (?:list|tow|wrecker)"),
+    ("non-consent",   5, r"\bnon[- ]?consent(?:ual)? tow"),
+    ("PPI",           4, r"\bprivate property (?:tow|impound)\w*|\bPPI\b"),
+    ("wrecker",       3, r"\bwreckers?\b"),
+    ("impound",       3, r"\bimpound(?:ment|ed|ing|s)?\b"),
+    ("veh auction",   3, r"\bvehicle auctions?\b|\bauction of (?:abandoned|impounded) vehicles\b"),
+    ("veh storage",   3, r"\bvehicle storage\b|\bstorage lot\b|\bvehicle storage facilit"),
+    ("tow truck",     2, r"\btow[- ]?trucks?\b"),
+    ("towing",        2, r"\btow(?:ing|ed|s)?\b"),
+    ("abandoned veh", 2, r"\babandoned (?:vehicle|auto|car)s?\b"),
+    ("immobilize",    2, r"\bimmobiliz\w+\b|\bvehicle boot(?:ing)?\b"),
+    ("junk vehicle",  1, r"\bjunk(?:ed)? (?:vehicle|motor vehicle|car)s?\b"),
 ]
-KEYWORDS = [(tag, re.compile(rx, re.IGNORECASE)) for tag, rx in KEYWORDS]
+KEYWORDS = [(tag, w, re.compile(rx, re.IGNORECASE)) for tag, w, rx in KEYWORDS]
+
+# Context boosters: only counted when a keyword above already matched.
+# Each adds its weight once and suggests the category badge.
+CONTEXT = [
+    ("contract/RFP", 6, r"\brequest for (?:proposal|qualification)s?\b|\bRFP\b|\bsolicitation\b|\binvitation to bid\b"),
+    ("contract/RFP", 4, r"\bcontract|agreement\b|\bprocurement\b|\bbid(?:s|ding)?\b|\baward(?:ing|ed)?\b"),
+    ("PPI/portal",   3, r"\bportal\b|\bonline (?:system|registry)\b|\bpermit(?:s|ting)?\b|\blicens\w+"),
+    ("fees",         2, r"\bfees?\b|\brate schedule\b|\bcharges\b|\bsurcharge"),
+    ("enforcement",  1, r"\benforcement\b|\bviolations?\b|\bcitations?\b|\bpenalt\w+"),
+    ("ordinance",    1, r"\bordinance\b|\bamend\w*\b|\bmunicipal code\b|\bregulations?\b"),
+]
+CONTEXT = [(cat, w, re.compile(rx, re.IGNORECASE)) for cat, w, rx in CONTEXT]
+
+# Score thresholds for the color-coded rating.
+HIGH_AT, MEDIUM_AT = 10, 5
 
 CATEGORY_LIST = ["contract/RFP", "ordinance", "fees", "enforcement", "PPI/portal", "other"]
 
@@ -103,26 +119,51 @@ def db():
         intro_date TEXT, last_modified TEXT,
         first_seen TEXT,
         summary TEXT, category TEXT, relevance TEXT,
+        score INTEGER DEFAULT 0,
+        graded_by TEXT DEFAULT 'keywords',   -- 'keywords' or 'ai'
         demo INTEGER DEFAULT 0
     )""")
+    # Upgrade older databases in place (ignore "already exists" errors).
+    for col in ("score INTEGER DEFAULT 0", "graded_by TEXT DEFAULT 'keywords'"):
+        try:
+            conn.execute("ALTER TABLE hits ADD COLUMN " + col)
+        except sqlite3.OperationalError:
+            pass
     return conn
 
 
-def find_matches(text):
-    """Return (tags, snippets) for keyword hits in text."""
+def score_text(text):
+    """Score text for tow/impound relevance using weighted keywords.
+
+    Returns (score, tags, snippets, category, relevance).
+    score 0 means no keyword hit at all.
+    """
     if not text:
-        return [], []
-    tags, snippets = [], []
-    for tag, rx in KEYWORDS:
-        m = rx.search(text)
-        if m:
+        return 0, [], [], "", ""
+    score, tags, snippets = 0, [], []
+    for tag, weight, rx in KEYWORDS:
+        found = rx.findall(text)
+        if found:
+            score += weight * min(len(found), 3)
             tags.append(tag)
-            start = max(0, m.start() - 130)
-            end = min(len(text), m.end() + 130)
-            snip = re.sub(r"\s+", " ", text[start:end]).strip()
             if len(snippets) < 3:
+                m = rx.search(text)
+                start = max(0, m.start() - 130)
+                end = min(len(text), m.end() + 130)
+                snip = re.sub(r"\s+", " ", text[start:end]).strip()
                 snippets.append(("…" if start > 0 else "") + snip + ("…" if end < len(text) else ""))
-    return tags, snippets
+    if not tags:
+        return 0, [], [], "", ""
+    # Context boosters raise the score and pick the category badge.
+    category, best = ("PPI/portal", 99) if "PPI" in tags else ("", 0)
+    for cat, weight, rx in CONTEXT:
+        if rx.search(text):
+            score += weight
+            if weight > best:
+                category, best = cat, weight
+    category = category or "other"
+    relevance = "high" if score >= HIGH_AT else "medium" if score >= MEDIUM_AT else "low"
+    return score, tags, snippets, category, relevance
 
 
 # ------------------------------------------------------------------- probe --
@@ -188,20 +229,20 @@ def cmd_scan(days):
         count = 0
         for m in data:
             title = " ".join(filter(None, [m.get("MatterName"), m.get("MatterTitle")]))
-            tags, snippets = find_matches(title)
+            score, tags, snippets, category, relevance = score_text(title)
             matter_id = m.get("MatterId")
             hit_id = "%s:%s" % (src["client"], matter_id)
             already = conn.execute("SELECT 1 FROM hits WHERE id=?", (hit_id,)).fetchone()
             if already:
                 continue
-            body_text = ""
-            if not tags:
-                continue  # MVP: title/name match only; full-text pass is a later upgrade
+            if not score:
+                continue  # no tow/impound language in the title/name
+            # Pull the full legislation text and re-score title + body together,
+            # so repeat mentions and contract/fee language raise the rating.
             body_text = fetch_matter_text(src["client"], matter_id)
             if body_text:
-                more_tags, more_snips = find_matches(body_text)
-                tags = list(dict.fromkeys(tags + more_tags))
-                snippets = (snippets + more_snips)[:3]
+                score, tags, snippets, category, relevance = score_text(
+                    title + "\n" + body_text)
             guid = m.get("MatterGuid") or ""
             url = "https://%s.legistar.com/LegislationDetail.aspx?ID=%s&GUID=%s" % (
                 src["client"], matter_id, guid)
@@ -216,27 +257,32 @@ def cmd_scan(days):
                 "intro_date": (m.get("MatterIntroDate") or "")[:10],
                 "last_modified": (m.get("MatterLastModifiedUtc") or "")[:10],
                 "first_seen": now_iso,
+                "score": score, "category": category, "relevance": relevance,
+                "graded_by": "keywords", "summary": "",
             }
             new_hits.append(row)
             count += 1
         log("  %-22s %d matters checked, %d new hit%s" % (
             src["client"], len(data), count, "" if count == 1 else "s"))
 
+    # Optional AI upgrade: if a key is present, Claude refines the keyword
+    # grade and writes a summary. Without a key the keyword score stands.
     if new_hits and os.environ.get("ANTHROPIC_API_KEY"):
         log("\nAsking Claude to grade %d new hit(s)..." % len(new_hits))
         for row in new_hits:
             grade = ai_grade(row)
-            row.update(grade)
-    elif new_hits:
-        log("\n(No ANTHROPIC_API_KEY set — skipping AI summaries; raw matches saved.)")
+            if grade.get("relevance"):
+                row.update(grade)
+                row["graded_by"] = "ai"
 
     for row in new_hits:
         conn.execute("""INSERT OR IGNORE INTO hits
             (id, client, city, state, matter_file, title, url, keywords, snippet,
-             status, body, intro_date, last_modified, first_seen, summary, category, relevance, demo)
+             status, body, intro_date, last_modified, first_seen, summary, category,
+             relevance, score, graded_by, demo)
             VALUES (:id,:client,:city,:state,:matter_file,:title,:url,:keywords,:snippet,
-             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,:relevance,0)""",
-            {**{"summary": "", "category": "", "relevance": ""}, **row})
+             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,
+             :relevance,:score,:graded_by,0)""", row)
     conn.commit()
     # a real scan replaces any demo data
     if new_hits:
@@ -367,7 +413,7 @@ def esc(s):
 
 
 def highlight(text_escaped):
-    for tag, rx in KEYWORDS:
+    for tag, weight, rx in KEYWORDS:
         text_escaped = re.sub("(" + rx.pattern + ")", r"<mark>\1</mark>",
                               text_escaped, flags=re.IGNORECASE)
     return text_escaped
@@ -376,7 +422,7 @@ def highlight(text_escaped):
 def build_dashboard(conn):
     rows = conn.execute("""SELECT * FROM hits ORDER BY
         CASE relevance WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
-        last_modified DESC, first_seen DESC""").fetchall()
+        score DESC, last_modified DESC, first_seen DESC""").fetchall()
     cols = [d[0] for d in conn.execute("SELECT * FROM hits LIMIT 0").description]
     cards, states, has_demo = [], [], False
     for r in rows:
@@ -398,12 +444,13 @@ def build_dashboard(conn):
             '<div class="meta"><span class="loc">%s, %s</span>%s'
             '<span>%s</span><span>%s</span></div>'
             '<div class="title"><a href="%s" target="_blank">%s %s</a></div>%s%s'
-            '<div class="tags">matched: %s</div></div>' % (
+            '<div class="tags">matched: %s &middot; score %s%s</div></div>' % (
                 esc(h["relevance"] or "none"), esc(h["state"]), color,
                 esc(h["city"]), esc(h["state"]), badges,
                 esc(h["last_modified"] or h["intro_date"]), esc(h["status"]),
                 esc(h["url"]), esc(h["matter_file"]), esc(h["title"]),
-                summary, snippet, esc(h["keywords"])))
+                summary, snippet, esc(h["keywords"]), h["score"] or 0,
+                " &middot; AI graded" if h["graded_by"] == "ai" else ""))
     chips = "".join('<span class="chip" data-state="%s">%s</span>' % (esc(s), esc(s))
                     for s in sorted(states))
     page = (PAGE
@@ -431,9 +478,8 @@ DEMO_HITS = [
                  "performance reviews and updated per-tow fee caps…",
          status="Agenda Ready", body="City Council", intro_date="2026-07-08",
          last_modified="2026-07-10", first_seen="2026-07-14 09:00",
-         summary="Fort Worth is putting its police tow rotation contract on the agenda, "
-                 "with new fee caps. Operators must re-qualify to stay on the list.",
-         category="contract/RFP", relevance="high", demo=1),
+         summary="", category="contract/RFP", relevance="high",
+         score=18, graded_by="keywords", demo=1),
     dict(id="demo:2", client="demo", city="Tulsa", state="OK", matter_file="ORD 77123",
          title="An ordinance amending Title 37, private property impound; requiring use of "
                "the city vehicle-release portal and signage updates",
@@ -445,7 +491,8 @@ DEMO_HITS = [
          last_modified="2026-07-09", first_seen="2026-07-14 09:00",
          summary="Tulsa would require PPI operators to log every release in a city portal "
                  "within 2 hours. A compliance change for every operator in the city.",
-         category="PPI/portal", relevance="high", demo=1),
+         category="PPI/portal", relevance="high",
+         score=13, graded_by="ai", demo=1),
     dict(id="demo:3", client="demo", city="Columbus", state="OH", matter_file="0455-2026",
          title="To amend impound lot storage fee schedule and abandoned vehicle auction procedures",
          url="#", keywords="impound, veh storage, abandoned veh, veh auction",
@@ -453,9 +500,8 @@ DEMO_HITS = [
                  "authorize monthly auctions of abandoned vehicles held over 30 days…",
          status="Referred to Committee", body="Public Service Committee", intro_date="2026-06-28",
          last_modified="2026-07-07", first_seen="2026-07-14 09:00",
-         summary="Columbus wants higher impound storage fees and monthly abandoned-vehicle "
-                 "auctions — signals volume pressure at the city lot.",
-         category="fees", relevance="medium", demo=1),
+         summary="", category="fees", relevance="medium",
+         score=9, graded_by="keywords", demo=1),
     dict(id="demo:4", client="demo", city="Nashville", state="TN", matter_file="RS2026-1099",
          title="A resolution accepting a report on booting and immobilization enforcement in "
                "the downtown entertainment district",
@@ -464,9 +510,8 @@ DEMO_HITS = [
                  "Council requests recommendations on licensing booting operators…",
          status="Adopted", body="Metro Council", intro_date="2026-06-20",
          last_modified="2026-07-01", first_seen="2026-07-14 09:00",
-         summary="Nashville is studying licensing for booting operators downtown — early "
-                 "signal of new regulation, no action yet.",
-         category="ordinance", relevance="low", demo=1),
+         summary="", category="ordinance", relevance="low",
+         score=4, graded_by="keywords", demo=1),
 ]
 
 
@@ -475,9 +520,11 @@ def cmd_demo():
     for h in DEMO_HITS:
         conn.execute("""INSERT OR REPLACE INTO hits
             (id, client, city, state, matter_file, title, url, keywords, snippet,
-             status, body, intro_date, last_modified, first_seen, summary, category, relevance, demo)
+             status, body, intro_date, last_modified, first_seen, summary, category,
+             relevance, score, graded_by, demo)
             VALUES (:id,:client,:city,:state,:matter_file,:title,:url,:keywords,:snippet,
-             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,:relevance,:demo)""", h)
+             :status,:body,:intro_date,:last_modified,:first_seen,:summary,:category,
+             :relevance,:score,:graded_by,:demo)""", h)
     conn.commit()
     build_dashboard(conn)
     conn.close()
@@ -485,6 +532,12 @@ def cmd_demo():
 
 # -------------------------------------------------------------------- main --
 def main():
+    # Windows consoles sometimes can't print every character — never crash over it.
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(errors="replace")
+        except Exception:
+            pass
     args = sys.argv[1:]
     cmd = args[0] if args else "report"
     if cmd == "probe":
