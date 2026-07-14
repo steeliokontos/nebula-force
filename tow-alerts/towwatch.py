@@ -156,8 +156,22 @@ def file_ticket(summary, likely, claude_steps, operator_steps, details=""):
     log("TICKET FILED -> %s (paste it to Claude for a fix)" % TICKETS_FILE)
 
 
-# Pause between every outbound request - part of being a polite guest.
-REQUEST_PAUSE = 0.4
+# Per-site pacing - part of being a polite guest. Back-to-back requests to
+# the SAME government's website stay at least HOST_PAUSE seconds apart;
+# requests to different sites never wait on each other. Each site sees
+# slow, gentle traffic while the scan as a whole stays quick.
+# (The other polite-guest rule - scanning at most once every
+# MIN_SCAN_GAP_DAYS - lives in cmd_scan.)
+HOST_PAUSE = 1.0
+_last_hit_per_host = {}
+
+
+def _pace(url):
+    host = urllib.parse.urlparse(url).netloc.lower()
+    wait = _last_hit_per_host.get(host, 0.0) + HOST_PAUSE - time.time()
+    if wait > 0:
+        time.sleep(wait)
+    _last_hit_per_host[host] = time.time()
 
 
 class ConnectorError(Exception):
@@ -166,7 +180,7 @@ class ConnectorError(Exception):
 
 def http_get_raw(url, timeout=30, accept="*/*"):
     """GET a URL, return (bytes, None) or (None, 'error string'). Paced."""
-    time.sleep(REQUEST_PAUSE)
+    _pace(url)
     req = urllib.request.Request(url, headers={
         "Accept": accept,
         "User-Agent": USER_AGENT,
@@ -777,10 +791,11 @@ def cmd_scan(days=None, force=False):
     KNOWN_IDS.clear()
     KNOWN_IDS.update(r[0] for r in conn.execute("SELECT id FROM hits"))
 
-    for src in active:
+    for idx, src in enumerate(active, 1):
+        tick = "[%3d/%d]" % (idx, len(active))
         platform = src.get("platform", "legistar")
         if platform not in CONNECTORS:
-            log("  %-22s SKIPPED (unknown platform '%s')" % (src["client"], platform))
+            log("%s %-22s SKIPPED (unknown platform '%s')" % (tick, src["client"], platform))
             continue
         try:
             items = CONNECTORS[platform](src, since, now)
@@ -788,12 +803,12 @@ def cmd_scan(days=None, force=False):
             # Watchdog bookkeeping: count consecutive failures per source.
             src["fail_streak"] = src.get("fail_streak", 0) + 1
             src["last_error"] = str(e)
-            log("  %-22s SKIPPED (%s)" % (src["client"], e))
+            log("%s %-22s SKIPPED (%s)" % (tick, src["client"], e))
             continue
         except Exception as e:  # a bug in a connector must not stop the scan
             src["fail_streak"] = src.get("fail_streak", 0) + 1
             src["last_error"] = "connector crashed: %s" % str(e)[:90]
-            log("  %-22s SKIPPED (connector crashed: %s)" % (src["client"], e))
+            log("%s %-22s SKIPPED (connector crashed: %s)" % (tick, src["client"], e))
             continue
         src["fail_streak"] = 0
         src["last_ok"] = now_iso[:10]
@@ -830,8 +845,8 @@ def cmd_scan(days=None, force=False):
             }
             new_hits.append(row)
             count += 1
-        log("  %-22s %-10s %d item(s) checked, %d new hit%s" % (
-            src["client"], platform, len(items), count, "" if count == 1 else "s"))
+        log("%s %-22s %-10s %d item(s) checked, %d new hit%s" % (
+            tick, src["client"], platform, len(items), count, "" if count == 1 else "s"))
 
     # Optional AI upgrade: if a key is present, Claude refines the keyword
     # grade and writes a summary. Without a key the keyword score stands.

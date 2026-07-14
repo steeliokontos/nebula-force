@@ -9,15 +9,21 @@ hit, and turns them into a clean color-coded dashboard in Autura's style.
 This is the do-it-yourself version of the alert services vendors keep
 pitching. It runs on your own computer and costs nothing to operate.
 
-## Polite-guest rule (built in)
+## Polite-guest rules (built in — there are two)
 
-toWatch contacts the government sites **at most once every 3 days** — the
-industry moves slowly and there's no reason to knock more often. Double-click
-the launcher as often as you like: if a scan isn't due yet it just says so,
-tells you when the next one is, and opens the dashboard with what it already
-has. The lookback window automatically covers the gap since the last scan
-(plus a 2-day overlap), so nothing slips through between scans.
-`python3 towwatch.py scan --force` overrides the rule when truly needed.
+1. **The 3-day rule:** ToWatch scans **at most once every 3 days** — the
+   industry moves slowly and there's no reason to knock more often.
+   Double-click the launcher as often as you like: if a scan isn't due yet
+   it just says so, tells you when the next one is, and opens the dashboard
+   with what it already has. The lookback window automatically covers the
+   gap since the last scan (plus a 2-day overlap), so nothing slips through
+   between scans. `python3 towwatch.py scan --force` overrides it when
+   truly needed.
+2. **The per-site pause:** during a scan, back-to-back requests to the
+   *same* government's website stay at least 1 second apart, so no
+   individual site ever sees rapid-fire traffic. Requests to *different*
+   sites don't wait on each other — pausing between Houston and Tulsa
+   protects nobody — which keeps the overall scan quick.
 
 ## Built to withstand change (the watchdog)
 
@@ -65,10 +71,12 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
 That's it — it scans all the cities, then opens `dashboard.html` in your
 browser with anything new. Run it with your morning coffee.
 
-Heads-up: with 455 governments watched, a scan takes a while — likely
-20–40 minutes, because the app deliberately pauses between requests to be
-a polite guest. Start it, go do something else, come back to a full
-dashboard. (And remember it only actually scans once every 3 days.)
+Heads-up: with 455 governments watched, expect the first scan to take
+roughly 10–20 minutes (it works through them one at a time, and pauses
+politely between requests to the same site). The console shows a running
+`[ 37/455]` counter so you can see it's alive. Start it, top off your
+coffee, come back to a full dashboard. (And remember it only actually
+scans once every 3 days.)
 
 ## Quick start — Mac
 
