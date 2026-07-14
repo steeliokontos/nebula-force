@@ -104,75 +104,38 @@ ever.
 
 ## What it covers today
 
-89 sources across **six platform connectors** — cities AND county
-commissions (counties matter: sheriffs, commissioners courts, and consolidated
-dispatch centers often control tow dispatch, not the city):
+**163 sources, all 11 territories, six platform connectors.** The
+authoritative list lives in `sources.json` — every entry is one line
+naming the government, its state, and which connector reads it.
 
-**Legistar** (legislation-level detail):
-- **TX**: Fort Worth, Dallas, San Antonio, Austin, El Paso, Corpus Christi,
-  Boerne + Harris, Galveston, and Brazoria Counties
-- **OK**: Oklahoma County (OKC area)
-- **OH**: Columbus, Cleveland, Cincinnati, Toledo + Knox County
-- **AR**: Fayetteville, Jonesboro
-- **GA**: Fulton and DeKalb Counties (Atlanta metro)
-- **AL**: Huntsville + Baldwin County
-- **TN**: Metro Nashville / Davidson County + Blount County
-- **MS**: Harrison County (Gulfport/Biloxi), Vicksburg
-- **LA**: New Orleans + St. Charles Parish
-- **KY**: Louisville Metro (legislation archive) + Lexington-Fayette Urban
-  County — both consolidated city-county governments
+| State | Sources | Anchors |
+|---|---|---|
+| TX | 27 | Houston, DFW (6 bodies), San Antonio + Bexar, Austin + Travis/Williamson, El Paso, Lubbock, Amarillo, Laredo |
+| GA | 17 | Atlanta + 8 metro counties/cities, Savannah + Chatham, all four consolidated govts |
+| TN | 17 | Memphis + Shelby, Nashville metro (4), Knoxville + Knox, Chattanooga + Hamilton |
+| AL | 16 | Birmingham + Jefferson/Shelby, Montgomery x2, Mobile x2, Huntsville + Madison x2, Tuscaloosa |
+| AR | 16 | Little Rock + Pulaski, all of Northwest Arkansas, Fort Smith + Sebastian, Jonesboro |
+| MS | 16 | Jackson + Hinds/Rankin/Madison, Gulf Coast (5), Memphis-metro suburbs (3) |
+| OH | 16 | The three C's + their counties, Toledo + Lucas, Dayton + Montgomery, Akron + Summit, Canton + Stark, Butler |
+| OK | 15 | OKC metro (6), Tulsa city + county, Norman + Cleveland Co., Lawton + Comanche Co. |
+| LA | 15 | New Orleans + Jefferson Parish, Baton Rouge (2 parishes more), Shreveport + Caddo, Lafayette, Lake Charles |
+| KY | 8 | Louisville (both platforms), Lexington, northern KY (3), Bowling Green, Frankfort |
 
-**CivicClerk** (meeting agendas): Travis County TX (Austin), Cobb County GA,
-Tulsa County OK, Lake Charles LA, Ascension / West Baton Rouge / Washington
-Parishes LA, Bentonville + Rogers AR, Jackson + Gulfport + Hattiesburg +
-Rankin County MS
-
-**PrimeGov** (meeting agendas): Oklahoma City, Tarrant County TX (Fort Worth),
-Shreveport LA, Louisville Metro Council KY
-
-**iQM2** (meeting agendas): Butler County OH, Atlanta, Jefferson County AL
-(Birmingham)
-
-**CivicPlus Agenda Center** (agenda/minutes PDFs): Bexar County TX (San
-Antonio), Hidalgo County TX, Montgomery County OH (Dayton), Baton Rouge /
-East Baton Rouge, Jefferson Parish, Kenner, Bossier City, Livingston Parish
-LA, Kenton County, Hardin County, Frankfort KY, Hot Springs AR, Southaven +
-Olive Branch + Pascagoula + DeSoto County + Jackson County MS
-
-**Page watcher** (generic — any body that posts agendas/PDFs on its own
-website): Summit County Council OH (Akron), Lafayette Consolidated Govt,
-Caddo Parish, St. Tammany Parish LA; Bowling Green, Covington KY; Little
-Rock, North Little Rock, Fort Smith, Springdale, Conway, Texarkana, Pine
-Bluff + Pulaski / Benton / Washington / Sebastian Counties AR; Biloxi,
-Meridian, Tupelo + Madison / Hinds Counties MS.
-Adding an own-site body = one line with the URL of its agenda page.
-
-Legistar sources alert per piece of legislation; the other three alert per
-meeting whose agenda contains tow language (agenda PDFs are read with a
-built-in extractor — no extra installs). Each source declares its platform
-in `sources.json`; adding a body on any of the four platforms is one line.
-
-Adding a city that uses Legistar = adding one line to `sources.json`. If a
-city's agenda site looks like `something.legistar.com`, the `something` part
-is the "client" value.
+By connector: pagewatch 63 · legistar 33 · agendacenter 30 · civicclerk 26
+· iqm2 6 · primegov 5. Legistar sources alert per piece of legislation;
+the rest alert per meeting whose agenda contains tow language (agenda
+PDFs are read with a built-in extractor — no installs).
 
 ## Known coverage gaps (the phase-2 list)
 
-Remaining bodies not yet watched (the page watcher can take any of them —
-each just needs its agenda-page URL added to sources.json):
+Nearly everything mapped is now watched. Still outstanding:
 
-- **Platform connectors not built yet**: CivicWeb (Dallas County TX),
-  NovusAGENDA (El Paso County TX), OnBase (Hamilton County OH, Akron city),
-  Municode Meetings (Norman OK)
-- **Own-site bodies with known agenda pages, ready for pagewatch**:
-  Owensboro, Florence, Elizabethtown, Boone / Campbell / Warren / Daviess
-  Counties KY; Calcasieu Parish LA; Cuyahoga (Cleveland) and Franklin
-  (Columbus) Counties OH; Memphis, Chattanooga, Knoxville + Shelby / Knox /
-  Hamilton Counties TN; Gwinnett, Chatham Counties GA; Birmingham,
-  Montgomery, Mobile + Madison / Mobile Counties AL; Houston, Fort Bend
-  County TX; Tulsa
-- **Puerto Rico**: San Juan's municipal legislature, Spanish-language
-  (a good fit for the AI pass later)
+- **Dallas County TX** (CivicWeb) and **El Paso County TX** (NovusAGENDA) —
+  addable via pagewatch with their portal URLs, or dedicated connectors
+- **Kentucky small cities/counties**: Owensboro, Florence, Elizabethtown,
+  Boone / Campbell / Warren / Daviess Counties (own sites — pagewatch-ready,
+  URLs in the KY research notes)
+- **Calcasieu Parish LA** (Lake Charles's parish, own site)
 - **Puerto Rico**: San Juan's municipal legislature, Spanish-language
   (a good fit for the AI pass later)
 

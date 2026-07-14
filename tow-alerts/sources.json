@@ -711,6 +711,466 @@
       "kind": "county",
       "platform": "pagewatch",
       "url": "https://cherokeega.granicus.com/ViewPublisher.php?view_id=1"
+    },
+    {
+      "client": "brokenarrow",
+      "name": "Broken Arrow (Tulsa metro)",
+      "state": "OK",
+      "kind": "city"
+    },
+    {
+      "client": "lawtonok",
+      "name": "Lawton",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "stillwaterok",
+      "name": "Stillwater",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "midwestcityok",
+      "name": "Midwest City (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "clevelandcountyok.com",
+      "name": "Cleveland County (Norman)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "canadiancounty.org",
+      "name": "Canadian County (OKC metro)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "comanchecountyok.gov",
+      "name": "Comanche County (Lawton)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "tulsacity",
+      "name": "Tulsa City Council",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityoftulsa.org/government/meeting-agendas/"
+    },
+    {
+      "client": "normanok",
+      "name": "Norman",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.normanok.gov/your-government/public-information/agendas-and-minutes"
+    },
+    {
+      "client": "edmondok",
+      "name": "Edmond (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://edmondok.gov/84/Agendas-Minutes"
+    },
+    {
+      "client": "mooreok",
+      "name": "Moore (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofmoore.com/meetings-and-notices"
+    },
+    {
+      "client": "enidok",
+      "name": "Enid",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://enid.civicweb.net/Portal/MeetingTypeList.aspx"
+    },
+    {
+      "client": "franklintn",
+      "name": "Franklin (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "clarksvilletn",
+      "name": "Clarksville",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "knoxvilletn",
+      "name": "Knoxville",
+      "state": "TN",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "murfreesborotn.gov",
+      "name": "Murfreesboro (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "williamsoncounty-tn.gov",
+      "name": "Williamson County (Nashville metro)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "memphistn",
+      "name": "Memphis",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://memphistn.gov/city-council-meeting-agenda/"
+    },
+    {
+      "client": "shelbytn",
+      "name": "Shelby County (Memphis)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://agenda.shelbycountytn.gov/OnBaseAgendaOnline"
+    },
+    {
+      "client": "knoxcountytn",
+      "name": "Knox County (Knoxville)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://commission.knoxcountytn.gov/documents/scheduled-meetings/"
+    },
+    {
+      "client": "chattanoogatn",
+      "name": "Chattanooga",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://chattanooga.gov/stay-informed/council-agendas-minutes"
+    },
+    {
+      "client": "hamiltontn",
+      "name": "Hamilton County (Chattanooga)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.hamiltontn.gov/CurrentAgenda.aspx"
+    },
+    {
+      "client": "johnsoncitytn",
+      "name": "Johnson City",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://johnsoncitytn.civicweb.net/Portal/MeetingSchedule.aspx"
+    },
+    {
+      "client": "kingsporttn",
+      "name": "Kingsport",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://kingsport-tn.municodemeetings.com/"
+    },
+    {
+      "client": "jacksontn",
+      "name": "Jackson",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.jacksontn.gov/government/citycouncil/agendaandminutes"
+    },
+    {
+      "client": "rutherfordtn",
+      "name": "Rutherford County (Murfreesboro)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://rutherfordcountytn.gov/countycommission_schedule"
+    },
+    {
+      "client": "montgomerytn",
+      "name": "Montgomery County (Clarksville)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://montgomerytn.gov/commission/agenda"
+    },
+    {
+      "client": "dentoncounty",
+      "name": "Denton County (DFW metro)",
+      "state": "TX",
+      "kind": "county"
+    },
+    {
+      "client": "cityoflaredo",
+      "name": "Laredo",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "garlandtx",
+      "name": "Garland (DFW metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "amarillotx",
+      "name": "Amarillo",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "lucascooh",
+      "name": "Lucas County (Toledo)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "wilcotx.gov",
+      "name": "Williamson County (Austin metro)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "mylubbock.us",
+      "name": "Lubbock",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "daytonohio.gov",
+      "name": "Dayton",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cantonohio.gov",
+      "name": "Canton",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "houstontx",
+      "name": "Houston",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.houstontx.gov/citysec/agenda/agendaindex.html"
+    },
+    {
+      "client": "fortbendtx",
+      "name": "Fort Bend County (Houston metro)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://agendalink.fortbendcountytx.gov/agenda_publish.cfm"
+    },
+    {
+      "client": "mctxgov",
+      "name": "Montgomery County (Houston metro)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.mctx.org/departments/departments_a_-_c/commissioner_s_court/current_agendas.php"
+    },
+    {
+      "client": "collintx",
+      "name": "Collin County (DFW metro)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://eagenda.collincountytx.gov/agenda_publish.cfm"
+    },
+    {
+      "client": "arlingtontx",
+      "name": "Arlington (DFW metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.arlingtontx.gov/Government/Meetings-Agendas/City-Council-Meeting-Agendas"
+    },
+    {
+      "client": "planotx",
+      "name": "Plano (DFW metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://plano.novusagenda.com/agendapublic/"
+    },
+    {
+      "client": "irvingtx",
+      "name": "Irving (DFW metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.irvingtx.gov/agendas"
+    },
+    {
+      "client": "cuyahogaoh",
+      "name": "Cuyahoga County Council (Cleveland)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://cuyahogacounty.gov/council/council-meeting"
+    },
+    {
+      "client": "franklincooh",
+      "name": "Franklin County (Columbus)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://commissioners.franklincountyohio.gov/archives/general-session-agendas/"
+    },
+    {
+      "client": "hamiltoncooh",
+      "name": "Hamilton County (Cincinnati)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://hcjfsonbase.jfs.hamilton-co.org/OnBaseAgendaOnline"
+    },
+    {
+      "client": "akronoh",
+      "name": "Akron",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://onlinedocs.akronohio.gov/OnBaseAgendaOnline/"
+    },
+    {
+      "client": "starkcooh",
+      "name": "Stark County (Canton)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.starkcountyohio.gov/government/offices/commissioners/agendas___minutes/index.php"
+    },
+    {
+      "client": "mobileal",
+      "name": "Mobile",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "www.hooveralabama.gov",
+      "name": "Hoover (Birmingham metro)",
+      "state": "AL",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.shelbyal.com",
+      "name": "Shelby County (Birmingham metro)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.dothan.org",
+      "name": "Dothan",
+      "state": "AL",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "birminghamal",
+      "name": "Birmingham",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.birminghamalcitycouncil.org/council-meeting-agendas/"
+    },
+    {
+      "client": "montgomeryal",
+      "name": "Montgomery",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.montgomeryal.gov/government/city-government/city-council/city-council-meetings-and-agendas"
+    },
+    {
+      "client": "montgomerycoal",
+      "name": "Montgomery County",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://mc-ala.civicweb.net/Portal/"
+    },
+    {
+      "client": "mobilecountyal",
+      "name": "Mobile County",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.mobilecountyal.gov/government/meetings-agendas/"
+    },
+    {
+      "client": "tuscaloosaal",
+      "name": "Tuscaloosa",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://tuscaloosaal.suiteonemedia.com/"
+    },
+    {
+      "client": "madisoncoal",
+      "name": "Madison County (Huntsville)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.madisoncountyal.gov/residents/advanced-components/list-detail-pages/calendar-meeting-list"
+    },
+    {
+      "client": "decaturall",
+      "name": "Decatur",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofdecatural.com/agendas/council-agendas/"
+    },
+    {
+      "client": "auburnal",
+      "name": "Auburn",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.auburnal.gov/agenda/"
+    },
+    {
+      "client": "madisonal",
+      "name": "Madison (Huntsville metro)",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://madison-al.municodemeetings.com/"
     }
   ]
 }
