@@ -1163,7 +1163,7 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
   .title a:hover { text-decoration: underline; }
   .metaline { display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
               font-size: 13px; color: #7d8895; margin-bottom: 13px; }
-  .metaline .loc { font-weight: 700; color: #26364a; }
+  .metaline .loc { font-weight: 800; color: #1b3350; font-size: 15px; }
   .metaline .pin { display: inline-flex; }
   .badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
   .badge { border-radius: 5px; padding: 2px 8px; font-size: 11.5px; font-weight: 600;
@@ -1212,8 +1212,8 @@ q.oninput=apply;
 
 
 # Small location pin drawn inline (no image files) for the card meta line.
-PIN_SVG = ('<svg width="12" height="12" viewBox="0 0 24 24" fill="none" '
-           'stroke="#26364a" stroke-width="2"><path d="M12 21s7-6.3 7-11a7 7 0 '
+PIN_SVG = ('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" '
+           'stroke="#1b3350" stroke-width="2"><path d="M12 21s7-6.3 7-11a7 7 0 '
            '1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>')
 
 
