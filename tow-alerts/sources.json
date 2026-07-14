@@ -1349,6 +1349,2023 @@
       "kind": "county",
       "platform": "pagewatch",
       "url": "https://www.johnsoncountytx.org/commissioners-court/public-information/meeting-agendas"
+    },
+    {
+      "client": "georgetownky.gov",
+      "name": "Georgetown",
+      "state": "KY",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofindependence.org",
+      "name": "Independence (Cincinnati metro)",
+      "state": "KY",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "owensboroky",
+      "name": "Owensboro",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.owensboro.org/government/city_clerk/agendas_minutes.php"
+    },
+    {
+      "client": "richmondky",
+      "name": "Richmond",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://richmondky.gov/government/agendas_minutes/city_commission.php"
+    },
+    {
+      "client": "florenceky",
+      "name": "Florence (Cincinnati metro)",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://florence-ky.gov/our-government/minutes-archive/"
+    },
+    {
+      "client": "elizabethtownky",
+      "name": "Elizabethtown",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.elizabethtownky.org/government/agendas_minutes.php"
+    },
+    {
+      "client": "nicholasvilleky",
+      "name": "Nicholasville",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://nicholasvillecityky.documents-on-demand.com/"
+    },
+    {
+      "client": "hopkinsvilleky",
+      "name": "Hopkinsville",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.hopkinsvilleky.us/departments/city_clerk/meeting_agendas_minutes_and_packets.php"
+    },
+    {
+      "client": "paducahky",
+      "name": "Paducah",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://paducahky.gov/departments/city-clerk/city-commission-meeting-information"
+    },
+    {
+      "client": "ashlandky",
+      "name": "Ashland",
+      "state": "KY",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.ashlandky.gov/government/board_of_commissioners/agendas___minutes/mayor___commission.php"
+    },
+    {
+      "client": "boonecountyky",
+      "name": "Boone County Fiscal Court (Cincinnati metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.boonecountyky.org/government/boone_county_fiscal_court/index.php"
+    },
+    {
+      "client": "warrencountyky",
+      "name": "Warren County Fiscal Court (Bowling Green)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.warrencountyky.gov/departments/fiscal-court/"
+    },
+    {
+      "client": "campbellcountyky",
+      "name": "Campbell County Fiscal Court (Cincinnati metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://campbellcountyky.gov/meetings/"
+    },
+    {
+      "client": "daviesscountyky",
+      "name": "Daviess County Fiscal Court (Owensboro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.daviessky.org/county-government/fiscal-court-agendas/"
+    },
+    {
+      "client": "bullittcountyky",
+      "name": "Bullitt County Fiscal Court (Louisville metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://bullittky.com/?page_id=281"
+    },
+    {
+      "client": "oldhamcountyky",
+      "name": "Oldham County Fiscal Court (Louisville metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.oldhamcountyky.gov/fiscalcourtagendas"
+    },
+    {
+      "client": "madisoncountyky",
+      "name": "Madison County Fiscal Court (Richmond)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://madisoncountyky.gov/judge-executive/fiscal-court-meeting-archive/"
+    },
+    {
+      "client": "scottcountyky",
+      "name": "Scott County Fiscal Court (Georgetown)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://scottky.gov/agenda/"
+    },
+    {
+      "client": "jessamineky",
+      "name": "Jessamine County Fiscal Court (Lexington metro)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://jessamineky.gov/jessamine-county-fiscal-court/"
+    },
+    {
+      "client": "mccrackenky",
+      "name": "McCracken County Fiscal Court (Paducah)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://mccrackencountyky.gov/agenda/"
+    },
+    {
+      "client": "christiancountyky",
+      "name": "Christian County Fiscal Court (Hopkinsville)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://christiancountyky.gov/christian-co-fiscal-court"
+    },
+    {
+      "client": "pulaskicountyky",
+      "name": "Pulaski County Fiscal Court (Somerset)",
+      "state": "KY",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.pulaskigov.com/fiscal-court-documents/fiscal-court-minutes/"
+    },
+    {
+      "client": "smyrnacity",
+      "name": "Smyrna (Atlanta metro)",
+      "state": "GA",
+      "kind": "city"
+    },
+    {
+      "client": "southfultonga",
+      "name": "South Fulton (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "alpharettaga",
+      "name": "Alpharetta (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "newnanga",
+      "name": "Newnan",
+      "state": "GA",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "cowetacoga",
+      "name": "Coweta County",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "douglascountyga",
+      "name": "Douglas County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "carrollcoga",
+      "name": "Carroll County",
+      "state": "GA",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "brookhavenga",
+      "name": "Brookhaven (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "www.mariettaga.gov",
+      "name": "Marietta (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.peachtreecornersga.gov",
+      "name": "Peachtree Corners",
+      "state": "GA",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.romega.us",
+      "name": "Rome",
+      "state": "GA",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.hallcounty.org",
+      "name": "Hall County (Gainesville)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.paulding.gov",
+      "name": "Paulding County",
+      "state": "GA",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.lowndescounty.com",
+      "name": "Lowndes County (Valdosta)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "johnscreekga",
+      "name": "Johns Creek (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://johnscreekga.granicus.com/ViewPublisher.php?view_id=1"
+    },
+    {
+      "client": "stonecrestga",
+      "name": "Stonecrest (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://stonecrest-ga.municodemeetings.com/"
+    },
+    {
+      "client": "dunwoodyga",
+      "name": "Dunwoody (Atlanta metro)",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.dunwoodyga.gov/government/agendas-and-minutes"
+    },
+    {
+      "client": "valdostaga",
+      "name": "Valdosta",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.valdostacity.com/city-council/agendas-minutes"
+    },
+    {
+      "client": "albanyga",
+      "name": "Albany",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.albanyga.gov/City-Commission/City-Clerks-Office/Meeting-Agendas"
+    },
+    {
+      "client": "warnerrobinsga",
+      "name": "Warner Robins",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.wrga.gov/documents/agenda-center/city-council-agendas-&-minutes/547449"
+    },
+    {
+      "client": "gainesvillega",
+      "name": "Gainesville",
+      "state": "GA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.gainesville.org/471/Agendas-Minutes---City-Council"
+    },
+    {
+      "client": "fayettecoga",
+      "name": "Fayette County (Atlanta metro)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://fayettecountyga.gov/government/board_of_commissioners/agendas_minutes.php"
+    },
+    {
+      "client": "bartowcoga",
+      "name": "Bartow County",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.bartowcountyga.gov/departments/county_commissioner/public_meeting_minutes/index.php"
+    },
+    {
+      "client": "houstoncoga",
+      "name": "Houston County (Warner Robins)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.houstoncountyga.gov/commissioner/meeting-minutes.cms"
+    },
+    {
+      "client": "doughertycoga",
+      "name": "Dougherty County (Albany)",
+      "state": "GA",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.dougherty.ga.us/Government/Board-of-Commissioners/Agendas-and-Minutes"
+    },
+    {
+      "client": "fairfieldoh",
+      "name": "Fairfield (Cincinnati metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "springfieldohio",
+      "name": "Springfield",
+      "state": "OH",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "cityofparma-oh.gov",
+      "name": "Parma (Cleveland metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityoflorain.org",
+      "name": "Lorain",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofmiddletown.org",
+      "name": "Middletown",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "beavercreekohio.gov",
+      "name": "Beavercreek (Dayton metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "lancasterohio.gov",
+      "name": "Lancaster",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "limaohio.gov",
+      "name": "Lima",
+      "state": "OH",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "mahoningcountyoh.gov",
+      "name": "Mahoning County (Youngstown)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "loraincountyohio.gov",
+      "name": "Lorain County",
+      "state": "OH",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "greenecountyohio.gov",
+      "name": "Greene County (Dayton metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "hamiltoncityoh",
+      "name": "Hamilton (city)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.hamilton-oh.gov/agendas-minutes"
+    },
+    {
+      "client": "ketteringoh",
+      "name": "Kettering (Dayton metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.ketteringoh.org/city-council-meetings/"
+    },
+    {
+      "client": "elyriaoh",
+      "name": "Elyria",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofelyria.org/city-council-updates/"
+    },
+    {
+      "client": "lakewoodoh",
+      "name": "Lakewood (Cleveland metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.lakewoodoh.gov/minutesandagendas/"
+    },
+    {
+      "client": "cuyahogafallsoh",
+      "name": "Cuyahoga Falls (Akron metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofcf.com/city-council/files"
+    },
+    {
+      "client": "newarkoh",
+      "name": "Newark",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.newarkohio.gov/meeting-agendas/"
+    },
+    {
+      "client": "dublinoh",
+      "name": "Dublin (Columbus metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://dublinohiousa.gov/council/meeting-schedule/"
+    },
+    {
+      "client": "mentoroh",
+      "name": "Mentor (Cleveland metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://cityofmentor.com/departments/city-council/"
+    },
+    {
+      "client": "strongsvilleoh",
+      "name": "Strongsville (Cleveland metro)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.strongsville.org/government/city-council/minutes-agendas"
+    },
+    {
+      "client": "findlayoh",
+      "name": "Findlay",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.findlayohio.gov/government/meeting-agendas-minutes"
+    },
+    {
+      "client": "warrenoh",
+      "name": "Warren (city)",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.warren.org/government/city_council/meeting_agendas.php"
+    },
+    {
+      "client": "youngstownoh",
+      "name": "Youngstown",
+      "state": "OH",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://youngstownohio.gov/city_council"
+    },
+    {
+      "client": "warrencountyoh",
+      "name": "Warren County (Cincinnati metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://commissioners.warrencountyohio.gov/News/AgendaMinutes/Index"
+    },
+    {
+      "client": "clermontcountyoh",
+      "name": "Clermont County (Cincinnati metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://bcc.clermontcountyohio.gov/agenda/"
+    },
+    {
+      "client": "delawarecountyoh",
+      "name": "Delaware County (Columbus metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://co.delaware.oh.us/media-room/video/"
+    },
+    {
+      "client": "lickingcountyoh",
+      "name": "Licking County (Columbus metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://lickingcounty.gov/depts/commissioners/default.htm"
+    },
+    {
+      "client": "trumbullcountyoh",
+      "name": "Trumbull County (Youngstown)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.co.trumbull.oh.us/Commissioners/Meetings"
+    },
+    {
+      "client": "medinacountyoh",
+      "name": "Medina County (Cleveland metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.medinaco.org/county-commissioners/meeting-agendas/"
+    },
+    {
+      "client": "portagecountyoh",
+      "name": "Portage County (Akron metro)",
+      "state": "OH",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.portagecounty-oh.gov/minutes-and-agendas"
+    },
+    {
+      "client": "mtjuliet-tn",
+      "name": "Mount Juliet (Nashville metro)",
+      "state": "TN",
+      "kind": "city"
+    },
+    {
+      "client": "bartletttn",
+      "name": "Bartlett (Memphis metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "smyrnatn",
+      "name": "Smyrna (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "columbiatn",
+      "name": "Columbia",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "lavergnetn",
+      "name": "La Vergne (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "www.hvilletn.org",
+      "name": "Hendersonville (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.springhilltn.org",
+      "name": "Spring Hill (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.gallatintn.gov",
+      "name": "Gallatin (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.cookeville-tn.gov",
+      "name": "Cookeville",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.lebanontn.org",
+      "name": "Lebanon (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.oakridgetn.gov",
+      "name": "Oak Ridge (Knoxville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.bristoltn.gov",
+      "name": "Bristol",
+      "state": "TN",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.wilsoncountytn.gov",
+      "name": "Wilson County (Nashville metro)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.maurycounty-tn.gov",
+      "name": "Maury County (Columbia)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "www.washingtoncountytn.org",
+      "name": "Washington County (Johnson City)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "colliervilletn",
+      "name": "Collierville (Memphis metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.colliervilletn.gov/government/public-meetings"
+    },
+    {
+      "client": "germantowntn",
+      "name": "Germantown (Memphis metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.germantown-tn.gov/government/city-boards-commissions/board-and-commission-schedules-and-archives"
+    },
+    {
+      "client": "brentwoodtn",
+      "name": "Brentwood (Nashville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.brentwoodtn.gov/Your-Government/Agendas-Minutes-Videos"
+    },
+    {
+      "client": "maryvilletn",
+      "name": "Maryville (Knoxville metro)",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.maryvillegov.com/"
+    },
+    {
+      "client": "morristowntn",
+      "name": "Morristown",
+      "state": "TN",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.mymorristown.com/government/council/council_agendas.php"
+    },
+    {
+      "client": "sumnercountytn",
+      "name": "Sumner County (Nashville metro)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://sumnercountytn.gov/government/agendas-minutes/"
+    },
+    {
+      "client": "seviercountytn",
+      "name": "Sevier County (Pigeon Forge)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.seviercountytn.gov/government/county_officials/county_commissioners/county_commission_agenda.php"
+    },
+    {
+      "client": "bradleycountytn",
+      "name": "Bradley County (Cleveland TN)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://bradleycountytn.gov/county-government/county-commission/county-commission-agendas-minutes/"
+    },
+    {
+      "client": "putnamcountytn",
+      "name": "Putnam County (Cookeville)",
+      "state": "TN",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://putnamcountytn.gov/commission-agenda"
+    },
+    {
+      "client": "pearlms",
+      "name": "Pearl (Jackson metro)",
+      "state": "MS",
+      "kind": "city"
+    },
+    {
+      "client": "laurelms",
+      "name": "Laurel",
+      "state": "MS",
+      "kind": "city"
+    },
+    {
+      "client": "brandonms",
+      "name": "Brandon (Jackson metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "ridgelandms",
+      "name": "Ridgeland (Jackson metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "oceanspringsms",
+      "name": "Ocean Springs (Gulf Coast)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "hancockcoms",
+      "name": "Hancock County (Gulf Coast)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "cityofstarkville.org",
+      "name": "Starkville",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "natchez.ms.us",
+      "name": "Natchez",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "gautier-ms.gov",
+      "name": "Gautier (Gulf Coast)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "oktibbeha.ms.gov",
+      "name": "Oktibbeha County (Starkville)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "lowndescountyms.com",
+      "name": "Lowndes County (Columbus MS)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "pearlrivercounty.net",
+      "name": "Pearl River County",
+      "state": "MS",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "clintonms",
+      "name": "Clinton (Jackson metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://clintonms.org/menu-nav/agenda-minutes/"
+    },
+    {
+      "client": "hornlakems",
+      "name": "Horn Lake (Memphis metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.hornlake.org/MeetingMinutes"
+    },
+    {
+      "client": "oxfordms",
+      "name": "Oxford",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.oxfordms.net/board-of-aldermen-agenda"
+    },
+    {
+      "client": "madisoncityms",
+      "name": "Madison (Jackson metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.madisonthecity.com/government/aldermen/agendas-minutes/"
+    },
+    {
+      "client": "hernandoms",
+      "name": "Hernando (Memphis metro)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofhernando.org/government/mayor-board-of-aldermen/meeting-schedule-minutes"
+    },
+    {
+      "client": "longbeachms",
+      "name": "Long Beach (Gulf Coast)",
+      "state": "MS",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityoflongbeachms.info/board-meetings"
+    },
+    {
+      "client": "lauderdalecoms",
+      "name": "Lauderdale County (Meridian)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.lauderdalecounty.org/minutes/"
+    },
+    {
+      "client": "leecountyms",
+      "name": "Lee County (Tupelo)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.leecounty.org/agenda.aspx"
+    },
+    {
+      "client": "forrestcoms",
+      "name": "Forrest County (Hattiesburg)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://forrestcountyms.us/forrest-county-minutes/"
+    },
+    {
+      "client": "lamarcoms",
+      "name": "Lamar County (Hattiesburg)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://lamarcountyms.gov/ms/document-category/board-agenda/"
+    },
+    {
+      "client": "lafayettecoms",
+      "name": "Lafayette County (Oxford)",
+      "state": "MS",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://lafayettems.com/board-of-supervisors/"
+    },
+    {
+      "client": "killeen",
+      "name": "Killeen",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "roundrock",
+      "name": "Round Rock (Austin metro)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "leaguecity",
+      "name": "League City (Houston metro)",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "newbraunfels",
+      "name": "New Braunfels",
+      "state": "TX",
+      "kind": "city"
+    },
+    {
+      "client": "brownsvilletx",
+      "name": "Brownsville",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "mcallentx",
+      "name": "McAllen",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "collegestationtx",
+      "name": "College Station",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "abilenetx",
+      "name": "Abilene",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "sugarlandtx",
+      "name": "Sugar Land (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "wichitafallstx",
+      "name": "Wichita Falls",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "edinburgtx",
+      "name": "Edinburg (RGV)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "midlandtx",
+      "name": "Midland",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "pharrtx",
+      "name": "Pharr (RGV)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "mclennancotx",
+      "name": "McLennan County (Waco)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "wacotexas",
+      "name": "Waco",
+      "state": "TX",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "tylertx",
+      "name": "Tyler",
+      "state": "TX",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "beaumonttexas",
+      "name": "Beaumont",
+      "state": "TX",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "cityoftemple",
+      "name": "Temple",
+      "state": "TX",
+      "kind": "city",
+      "platform": "primegov"
+    },
+    {
+      "client": "pasadenatx.gov",
+      "name": "Pasadena (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "odessa-tx.gov",
+      "name": "Odessa",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "baytown.org",
+      "name": "Baytown (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "sanangelo.gov",
+      "name": "San Angelo",
+      "state": "TX",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "brazoscountytx.gov",
+      "name": "Brazos County (College Station)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "pearlandtx",
+      "name": "Pearland (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://pearlandtx.civicweb.net/Portal/MeetingTypeList.aspx"
+    },
+    {
+      "client": "missouricitytx",
+      "name": "Missouri City (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://missouricitytx.civicweb.net/Portal/MeetingTypeList.aspx"
+    },
+    {
+      "client": "conroetx",
+      "name": "Conroe (Houston metro)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofconroe.org/government/city_council/agendas_minutes/index.php"
+    },
+    {
+      "client": "bryantx",
+      "name": "Bryan (College Station)",
+      "state": "TX",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://go.boarddocs.com/tx/cobtx/Board.nsf/Public"
+    },
+    {
+      "client": "cameroncotx",
+      "name": "Cameron County (Brownsville)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.cameroncountytx.gov/commissioners-court-agendas/"
+    },
+    {
+      "client": "nuecescotx",
+      "name": "Nueces County (Corpus Christi)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.nuecesco.com/commissioners-court/agendas-minutes-videos"
+    },
+    {
+      "client": "bellcotx",
+      "name": "Bell County (Killeen)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.bellcountytx.com/county_government/commissioners_court/agendas_and_minutes.php"
+    },
+    {
+      "client": "webbcotx",
+      "name": "Webb County (Laredo)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.webbcountytx.gov/agendaandminutes/"
+    },
+    {
+      "client": "jeffersoncotx",
+      "name": "Jefferson County (Beaumont)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://co.jefferson.tx.us/jcagenda/"
+    },
+    {
+      "client": "smithcotx",
+      "name": "Smith County (Tyler)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.smith-county.com/i-want-to/view/commissioners-court-agendas"
+    },
+    {
+      "client": "comalcotx",
+      "name": "Comal County (New Braunfels)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.comalcounty.gov/175/Agendas"
+    },
+    {
+      "client": "hayscotx",
+      "name": "Hays County (Austin metro)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.hayscountytx.gov/draft-weekly-commissioners-court-agendas"
+    },
+    {
+      "client": "shawneeok",
+      "name": "Shawnee",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "bixbyok",
+      "name": "Bixby (Tulsa metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "mcalesterok",
+      "name": "McAlester",
+      "state": "OK",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "pottawatomiecook",
+      "name": "Pottawatomie County (Shawnee)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "cityofowasso.com",
+      "name": "Owasso (Tulsa metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "jenks.com",
+      "name": "Jenks (Tulsa metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "yukonok.gov",
+      "name": "Yukon (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "ardmorecity.org",
+      "name": "Ardmore",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "duncanok.gov",
+      "name": "Duncan",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "sandspringsok.gov",
+      "name": "Sand Springs (Tulsa metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "rogerscounty.org",
+      "name": "Rogers County (Claremore)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "wagonercounty.ok.gov",
+      "name": "Wagoner County (Tulsa metro)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "bartlesvilleok",
+      "name": "Bartlesville",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofbartlesville.org/city-government/city-council/meeting-agendas/"
+    },
+    {
+      "client": "muskogeeok",
+      "name": "Muskogee",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.muskogeeok.gov/government/city_council/agendas_and_minutes.php"
+    },
+    {
+      "client": "poncacityok",
+      "name": "Ponca City",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.poncacityok.gov/DocumentCenter/Index/243"
+    },
+    {
+      "client": "sapulpaok",
+      "name": "Sapulpa (Tulsa metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.sapulpaok.gov/vnews/display.v/ART/5e94d810d91d4"
+    },
+    {
+      "client": "delcityok",
+      "name": "Del City (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://cityofdelcity.gov/government/agenda-minutes/"
+    },
+    {
+      "client": "claremoreok",
+      "name": "Claremore",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://claremore.com/city-council/agendas-minutes/"
+    },
+    {
+      "client": "mustangok",
+      "name": "Mustang (OKC metro)",
+      "state": "OK",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofmustang.org/documents/agendas/minutes/city-council"
+    },
+    {
+      "client": "paynecountyok",
+      "name": "Payne County (Stillwater)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.paynecounty.org/meeting-agendas-and-schedules"
+    },
+    {
+      "client": "creekcountyok",
+      "name": "Creek County (Sapulpa)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.creekcountyonline.com/meeting-notices"
+    },
+    {
+      "client": "washingtoncountyok",
+      "name": "Washington County (Bartlesville)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://washingtoncountyok.gov/agendas"
+    },
+    {
+      "client": "muskogeecountyok",
+      "name": "Muskogee County",
+      "state": "OK",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://muskogee.okcounties.org/meetings"
+    },
+    {
+      "client": "garfieldcountyok",
+      "name": "Garfield County (Enid)",
+      "state": "OK",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.commissioner.garfieldok.com/agendas-and-minutes"
+    },
+    {
+      "client": "bellavistaar",
+      "name": "Bella Vista (NW Arkansas)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "searcyar",
+      "name": "Searcy",
+      "state": "AR",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "cabotar.gov",
+      "name": "Cabot (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "sherwoodar.gov",
+      "name": "Sherwood (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofjacksonville.net",
+      "name": "Jacksonville (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofparagould.com",
+      "name": "Paragould",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "russellvillearkansas.org",
+      "name": "Russellville",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "cityofvanburenar.gov",
+      "name": "Van Buren (Fort Smith metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "maumelle.gov",
+      "name": "Maumelle (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "siloamsprings.com",
+      "name": "Siloam Springs (NW Arkansas)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "garlandcounty.org",
+      "name": "Garland County (Hot Springs)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "bryantar",
+      "name": "Bryant (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.bryantar.gov/pages/agendas.php"
+    },
+    {
+      "client": "bentonar",
+      "name": "Benton (Little Rock metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.bentonar.org/meetings"
+    },
+    {
+      "client": "eldoradoar",
+      "name": "El Dorado",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.goeldorado.com/local-government/"
+    },
+    {
+      "client": "marionar",
+      "name": "Marion (Memphis metro)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.marionar.org/page/city-council"
+    },
+    {
+      "client": "centertonar",
+      "name": "Centerton (NW Arkansas)",
+      "state": "AR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://centertonar.us/government/boards_commissions/city_council/city_council_agenda.php"
+    },
+    {
+      "client": "craigheadcountyar",
+      "name": "Craighead County (Jonesboro)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://craigheadcountyar.gov/transparency"
+    },
+    {
+      "client": "faulknercountyar",
+      "name": "Faulkner County (Conway)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.faulknercountyar.gov/government/courts/quorum-court/meeting-info/"
+    },
+    {
+      "client": "salinecountyar",
+      "name": "Saline County (Little Rock metro)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.salinecounty.org/government/quorum_court/agenda___exhibits.php"
+    },
+    {
+      "client": "whitecountyar",
+      "name": "White County (Searcy)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://whitecounty.ar.gov/quorum-court"
+    },
+    {
+      "client": "lonokecountyar",
+      "name": "Lonoke County",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://lonokecoclerk.com/quroum-court-agendas/"
+    },
+    {
+      "client": "jeffersoncountyar",
+      "name": "Jefferson County (Pine Bluff)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.jeffersoncountyar.gov/government/quorum-court"
+    },
+    {
+      "client": "crawfordcountyar",
+      "name": "Crawford County (Fort Smith metro)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.crawfordcountyar.gov/officials/county_clerk.cshtml"
+    },
+    {
+      "client": "popecountyar",
+      "name": "Pope County (Russellville)",
+      "state": "AR",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.popecountyar.gov/meetings-agendas"
+    },
+    {
+      "client": "sbpg.net",
+      "name": "St. Bernard Parish (New Orleans metro)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "plaqueminesparish.gov",
+      "name": "Plaquemines Parish (New Orleans metro)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "monroela",
+      "name": "Monroe",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://monroela.us/government/city-council/city-council-meetings/"
+    },
+    {
+      "client": "alexandriala",
+      "name": "Alexandria",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofalexandriala.com/government/city-council/council-agenda/"
+    },
+    {
+      "client": "terrebonnela",
+      "name": "Terrebonne Parish / Houma (consolidated)",
+      "state": "LA",
+      "kind": "city-parish",
+      "platform": "pagewatch",
+      "url": "https://www.tpcg.org/index.php?f=council&p=agendas"
+    },
+    {
+      "client": "slidellla",
+      "name": "Slidell (New Orleans metro)",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://myslidell.com/government/slidell-city-council/agenda/"
+    },
+    {
+      "client": "centralla",
+      "name": "Central (Baton Rouge metro)",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.centralgov.com/page/city-council"
+    },
+    {
+      "client": "rustonla",
+      "name": "Ruston",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.ruston.org/agendas"
+    },
+    {
+      "client": "sulphurla",
+      "name": "Sulphur (Lake Charles metro)",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.sulphur.org/meetings/"
+    },
+    {
+      "client": "hammondla",
+      "name": "Hammond",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://hammond.org/category/council-agendas/"
+    },
+    {
+      "client": "natchitochesla",
+      "name": "Natchitoches",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.natchitochesla.gov/government/city-council/agendas-minutes/"
+    },
+    {
+      "client": "zacharyla",
+      "name": "Zachary (Baton Rouge metro)",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofzachary.org/city-hall/city-council/agendas-minutes"
+    },
+    {
+      "client": "newiberiala",
+      "name": "New Iberia",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://cityofnewiberia.com/site439.php"
+    },
+    {
+      "client": "opelousasla",
+      "name": "Opelousas",
+      "state": "LA",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofopelousas.com/government/meeting-agendas-minutes/"
+    },
+    {
+      "client": "ouachitaparish",
+      "name": "Ouachita Parish (Monroe)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://www.oppj.org/departments/administration/documents/meetingsagendaandminutes.php"
+    },
+    {
+      "client": "rapidesparish",
+      "name": "Rapides Parish (Alexandria)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://rppj.com/agendas-minutes-archive/"
+    },
+    {
+      "client": "lafourcheparish",
+      "name": "Lafourche Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://library.municode.com/la/lafourche_parish_council/munidocs/munidocs?nodeId=agendas"
+    },
+    {
+      "client": "tangipahoaparish",
+      "name": "Tangipahoa Parish (Hammond)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://tangipahoa.org/government/council/agendas-minutes/"
+    },
+    {
+      "client": "iberiaparish",
+      "name": "Iberia Parish (New Iberia)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://iberiaparishgovernment.com/mec-category/parish-council-meetings/"
+    },
+    {
+      "client": "sjbparish",
+      "name": "St. John the Baptist Parish",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://www.sjbparish.gov/Government/St-John-Parish-Council"
+    },
+    {
+      "client": "bossierparish",
+      "name": "Bossier Parish (Shreveport metro)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://www.bossierparishla.gov/police-jury/meetings-and-agendas"
+    },
+    {
+      "client": "calcasieuparish",
+      "name": "Calcasieu Parish (Lake Charles)",
+      "state": "LA",
+      "kind": "parish",
+      "platform": "pagewatch",
+      "url": "https://www.calcasieu.gov/services/pj-minutes-and-agendas"
+    },
+    {
+      "client": "vestaviahillsal",
+      "name": "Vestavia Hills",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "northportal",
+      "name": "Northport",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "opelikaal",
+      "name": "Opelika",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "daphneal",
+      "name": "Daphne",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "fairhopeal",
+      "name": "Fairhope",
+      "state": "AL",
+      "kind": "city",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "leecoal",
+      "name": "Lee County Commission (Auburn-Opelika)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "civicclerk"
+    },
+    {
+      "client": "cityofgadsden.com",
+      "name": "Gadsden",
+      "state": "AL",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "athensalabama.us",
+      "name": "Athens",
+      "state": "AL",
+      "kind": "city",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "stclairco.com",
+      "name": "St. Clair County Commission",
+      "state": "AL",
+      "kind": "county",
+      "platform": "agendacenter"
+    },
+    {
+      "client": "prattvilleal",
+      "name": "Prattville",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://prattvilleal.gov/departments/city-clerk/agenda-packets-minutes/"
+    },
+    {
+      "client": "phenixcityal",
+      "name": "Phenix City",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://phenixcityal.gov/government/agendas-minutes/"
+    },
+    {
+      "client": "florenceal",
+      "name": "Florence",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://florenceal.org/meeting-schedule-agenda/"
+    },
+    {
+      "client": "enterpriseal",
+      "name": "Enterprise",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.enterpriseal.gov/government/agendas___minutes.php"
+    },
+    {
+      "client": "annistonal",
+      "name": "Anniston",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://annistonal.gov/city-council-agendas-minutes/"
+    },
+    {
+      "client": "pelhamal",
+      "name": "Pelham",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://pelhamalabama.gov/827/Agendas-Minutes-Meeting-Media"
+    },
+    {
+      "client": "alabasteral",
+      "name": "Alabaster (agendas on Municode Meetings)",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://cityofalabaster.com/506/Municode-Agenda"
+    },
+    {
+      "client": "trussvilleal",
+      "name": "Trussville",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://trussville.org/government/minutes/"
+    },
+    {
+      "client": "homewoodal",
+      "name": "Homewood",
+      "state": "AL",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.cityofhomewood.com/meetings"
+    },
+    {
+      "client": "tuscaloosacountyal",
+      "name": "Tuscaloosa County Commission",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.tuscco.com/agendaminutes/"
+    },
+    {
+      "client": "morgancountyal",
+      "name": "Morgan County Commission (Decatur)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://morgancounty-al.gov/government/morgan-county-commission/commission-agenda-meeting-minutes/"
+    },
+    {
+      "client": "calhouncountyal",
+      "name": "Calhoun County Commission (Anniston)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.calhouncounty.org/minutes/"
+    },
+    {
+      "client": "etowahcountyal",
+      "name": "Etowah County Commission (Gadsden)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://etowahcounty.org/meetings-and-agenda/"
+    },
+    {
+      "client": "houstoncountyal",
+      "name": "Houston County Commission (Dothan)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://houstoncountyal.gov/commission/meetings_minutes/"
+    },
+    {
+      "client": "limestonecountyal",
+      "name": "Limestone County Commission (Athens/Huntsville metro)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.limestonecounty-al.gov/Government/County-Commission/Meetings-Minutes"
+    },
+    {
+      "client": "lauderdalecountyal",
+      "name": "Lauderdale County Commission (Florence)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://lauderdalecountyal.gov/index.php/past-meeting-minutes/"
+    },
+    {
+      "client": "elmorecountyal",
+      "name": "Elmore County Commission (Montgomery metro)",
+      "state": "AL",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://www.elmoreco.org/meetingagenda"
+    },
+    {
+      "client": "sanjuanordenanzaspr",
+      "name": "San Juan Legislatura Municipal \u2014 Ordenanzas",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.legislaturasanjuan.pr/biblioteca/ordenanzas"
+    },
+    {
+      "client": "sanjuanresolucionespr",
+      "name": "San Juan Legislatura Municipal \u2014 Resoluciones",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://legislaturasanjuan.pr/biblioteca/resoluciones"
+    },
+    {
+      "client": "bayamonpr",
+      "name": "Bayam\u00f3n Legislatura Municipal \u2014 Ordenanzas",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.municipiodebayamon.com/legislatura-municipal/ordenanzas/"
+    },
+    {
+      "client": "carolinapr",
+      "name": "Carolina Legislatura Municipal (info page; docs archived off-site)",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.municipiocarolina.com/legislatura-municipal/"
+    },
+    {
+      "client": "poncepr",
+      "name": "Ponce Legislatura Municipal",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "http://lmuponce.ddns.net/"
+    },
+    {
+      "client": "caguaspr",
+      "name": "Caguas Legislatura Municipal (info page only)",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://caguas.gov.pr/legislatura-municipal-de-caguas/"
+    },
+    {
+      "client": "guaynabopr",
+      "name": "Guaynabo Legislatura Municipal \u2014 ordenanzas/resoluciones",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.guaynabocity.gov.pr/legislatura-municipal/"
+    },
+    {
+      "client": "arecibopr",
+      "name": "Arecibo \u2014 Ordenanzas",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://arecibo.pr.gov/ordenanzas/"
+    },
+    {
+      "client": "toabajapr",
+      "name": "Toa Baja Legislatura Municipal",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://toabaja.com/legislatura-municipal/"
+    },
+    {
+      "client": "trujilloaltopr",
+      "name": "Trujillo Alto Legislatura Municipal \u2014 ordenanzas y resoluciones",
+      "state": "PR",
+      "kind": "city",
+      "platform": "pagewatch",
+      "url": "https://www.trujilloalto.pr/legislaturamunicipal"
+    },
+    {
+      "client": "dallascountytx",
+      "name": "Dallas County Commissioners Court (CivicWeb)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://dallascounty.civicweb.net/Portal/MeetingTypeList.aspx"
+    },
+    {
+      "client": "elpasocountytx",
+      "name": "El Paso County Commissioners Court (NovusAGENDA)",
+      "state": "TX",
+      "kind": "county",
+      "platform": "pagewatch",
+      "url": "https://elpaso.novusagenda.com/AgendaPublic/"
     }
   ]
 }

@@ -65,6 +65,11 @@ The dashboard's Watchdog panel shows a count whenever tickets are waiting.
 That's it — it scans all the cities, then opens `dashboard.html` in your
 browser with anything new. Run it with your morning coffee.
 
+Heads-up: with 455 governments watched, a scan takes a while — likely
+20–40 minutes, because the app deliberately pauses between requests to be
+a polite guest. Start it, go do something else, come back to a full
+dashboard. (And remember it only actually scans once every 3 days.)
+
 ## Quick start — Mac
 
 ```
@@ -123,44 +128,54 @@ ever.
 
 ## What it covers today
 
-**163 sources, all 11 territories, six platform connectors.** The
+**455 sources, all 11 territories, six platform connectors.** The
 authoritative list lives in `sources.json` — every entry is one line
-naming the government, its state, and which connector reads it.
+naming the government, its state, and which connector reads it. Every
+major metro, every mid-size city, county seats, consolidated dispatch
+centers, and Puerto Rico's municipal legislatures (Spanish keyword
+support is built in — grúa, remolque, depósito de vehículos, licitación).
 
-| State | Sources | Anchors |
+| State | Sources | Reach |
 |---|---|---|
-| TX | 27 | Houston, DFW (6 bodies), San Antonio + Bexar, Austin + Travis/Williamson, El Paso, Lubbock, Amarillo, Laredo |
-| GA | 17 | Atlanta + 8 metro counties/cities, Savannah + Chatham, all four consolidated govts |
-| TN | 17 | Memphis + Shelby, Nashville metro (4), Knoxville + Knox, Chattanooga + Hamilton |
-| AL | 16 | Birmingham + Jefferson/Shelby, Montgomery x2, Mobile x2, Huntsville + Madison x2, Tuscaloosa |
-| AR | 16 | Little Rock + Pulaski, all of Northwest Arkansas, Fort Smith + Sebastian, Jonesboro |
-| MS | 16 | Jackson + Hinds/Rankin/Madison, Gulf Coast (5), Memphis-metro suburbs (3) |
-| OH | 16 | The three C's + their counties, Toledo + Lucas, Dayton + Montgomery, Akron + Summit, Canton + Stark, Butler |
-| OK | 15 | OKC metro (6), Tulsa city + county, Norman + Cleveland Co., Lawton + Comanche Co. |
-| LA | 15 | New Orleans + Jefferson Parish, Baton Rouge (2 parishes more), Shreveport + Caddo, Lafayette, Lake Charles |
-| KY | 8 | Louisville (both platforms), Lexington, northern KY (3), Bowling Green, Frankfort |
+| TX | 89 | Houston/Harris → DFW suburbs → border cities; Dallas + El Paso Counties |
+| OH | 46 | The three C's, every metro county, Summit + Butler consolidated dispatch |
+| GA | 42 | Atlanta metro, all four consolidated govts, tier-2 cities statewide |
+| AL | 42 | Birmingham metro suburbs, every metro county commission, Gulf Coast |
+| TN | 41 | Memphis + Nashville metros, Knoxville, Chattanooga, tier-2 statewide |
+| AR | 40 | Little Rock, all of NW Arkansas, Fort Smith, Jonesboro, county seats |
+| MS | 39 | Jackson metro, full Gulf Coast, Memphis-metro suburbs, county boards |
+| OK | 39 | OKC + Tulsa metros, Norman, Lawton, tier-2 cities and counties |
+| LA | 37 | New Orleans, Baton Rouge, Shreveport, Lafayette, parishes incl. Calcasieu |
+| KY | 30 | Louisville, Lexington, northern KY, Owensboro, Bowling Green, fiscal courts |
+| PR | 10 | San Juan, Bayamón, Ponce, Carolina, Caguas, Guaynabo, Arecibo + more |
 
-By connector: pagewatch 63 · legistar 33 · agendacenter 30 · civicclerk 26
-· iqm2 6 · primegov 5. Legistar sources alert per piece of legislation;
-the rest alert per meeting whose agenda contains tow language (agenda
-PDFs are read with a built-in extractor — no installs).
+By connector: pagewatch 229 · agendacenter 95 · civicclerk 66 ·
+legistar 48 · primegov 11 · iqm2 6. Legistar sources alert per piece of
+legislation; the rest alert per meeting whose agenda contains tow language
+(agenda PDFs are read with a built-in extractor — no installs).
 
-## Known coverage gaps (the phase-2 list)
+## Known coverage gaps (honest list)
 
-Nearly everything mapped is now watched. Still outstanding:
+These bodies simply don't publish agendas anywhere a scraper can watch:
 
-- **Dallas County TX** (CivicWeb) and **El Paso County TX** (NovusAGENDA) —
-  addable via pagewatch with their portal URLs, or dedicated connectors
-- **Kentucky small cities/counties**: Owensboro, Florence, Elizabethtown,
-  Boone / Campbell / Warren / Daviess Counties (own sites — pagewatch-ready,
-  URLs in the KY research notes)
-- **Calcasieu Parish LA** (Lake Charles's parish, own site)
-- **Puerto Rico**: San Juan's municipal legislature, Spanish-language
-  (a good fit for the AI pass later)
+- **Laurel County KY** — posts meeting info only on Facebook
+- **El Dorado AR** — Facebook is the de facto agenda channel
+- **Greenville, Corinth, Grenada, Warren County MS** — no online agendas found
+- **Mayagüez PR** — ordinances only appear on the third-party LexJuris
+  archive, no official online source
+- **Carolina + Caguas PR** — legislature info pages are watched, but their
+  document archives aren't online (flagged in their source names)
+
+Watch-list notes: CivicPlus-hosted sites (Pelham, Alabaster, St. Clair,
+Athens, Gadsden AL; Craighead County AR) rejected non-browser fetchers
+during research — if they show up failing in the watchdog after the first
+real scan, paste the output to Claude for a browser-style header tweak.
+A few Texas bodies are mid-migration between platforms (Odessa, San
+Angelo, McLennan County, Midland) — both ends are noted in their names.
 
 Also on the roadmap: meeting *video* transcripts (catches discussion that
 never becomes a written agenda item), email digests, Salesforce push and
-ZoomInfo contact lookup, and more cities per state.
+ZoomInfo contact lookup, and coworker territories once these 11 are proven.
 
 ## Files
 
